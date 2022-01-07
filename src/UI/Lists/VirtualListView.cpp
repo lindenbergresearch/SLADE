@@ -55,7 +55,7 @@ int vlv_chars[] =
 };
 int n_vlv_chars = 29;
 
-CVAR(Int, font_size, 13, CVAR_SAVE)
+CVAR(Int, font_size, 12, CVAR_SAVE)
 
 /*******************************************************************
  * VIRTUALLISTVIEW CLASS FUNCTIONS
