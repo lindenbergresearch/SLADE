@@ -60,8 +60,8 @@ public:
 	SToolBarSeparator(wxWindow* parent) : wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 	{
 		// Set size
-		int height = UI::scalePx(toolbar_size + 6);
-		int width = UI::scalePx(4);
+		int height = UI::scalePx(toolbar_size * 1.5);
+		int width = UI::scalePx(6);
 		SetSizeHints(width, height, width, height);
 		SetMinSize(wxSize(width, height));
 		SetSize(width, height);
