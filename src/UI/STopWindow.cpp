@@ -50,18 +50,13 @@
 // STopWindow class constructor
 // ----------------------------------------------------------------------------
 STopWindow::STopWindow(string title, string id, int x, int y, int width, int height)
-#ifndef __WXOSX__
 	: wxFrame(nullptr, -1, title, wxPoint(x, y), wxSize(width, height))
-#else
-	: wxFrame(nullptr, -1, title, wxDefaultPosition, wxSize(width, height))
-#endif
 {
 	// Enable fullscreen mode on OSX
 #if __APPLE__ && ((wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1) || wxMAJOR_VERSION > 3)
 	EnableFullScreenView(true);
 #endif
 
-#ifndef __WXOSX__
 	// Init size/pos
 	auto info = Misc::getWindowInfo(id);
 	if (!info.id.IsEmpty())
@@ -71,7 +66,6 @@ STopWindow::STopWindow(string title, string id, int x, int y, int width, int hei
 	}
 	else
 		Misc::setWindowInfo(id, width, height, x, y);
-#endif
 
 	// Init variables
 	custom_menus_begin_ = 0;
