@@ -45,7 +45,7 @@
 // ----------------------------------------------------------------------------
 CVAR(Bool, show_toolbar_names, false, CVAR_SAVE)
 CVAR(String, toolbars_hidden, "", CVAR_SAVE)
-CVAR(Int, toolbar_size, 16, CVAR_SAVE)
+CVAR(Int, toolbar_size, 18, CVAR_SAVE)
 DEFINE_EVENT_TYPE(wxEVT_STOOLBAR_LAYOUT_UPDATED)
 
 
