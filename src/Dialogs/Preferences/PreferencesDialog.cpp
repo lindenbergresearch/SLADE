@@ -59,6 +59,8 @@
 #include "TextEditorPrefsPanel.h"
 #include "TextStylePrefsPanel.h"
 #include "General/UI.h"
+#include <UI/WxUtils.h>
+
 
 
 // ----------------------------------------------------------------------------
@@ -138,6 +140,10 @@ PreferencesDialog::PreferencesDialog(wxWindow* parent) : SDialog(parent, "SLADE 
 #if wxMAJOR_VERSION > 3 || (wxMAJOR_VERSION == 3 && wxMINOR_VERSION >= 1)
 	tree_prefs_->GetTreeCtrl()->EnableSystemTheme(true);
 #endif
+
+    auto *font_normal = new wxFont(WxUtils::getListFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
+    font_normal->SetPointSize(13);
+    tree_prefs_->GetTreeCtrl()->SetFont(*font_normal);
 
 	// Setup preferences TreeBook
 	addPrefsPage<GeneralPrefsPanel>("General", false, true);
