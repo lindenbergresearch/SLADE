@@ -55,6 +55,7 @@ int vlv_chars[] =
 };
 int n_vlv_chars = 29;
 
+CVAR(Int, font_size, 13, CVAR_SAVE)
 
 /*******************************************************************
  * VIRTUALLISTVIEW CLASS FUNCTIONS
@@ -82,10 +83,14 @@ VirtualListView::VirtualListView(wxWindow* parent)
 	memset(cols_editable, 0, 100);
 
 	// Set monospace font if configured
-	font_normal = new wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
+	font_normal = new wxFont(WxUtils::getListFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
 	font_monospace = new wxFont(WxUtils::getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
-	if (list_font_monospace)
-		item_attr->SetFont(*font_monospace);
+
+    font_normal->SetPointSize(font_size);
+    font_monospace->SetPointSize(font_size);
+
+	if (list_font_monospace) item_attr->SetFont(*font_monospace);
+    else item_attr->SetFont(*font_normal);
 
 	// Bind events
 #ifndef __WXMSW__
