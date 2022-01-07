@@ -855,5 +855,5 @@ void SToolBar::onEraseBackground(wxEraseEvent& e)
 // ----------------------------------------------------------------------------
 int SToolBar::getBarHeight()
 {
-	return UI::scalePx(toolbar_size + 14);
+	return UI::scalePx(toolbar_size * 2);
 }
