@@ -40,7 +40,8 @@
 // Variables
 //
 // ----------------------------------------------------------------------------
-CVAR(String, font_monospace, "Consolas,Lucida Console", CVAR_SAVE)
+CVAR(String, font_monospace, "Menlo, Consolas, Lucida Console", CVAR_SAVE);
+CVAR(String, font_entry_list, ".SF NS, Lucida Grande", CVAR_SAVE);
 CVAR(Int, tab_style, 1, CVAR_SAVE)
 
 
@@ -88,6 +89,32 @@ wxFont WxUtils::getMonospaceFont(wxFont base)
 
 	return font;
 }
+
+
+
+// ----------------------------------------------------------------------------
+// WxUtils::getListFont
+//
+// Returns a copy of the font use for list boxes
+// ----------------------------------------------------------------------------
+wxFont WxUtils::getListFont(wxFont base) {
+    wxFont font(base.GetPointSize(), wxFONTFAMILY_MODERN, base.GetStyle(), base.GetWeight());
+
+    auto split = wxSplit(font_entry_list, ',');
+    for (unsigned a = 0; a < split.size(); a++)
+    {
+        if (base.SetFaceName(split[a]))
+        {
+            font.SetFaceName(split[a]);
+            break;
+        }
+    }
+
+    return font;
+}
+
+
+
 
 // ----------------------------------------------------------------------------
 // WxUtils::createSmallImageList

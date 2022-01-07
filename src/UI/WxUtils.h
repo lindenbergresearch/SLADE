@@ -16,7 +16,8 @@ namespace WxUtils
 						const string& help = wxEmptyString,
 						const string& icon = wxEmptyString
 					);
-	wxFont			getMonospaceFont(wxFont base);
+    wxFont			getMonospaceFont(wxFont base);
+    wxFont			getListFont(wxFont base);
 	wxImageList*	createSmallImageList();
 	wxPanel*		createPadPanel(wxWindow* parent, wxWindow* control, int pad = -1);
 
