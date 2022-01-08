@@ -284,9 +284,9 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	sizer->Add(hbox, 0, wxEXPAND);
 	hbox->AddStretchSpacer();
 	btn_ok = new wxButton(this, -1, "OK");
-	hbox->Add(btn_ok, 0, wxEXPAND|wxRIGHT, UI::pad());
+	hbox->Add(btn_ok, 0, wxEXPAND|wxRIGHT|wxBOTTOM, UI::padLarge());
 	btn_cancel = new wxButton(this, wxID_CANCEL, "Cancel");
-	hbox->Add(btn_cancel, 0, wxEXPAND);
+	hbox->Add(btn_cancel, 0, wxEXPAND|wxBOTTOM, UI::padLarge());
 
 	// Populate map list
 	populateMapList();
@@ -305,7 +305,7 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 
 	Layout();
 	SetMinClientSize(mainsizer->GetMinSize());
-	//mainsizer->Fit(this);
+	mainsizer->Fit(this);
 	CenterOnParent();
 
 	// Select first map
