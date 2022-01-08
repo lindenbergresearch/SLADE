@@ -44,7 +44,7 @@
  * VARIABLES
  *******************************************************************/
 wxDEFINE_EVENT(EVT_VLV_SELECTION_CHANGED, wxCommandEvent);
-CVAR(Bool, list_font_monospace, false, CVAR_SAVE)
+CVAR(Bool, list_font_monospace, true, CVAR_SAVE)
 VirtualListView* VirtualListView::lv_current = nullptr;
 int vlv_chars[] =
 {
