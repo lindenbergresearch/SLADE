@@ -43,9 +43,9 @@
 // Variables
 //
 // ----------------------------------------------------------------------------
-CVAR(Bool, show_toolbar_names, false, CVAR_SAVE)
+CVAR(Bool, show_toolbar_names, true, CVAR_SAVE)
 CVAR(String, toolbars_hidden, "", CVAR_SAVE)
-CVAR(Int, toolbar_size, 18, CVAR_SAVE)
+CVAR(Int, toolbar_size, 16, CVAR_SAVE)
 DEFINE_EVENT_TYPE(wxEVT_STOOLBAR_LAYOUT_UPDATED)
 
 
@@ -60,8 +60,8 @@ public:
 	SToolBarSeparator(wxWindow* parent) : wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE)
 	{
 		// Set size
-		int height = UI::scalePx(toolbar_size * 1.5);
-		int width = UI::scalePx(6);
+		int height = UI::scalePx(toolbar_size +6);
+		int width = UI::scalePx(4);
 		SetSizeHints(width, height, width, height);
 		SetMinSize(wxSize(width, height));
 		SetSize(width, height);
