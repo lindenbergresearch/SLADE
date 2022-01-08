@@ -41,7 +41,7 @@
 //
 // ----------------------------------------------------------------------------
 CVAR(String, font_monospace, "Menlo, Consolas, Lucida Console", CVAR_SAVE);
-CVAR(String, font_entry_list, ".SF NS, Lucida Grande", CVAR_SAVE);
+CVAR(String, font_entry_list, "Lucida Grande", CVAR_SAVE);
 CVAR(Int, tab_style, 1, CVAR_SAVE)
 
 
