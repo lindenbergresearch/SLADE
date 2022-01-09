@@ -83,7 +83,7 @@ bool	update_check_message_box = false;
 CVAR(String, dir_last, "", CVAR_SAVE)
 CVAR(Bool, update_check, true, CVAR_SAVE)
 CVAR(Bool, update_check_beta, false, CVAR_SAVE)
-
+CVAR(Float, ui_scale_factor, 1.0, CVAR_SAVE)
 
 // ----------------------------------------------------------------------------
 //
@@ -582,7 +582,7 @@ bool SLADEWxApp::OnInit()
 
 #ifdef __APPLE__
 	// Should be constant, wxWidgets Cocoa backend scales everything under the hood
-	const double ui_scale = 1.0;
+	const double ui_scale = ui_scale_factor;
 #else // !__APPLE__
 	// Calculate scaling factor (from system ppi)
 	wxMemoryDC dc;
