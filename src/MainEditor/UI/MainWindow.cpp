@@ -80,7 +80,7 @@ CVAR(Bool, confirm_exit, true, CVAR_SAVE);
 //
 // ----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, tabs_condensed)
-
+EXTERN_CVAR(Int, font_size);
 
 // ----------------------------------------------------------------------------
 // MainWindowDropTarget Class
@@ -417,6 +417,9 @@ void MainWindow::setupLayout()
 	// -- Status Bar --
 	CreateStatusBar(3);
 
+    auto font_normal = new wxFont(WxUtils::getListFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
+    font_normal->SetPointSize(font_size);
+    GetStatusBar()->SetFont(*font_normal);
 
 	// Load previously saved perspective string
 	loadLayout();
