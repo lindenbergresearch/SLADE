@@ -121,7 +121,7 @@ void ConsolePanel::setupTextArea() const
 	StyleSet::currentSet()->applyToWx(text_log_);
 
 	// Margins
-	text_log_->SetMarginWidth(0, text_log_->TextWidth(wxSTC_STYLE_DEFAULT, "00:00:00"));
+	text_log_->SetMarginWidth(0, text_log_->TextWidth(wxSTC_STYLE_DEFAULT, "[00:00:00:000]"));
 	text_log_->SetMarginType(0, wxSTC_MARGIN_TEXT);
 	text_log_->SetMarginWidth(1, 8);
 
@@ -162,11 +162,11 @@ void ConsolePanel::update()
 
 		// Add message line + timestamp margin
 		text_log_->AppendText(log[a].message);
-		text_log_->MarginSetText(a, wxDateTime(log[a].timestamp).FormatISOTime());
+		text_log_->MarginSetText(a, wxDateTime(log[a].timestamp).Format("[%H:%M:%S:%l]"));
 		text_log_->MarginSetStyle(a, wxSTC_STYLE_LINENUMBER);
 
 		// Set line colour depending on message type
-		text_log_->StartStyling(text_log_->GetLineEndPosition(a) - text_log_->GetLineLength(a), 0);
+		text_log_->StartStyling(text_log_->GetLineEndPosition(a) - text_log_->GetLineLength(a));
 		switch (log[a].type)
 		{
 		case Log::MessageType::Error:
