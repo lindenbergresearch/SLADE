@@ -155,17 +155,17 @@ void ConsolePanel::update()
 
 	// Add new log messages to log text area
 	text_log_->SetEditable(true);
-	for (auto a = next_message_index_; a < log.size(); ++a)
+	for (auto a = next_message_index_; a < log.size(); a++)
 	{
-		if (a > 0)
-			text_log_->AppendText("\n");
-
 		// Add message line + timestamp margin
 		text_log_->AppendText(log[a].message);
 		text_log_->MarginSetText(a, wxDateTime(log[a].timestamp).Format("[%H:%M:%S:%l]"));
 		text_log_->MarginSetStyle(a, wxSTC_STYLE_LINENUMBER);
 
-		// Set line colour depending on message type
+        if (a > 0)
+            text_log_->AppendText("\n");
+
+        // Set line colour depending on message type
 		text_log_->StartStyling(text_log_->GetLineEndPosition(a) - text_log_->GetLineLength(a));
 		switch (log[a].type)
 		{
