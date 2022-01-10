@@ -57,78 +57,75 @@ EXTERN_CVAR(String, nodebuilder_options)
 //
 // NodesPrefsPanel class constructor
 // ----------------------------------------------------------------------------
-NodesPrefsPanel::NodesPrefsPanel(wxWindow* parent, bool useframe) : PrefsPanelBase(parent)
-{
-	// Create sizer
-	auto sizer = new wxGridBagSizer(UI::pad(), UI::pad());
-	SetSizer(sizer);
+NodesPrefsPanel::NodesPrefsPanel(wxWindow *parent, bool useframe) : PrefsPanelBase(parent) {
+    // Create sizer
+    auto sizer = new wxGridBagSizer(UI::pad(), UI::pad());
+    SetSizer(sizer);
 
-	// Nodebuilder list
-	wxArrayString builders;
-	unsigned sel = 0;
-	for (unsigned a = 0; a < NodeBuilders::nNodeBuilders(); a++)
-	{
-		builders.Add(NodeBuilders::getBuilder(a).name);
-		if (nodebuilder_id == NodeBuilders::getBuilder(a).id)
-			sel = a;
-	}
-	choice_nodebuilder_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, builders);
-	sizer->Add(new wxStaticText(this, -1, "Node Builder:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	sizer->Add(choice_nodebuilder_, { 0, 1 }, { 1, 2 }, wxEXPAND);
+    // Nodebuilder list
+    wxArrayString builders;
+    unsigned sel = 0;
+    for (unsigned a = 0; a < NodeBuilders::nNodeBuilders(); a++) {
+        builders.Add(NodeBuilders::getBuilder(a).name);
+        if (nodebuilder_id == NodeBuilders::getBuilder(a).id)
+            sel = a;
+    }
+    choice_nodebuilder_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, builders);
+    sizer->Add(new wxStaticText(this, -1, "Node Builder:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+    sizer->Add(choice_nodebuilder_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
-	// Nodebuilder path text
-	text_path_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
-	sizer->Add(new wxStaticText(this, -1, "Path:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	sizer->Add(text_path_, { 1, 1 }, { 1, 1 }, wxEXPAND);
+    // Nodebuilder path text
+    text_path_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
+    sizer->Add(new wxStaticText(this, -1, "Path:"), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+    sizer->Add(text_path_, { 1, 1 }, { 1, 1 }, wxEXPAND);
 
-	// Browse nodebuilder path button
-	btn_browse_path_ = new wxButton(this, -1, "Browse");
-	sizer->Add(btn_browse_path_, { 1, 2 }, { 1, 1 }, wxEXPAND);
+    // Browse nodebuilder path button
+    btn_browse_path_ = new wxButton(this, -1, "Browse");
+    sizer->Add(btn_browse_path_, { 1, 2 }, { 1, 1 }, wxEXPAND);
 
-	// Nodebuilder options
-	clb_options_ = new wxCheckListBox(this, -1, wxDefaultPosition, wxDefaultSize);
-	sizer->Add(WxUtils::createLabelVBox(this, "Options:", clb_options_), { 2, 0 }, { 1, 3 }, wxEXPAND);
+    // Nodebuilder options
+    clb_options_ = new wxCheckListBox(this, -1, wxDefaultPosition, wxDefaultSize);
+    sizer->Add(WxUtils::createLabelVBox(this, "Options:", clb_options_), { 2, 0 }, { 1, 3 }, wxEXPAND);
 
-	sizer->AddGrowableCol(1, 1);
-	sizer->AddGrowableRow(2, 1);
+    sizer->AddGrowableCol(1, 1);
+    sizer->AddGrowableRow(2, 1);
 
-	// Bind events
-	choice_nodebuilder_->Bind(wxEVT_CHOICE, &NodesPrefsPanel::onChoiceBuilderChanged, this);
-	btn_browse_path_->Bind(wxEVT_BUTTON, &NodesPrefsPanel::onBtnBrowse, this);
+    // Bind events
+    choice_nodebuilder_->Bind(wxEVT_CHOICE, &NodesPrefsPanel::onChoiceBuilderChanged, this);
+    btn_browse_path_->Bind(wxEVT_BUTTON, &NodesPrefsPanel::onBtnBrowse, this);
 
-	// Init
-	choice_nodebuilder_->Select(sel);
-	populateOptions(nodebuilder_options);
+    // Init
+    choice_nodebuilder_->Select(sel);
+    populateOptions(nodebuilder_options);
 }
+
 
 // ----------------------------------------------------------------------------
 // NodesPrefsPanel::~NodesPrefsPanel
 //
 // NodesPrefsPanel class destructor
 // ----------------------------------------------------------------------------
-NodesPrefsPanel::~NodesPrefsPanel()
-{
+NodesPrefsPanel::~NodesPrefsPanel() {
 }
+
 
 // ----------------------------------------------------------------------------
 // NodesPrefsPanel::init
 //
 // Initialises panel controls
 // ----------------------------------------------------------------------------
-void NodesPrefsPanel::init()
-{
-	unsigned sel = 0;
-	for (unsigned a = 0; a < NodeBuilders::nNodeBuilders(); a++)
-	{
-		if (nodebuilder_id == NodeBuilders::getBuilder(a).id)
-		{
-			sel = a;
-			break;
-		}
-	}
-	choice_nodebuilder_->Select(sel);
-	populateOptions(nodebuilder_options);
+void NodesPrefsPanel::init() {
+    unsigned sel = 0;
+    for (unsigned a = 0; a < NodeBuilders::nNodeBuilders(); a++) {
+        if (nodebuilder_id == NodeBuilders::getBuilder(a).id) {
+            sel = a;
+            break;
+        }
+    }
+    choice_nodebuilder_->Select(sel);
+    populateOptions(nodebuilder_options);
 }
+
 
 // ----------------------------------------------------------------------------
 // NodesPrefsPanel::populateOptions
@@ -136,49 +133,45 @@ void NodesPrefsPanel::init()
 // Populates the options CheckListBox with options for the currently selected
 // node builder
 // ----------------------------------------------------------------------------
-void NodesPrefsPanel::populateOptions(string options)
-{
-	// Get current builder
-	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
-	btn_browse_path_->Enable(builder.id != "none");
+void NodesPrefsPanel::populateOptions(string options) {
+    // Get current builder
+    NodeBuilders::builder_t &builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
+    btn_browse_path_->Enable(builder.id != "none");
 
-	// Set builder path
-	text_path_->SetValue(builder.path);
+    // Set builder path
+    text_path_->SetValue(builder.path);
 
-	// Clear current options
-	clb_options_->Clear();
+    // Clear current options
+    clb_options_->Clear();
 
-	// Add builder options
-	for (unsigned a = 0; a < builder.option_desc.size(); a++)
-	{
-		clb_options_->Append(builder.option_desc[a]);
-		if (!options.IsEmpty() && options.Contains(S_FMT(" %s ", builder.options[a])))
-			clb_options_->Check(a);
-	}
+    // Add builder options
+    for (unsigned a = 0; a < builder.option_desc.size(); a++) {
+        clb_options_->Append(builder.option_desc[a]);
+        if (!options.IsEmpty() && options.Contains(S_FMT(" %s ", builder.options[a])))
+            clb_options_->Check(a);
+    }
 }
+
 
 // ----------------------------------------------------------------------------
 // NodesPrefsPanel::applyPreferences
 //
 // Applies preferences from the panel controls
 // ----------------------------------------------------------------------------
-void NodesPrefsPanel::applyPreferences()
-{
-	// Set nodebuilder
-	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
-	nodebuilder_id = builder.id;
+void NodesPrefsPanel::applyPreferences() {
+    // Set nodebuilder
+    NodeBuilders::builder_t &builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
+    nodebuilder_id = builder.id;
 
-	// Set options string
-	string opt = " ";
-	for (unsigned a = 0; a < clb_options_->GetCount(); a++)
-	{
-		if (clb_options_->IsChecked(a))
-		{
-			opt += builder.options[a];
-			opt += " ";
-		}
-	}
-	nodebuilder_options = opt;
+    // Set options string
+    string opt = " ";
+    for (unsigned a = 0; a < clb_options_->GetCount(); a++) {
+        if (clb_options_->IsChecked(a)) {
+            opt += builder.options[a];
+            opt += " ";
+        }
+    }
+    nodebuilder_options = opt;
 }
 
 
@@ -194,33 +187,32 @@ void NodesPrefsPanel::applyPreferences()
 //
 // Called when the node builder dropdown is changed
 // ----------------------------------------------------------------------------
-void NodesPrefsPanel::onChoiceBuilderChanged(wxCommandEvent& e)
-{
-	populateOptions("");
+void NodesPrefsPanel::onChoiceBuilderChanged(wxCommandEvent &e) {
+    populateOptions("");
 }
+
 
 // ----------------------------------------------------------------------------
 // NodesPrefsPanel::onBtnBrowse
 //
 // Called when the browse path button is clicked
 // ----------------------------------------------------------------------------
-void NodesPrefsPanel::onBtnBrowse(wxCommandEvent& e)
-{
-	NodeBuilders::builder_t& builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
+void NodesPrefsPanel::onBtnBrowse(wxCommandEvent &e) {
+    NodeBuilders::builder_t &builder = NodeBuilders::getBuilder(choice_nodebuilder_->GetSelection());
 
-	// Setup extension
+    // Setup extension
 #ifdef __WXMSW__
-	string ext = S_FMT("%s.exe|%s.exe|All Files (*.*)|*.*", builder.exe, builder.exe);
+    string ext = S_FMT("%s.exe|%s.exe|All Files (*.*)|*.*", builder.exe, builder.exe);
 #else
-	string ext = S_FMT("%s|%s|All Files (*.*)|*.*", builder.exe, builder.exe);
+    string ext = S_FMT("%s|%s|All Files (*.*)|*.*", builder.exe, builder.exe);
 #endif
 
-	// Browse for exe
-	SFileDialog::fd_info_t info;
-	if (!SFileDialog::openFile(info, "Browse for Nodebuilder Executable", ext, this))
-		return;
+    // Browse for exe
+    SFileDialog::fd_info_t info;
+    if (!SFileDialog::openFile(info, "Browse for Nodebuilder Executable", ext, this))
+        return;
 
-	// Set builder path
-	builder.path = info.filenames[0];
-	text_path_->SetValue(info.filenames[0]);
+    // Set builder path
+    builder.path = info.filenames[0];
+    text_path_->SetValue(info.filenames[0]);
 }

@@ -50,80 +50,88 @@
 // DirArchiveUpdateDialog class constructor
 // ----------------------------------------------------------------------------
 DirArchiveUpdateDialog::DirArchiveUpdateDialog(
-	wxWindow* parent,
-	DirArchive* archive,
-	vector<DirEntryChange>& changes
-) :	SDialog(parent, "Directory Content Changed", "dir_archive_update"),
-	archive_{ archive },
-	changes_{ changes }
-{
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(sizer);
+    wxWindow *parent,
+    DirArchive *archive,
+    vector<DirEntryChange> &changes
+) : SDialog(parent, "Directory Content Changed", "dir_archive_update"),
+    archive_{ archive },
+    changes_{ changes } {
+    auto sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(sizer);
 
-	// Message
-	string message = S_FMT(
-		"Contents of the directory \"%s\" have been modified outside of SLADE,\n",
-		archive->filename()
-	);
-	message += "please tick the changes below that you wish to apply.";
-	sizer->Add(new wxStaticText(this, -1, message), 0, wxEXPAND | wxALL, UI::padLarge());
-	message = "Note that any unticked changes will be overwritten on disk when the directory is saved.";
-	sizer->Add(new wxStaticText(this, -1, message), 0, wxEXPAND | wxALL, UI::padLarge());
+    // Message
+    string message = S_FMT(
+        "Contents of the directory \"%s\" have been modified outside of SLADE,\n",
+        archive->filename()
+    );
+    message += "please tick the changes below that you wish to apply.";
+    sizer->Add(new wxStaticText(this, -1, message), 0, wxEXPAND | wxALL, UI::padLarge());
+    message = "Note that any unticked changes will be overwritten on disk when the directory is saved.";
+    sizer->Add(new wxStaticText(this, -1, message), 0, wxEXPAND | wxALL, UI::padLarge());
 
-	// Changes list
-	list_changes_ = new wxDataViewListCtrl(this, -1);
-	list_changes_->AppendToggleColumn("", wxDATAVIEW_CELL_ACTIVATABLE, wxDVC_DEFAULT_MINWIDTH, wxALIGN_CENTER);
-	list_changes_->AppendTextColumn("Change");
-	list_changes_->AppendTextColumn("Filename", wxDATAVIEW_CELL_INERT, -2);
-	list_changes_->SetMinSize(wxSize(0, UI::scalePx(200)));
-	sizer->Add(list_changes_, 1, wxEXPAND | wxLEFT | wxRIGHT, UI::padLarge());
+    // Changes list
+    list_changes_ = new wxDataViewListCtrl(this, -1);
+    list_changes_->AppendToggleColumn("", wxDATAVIEW_CELL_ACTIVATABLE, wxDVC_DEFAULT_MINWIDTH, wxALIGN_CENTER);
+    list_changes_->AppendTextColumn("Change");
+    list_changes_->AppendTextColumn("Filename", wxDATAVIEW_CELL_INERT, -2);
+    list_changes_->SetMinSize(wxSize(0, UI::scalePx(200)));
+    sizer->Add(list_changes_, 1, wxEXPAND | wxLEFT | wxRIGHT, UI::padLarge());
 
-	// OK button
-	auto btn_ok = new wxButton(this, wxID_OK, "Apply Selected Changes");
-	sizer->AddSpacer(UI::pad());
-	sizer->Add(btn_ok, 0, wxALIGN_RIGHT | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
-	btn_ok->Bind(wxEVT_BUTTON, &DirArchiveUpdateDialog::onBtnOKClicked, this);
+    // OK button
+    auto btn_ok = new wxButton(this, wxID_OK, "Apply Selected Changes");
+    sizer->AddSpacer(UI::pad());
+    sizer->Add(btn_ok, 0, wxALIGN_RIGHT | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
+    btn_ok->Bind(wxEVT_BUTTON, &DirArchiveUpdateDialog::onBtnOKClicked, this);
 
-	populateChangeList();
+    populateChangeList();
 
-	Layout();
-	Fit();
-	SetInitialSize(GetSize());
+    Layout();
+    Fit();
+    SetInitialSize(GetSize());
 }
+
 
 // ----------------------------------------------------------------------------
 // DirArchiveUpdateDialog::~DirArchiveUpdateDialog
 //
 // DirArchiveUpdateDialog class destructor
 // ----------------------------------------------------------------------------
-DirArchiveUpdateDialog::~DirArchiveUpdateDialog()
-{
+DirArchiveUpdateDialog::~DirArchiveUpdateDialog() {
 }
+
 
 // ----------------------------------------------------------------------------
 // DirArchiveUpdateDialog::populateChangeList
 //
 // Populates the changes list
 // ----------------------------------------------------------------------------
-void DirArchiveUpdateDialog::populateChangeList()
-{
-	wxVector<wxVariant> row;
-	for (unsigned a = 0; a < changes_.size(); a++)
-	{
-		row.push_back(wxVariant(true));
-		switch (changes_[a].action)
-		{
-		case DirEntryChange::ADDED_FILE: row.push_back(wxVariant("Added")); break;
-		case DirEntryChange::ADDED_DIR: row.push_back(wxVariant("Added")); break;
-		case DirEntryChange::DELETED_FILE: row.push_back(wxVariant("Deleted")); break;
-		case DirEntryChange::DELETED_DIR: row.push_back(wxVariant("Deleted")); break;
-		case DirEntryChange::UPDATED: row.push_back(wxVariant("Modified")); break;
-		default: break;
-		}
-		row.push_back(wxVariant(changes_[a].file_path));
-		list_changes_->AppendItem(row);
-		row.clear();
-	}
+void DirArchiveUpdateDialog::populateChangeList() {
+    wxVector<wxVariant> row;
+    for (unsigned a = 0; a < changes_.size(); a++) {
+        row.push_back(wxVariant(true));
+        switch (changes_[a].action) {
+            case DirEntryChange::ADDED_FILE:
+                row.push_back(wxVariant("Added"));
+                break;
+            case DirEntryChange::ADDED_DIR:
+                row.push_back(wxVariant("Added"));
+                break;
+            case DirEntryChange::DELETED_FILE:
+                row.push_back(wxVariant("Deleted"));
+                break;
+            case DirEntryChange::DELETED_DIR:
+                row.push_back(wxVariant("Deleted"));
+                break;
+            case DirEntryChange::UPDATED:
+                row.push_back(wxVariant("Modified"));
+                break;
+            default:
+                break;
+        }
+        row.push_back(wxVariant(changes_[a].file_path));
+        list_changes_->AppendItem(row);
+        row.clear();
+    }
 }
 
 
@@ -139,19 +147,18 @@ void DirArchiveUpdateDialog::populateChangeList()
 //
 // Called when the 'Apply Selected Changes' button is clicked
 // ----------------------------------------------------------------------------
-void DirArchiveUpdateDialog::onBtnOKClicked(wxCommandEvent& e)
-{
-	// Get selected changes to apply
-	vector<DirEntryChange> apply_changes;
-	vector<DirEntryChange> ignore_changes;
-	for (unsigned a = 0; a < changes_.size(); a++)
-		if (list_changes_->GetToggleValue(a, 0))
-			apply_changes.push_back(changes_[a]);
-		else
-			ignore_changes.push_back(changes_[a]);
+void DirArchiveUpdateDialog::onBtnOKClicked(wxCommandEvent &e) {
+    // Get selected changes to apply
+    vector<DirEntryChange> apply_changes;
+    vector<DirEntryChange> ignore_changes;
+    for (unsigned a = 0; a < changes_.size(); a++)
+        if (list_changes_->GetToggleValue(a, 0))
+            apply_changes.push_back(changes_[a]);
+        else
+            ignore_changes.push_back(changes_[a]);
 
-	archive_->ignoreChangedEntries(ignore_changes);
-	archive_->updateChangedEntries(apply_changes);
+    archive_->ignoreChangedEntries(ignore_changes);
+    archive_->updateChangedEntries(apply_changes);
 
-	EndModal(wxID_OK);
+    EndModal(wxID_OK);
 }

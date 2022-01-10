@@ -52,22 +52,22 @@
 // BrowserItem class constructor
 // ----------------------------------------------------------------------------
 BrowserItem::BrowserItem(string name, unsigned index, string type) :
-	type_{ type },
-	name_{ name },
-	index_{ index }
-{
+    type_{ type },
+    name_{ name },
+    index_{ index } {
 }
+
 
 // ----------------------------------------------------------------------------
 // BrowserItem::~BrowserItem
 //
 // BrowserItem class destructor
 // ----------------------------------------------------------------------------
-BrowserItem::~BrowserItem()
-{
-	if (text_box_)
-		delete text_box_;
+BrowserItem::~BrowserItem() {
+    if (text_box_)
+        delete text_box_;
 }
+
 
 // ----------------------------------------------------------------------------
 // BrowserItem::loadImage
@@ -75,10 +75,10 @@ BrowserItem::~BrowserItem()
 // Loads the item image (base class does nothing, must be overridden by child
 // classes to be useful at all)
 // ----------------------------------------------------------------------------
-bool BrowserItem::loadImage()
-{
-	return false;
+bool BrowserItem::loadImage() {
+    return false;
 }
+
 
 // ----------------------------------------------------------------------------
 // BrowserItem::draw
@@ -86,151 +86,139 @@ bool BrowserItem::loadImage()
 // Draws the item in a [size]x[size] box, keeping the correct aspect ratio of
 // it's image
 // ----------------------------------------------------------------------------
-void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewtype, rgba_t colour, bool text_shadow)
-{
-	// Determine item name string (for normal viewtype)
-	string draw_name = "";
-	if (nametype == 0)
-		draw_name = name_;
-	else if (nametype == 1)
-		draw_name = S_FMT("%d", index_);
+void BrowserItem::draw(int size, int x, int y, int font, int nametype, int viewtype, rgba_t colour, bool text_shadow) {
+    // Determine item name string (for normal viewtype)
+    string draw_name = "";
+    if (nametype == 0)
+        draw_name = name_;
+    else if (nametype == 1)
+        draw_name = S_FMT("%d", index_);
 
-	// Truncate name if needed
-	if (parent_->truncateNames() && draw_name.Length() > 8)
-	{
-		// textures/aquatex/AQCONC13.png -> t./a./AQCONC13.png
-		// textures/AQDIRT01.png -> t./AQDIRT01.png
-		if (draw_name.Find('/') != wxNOT_FOUND)
-		{
-			int lastPos = 0;
-			string new_draw_name = "";
-			while (draw_name.Mid(lastPos).Find('/') != wxNOT_FOUND)
-			{
-				new_draw_name += draw_name.Mid(lastPos, 1) + "./";
-				lastPos += draw_name.Mid(lastPos).Find('/') + 1;
-			}
-			draw_name = new_draw_name + draw_name.AfterLast('/');
-		}
-		else
-		{
-			draw_name.Truncate(8);
-			draw_name += "...";
-		}
-	}
+    // Truncate name if needed
+    if (parent_->truncateNames() && draw_name.Length() > 8) {
+        // textures/aquatex/AQCONC13.png -> t./a./AQCONC13.png
+        // textures/AQDIRT01.png -> t./AQDIRT01.png
+        if (draw_name.Find('/') != wxNOT_FOUND) {
+            int lastPos = 0;
+            string new_draw_name = "";
+            while (draw_name.Mid(lastPos).Find('/') != wxNOT_FOUND) {
+                new_draw_name += draw_name.Mid(lastPos, 1) + "./";
+                lastPos += draw_name.Mid(lastPos).Find('/') + 1;
+            }
+            draw_name = new_draw_name + draw_name.AfterLast('/');
+        } else {
+            draw_name.Truncate(8);
+            draw_name += "...";
+        }
+    }
 
-	// Item name
-	if (viewtype == 0)
-	{
-		if (text_shadow)
-			Drawing::drawText(draw_name, x+(size*0.5+1), y+size+5, COL_BLACK, font, Drawing::ALIGN_CENTER);
-		Drawing::drawText(draw_name, x+(size*0.5), y+size+4, colour, font, Drawing::ALIGN_CENTER);
-	}
-	else if (viewtype == 1)
-	{
-		// Create text box if needed
-		if (!text_box_)
-			text_box_ = new TextBox(S_FMT("%d\n%s", index_, name_), font, UI::scalePx(144), UI::scalePx(16));
-		
-		int top = y;
-		top += ((size - text_box_->getHeight()) * 0.5);
+    // Item name
+    if (viewtype == 0) {
+        if (text_shadow)
+            Drawing::drawText(draw_name, x + (size * 0.5 + 1), y + size + 5, COL_BLACK, font, Drawing::ALIGN_CENTER);
+        Drawing::drawText(draw_name, x + (size * 0.5), y + size + 4, colour, font, Drawing::ALIGN_CENTER);
+    } else if (viewtype == 1) {
+        // Create text box if needed
+        if (!text_box_)
+            text_box_ = new TextBox(S_FMT("%d\n%s", index_, name_), font, UI::scalePx(144), UI::scalePx(16));
 
-		if (text_shadow)
-			text_box_->draw(x + size + 9, top + 1, COL_BLACK);
-		text_box_->draw(x + size + 8, top, colour);
-	}
+        int top = y;
+        top += ((size - text_box_->getHeight()) * 0.5);
 
-	// If the item is blank don't bother with the image
-	if (blank_)
-		return;
+        if (text_shadow)
+            text_box_->draw(x + size + 9, top + 1, COL_BLACK);
+        text_box_->draw(x + size + 8, top, colour);
+    }
 
-	// Try to load image if it isn't already
-	if (!image_ || (image_ && !image_->isLoaded()))
-		loadImage();
+    // If the item is blank don't bother with the image
+    if (blank_)
+        return;
 
-	// If it still isn't just draw a red box with an X
-	if (!image_ || (image_ && !image_->isLoaded()))
-	{
-		glPushAttrib(GL_ENABLE_BIT|GL_CURRENT_BIT);
+    // Try to load image if it isn't already
+    if (!image_ || (image_ && !image_->isLoaded()))
+        loadImage();
 
-		glColor3f(1, 0, 0);
-		glDisable(GL_TEXTURE_2D);
+    // If it still isn't just draw a red box with an X
+    if (!image_ || (image_ && !image_->isLoaded())) {
+        glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
 
-		// Outline
-		glBegin(GL_LINE_LOOP);
-		glVertex2i(x, y);
-		glVertex2i(x, y+size);
-		glVertex2i(x+size, y+size);
-		glVertex2i(x+size, y);
-		glEnd();
+        glColor3f(1, 0, 0);
+        glDisable(GL_TEXTURE_2D);
 
-		// X
-		glBegin(GL_LINES);
-		glVertex2i(x, y);
-		glVertex2i(x+size, y+size);
-		glVertex2i(x, y+size);
-		glVertex2i(x+size, y);
-		glEnd();
+        // Outline
+        glBegin(GL_LINE_LOOP);
+        glVertex2i(x, y);
+        glVertex2i(x, y + size);
+        glVertex2i(x + size, y + size);
+        glVertex2i(x + size, y);
+        glEnd();
 
-		glPopAttrib();
+        // X
+        glBegin(GL_LINES);
+        glVertex2i(x, y);
+        glVertex2i(x + size, y + size);
+        glVertex2i(x, y + size);
+        glVertex2i(x + size, y);
+        glEnd();
 
-		return;
-	}
+        glPopAttrib();
 
-	// Determine texture dimensions
-	double width = image_->getWidth();
-	double height = image_->getHeight();
+        return;
+    }
 
-	// Scale up if size > 128
-	if (size > 128)
-	{
-		double scale = (double)size / 128.0;
-		width *= scale;
-		height *= scale;
-	}
+    // Determine texture dimensions
+    double width = image_->getWidth();
+    double height = image_->getHeight();
 
-	if (width > height)
-	{
-		// Scale down by width
-		if (width > size)
-		{
-			double scale = (double)size / width;
-			width *= scale;
-			height *= scale;
-		}
-	}
-	else
-	{
-		// Scale down by height
-		if (height > size)
-		{
-			double scale = (double)size / height;
-			width *= scale;
-			height *= scale;
-		}
-	}
+    // Scale up if size > 128
+    if (size > 128) {
+        double scale = (double) size / 128.0;
+        width *= scale;
+        height *= scale;
+    }
 
-	// Determine draw coords
-	double top = y + ((double)size * 0.5) - (height * 0.5);
-	double left = x + ((double)size * 0.5) - (width * 0.5);
+    if (width > height) {
+        // Scale down by width
+        if (width > size) {
+            double scale = (double) size / width;
+            width *= scale;
+            height *= scale;
+        }
+    } else {
+        // Scale down by height
+        if (height > size) {
+            double scale = (double) size / height;
+            width *= scale;
+            height *= scale;
+        }
+    }
 
-	// Draw
-	image_->bind();
-	OpenGL::setColour(COL_WHITE, false);
+    // Determine draw coords
+    double top = y + ((double) size * 0.5) - (height * 0.5);
+    double left = x + ((double) size * 0.5) - (width * 0.5);
 
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0f, 0.0f);	glVertex2d(left, top);
-	glTexCoord2f(0.0f, 1.0f);	glVertex2d(left, top + height);
-	glTexCoord2f(1.0f, 1.0f);	glVertex2d(left + width, top + height);
-	glTexCoord2f(1.0f, 0.0f);	glVertex2d(left + width, top);
-	glEnd();
+    // Draw
+    image_->bind();
+    OpenGL::setColour(COL_WHITE, false);
+
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2d(left, top);
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex2d(left, top + height);
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex2d(left + width, top + height);
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex2d(left + width, top);
+    glEnd();
 }
+
 
 // ----------------------------------------------------------------------------
 // BrowserItem::clearImage
 //
 // Clears the item image
 // ----------------------------------------------------------------------------
-void BrowserItem::clearImage()
-{
-	if (image_) image_->clear();
+void BrowserItem::clearImage() {
+    if (image_) image_->clear();
 }

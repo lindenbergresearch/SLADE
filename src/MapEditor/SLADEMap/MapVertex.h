@@ -4,66 +4,100 @@
 
 #include "MapObject.h"
 
+
 class MapLine;
 
-struct doomvertex_t
-{
-	short x;
-	short y;
+
+struct doomvertex_t {
+    short x;
+    short y;
 };
 
 // Those are actually fixed_t
-struct doom64vertex_t
-{
-	int32_t x;
-	int32_t y;
+struct doom64vertex_t {
+    int32_t x;
+    int32_t y;
 };
 
-class MapVertex : public MapObject
-{
-	friend class SLADEMap;
+
+class MapVertex : public MapObject {
+    friend class SLADEMap;
+
+
 public:
-	MapVertex(SLADEMap* parent = nullptr);
-	MapVertex(double x, double y, SLADEMap* parent = nullptr);
-	~MapVertex();
+    MapVertex(SLADEMap *parent = nullptr);
 
-	double		xPos() const { return x; }
-	double		yPos() const { return y; }
 
-	fpoint2_t	getPoint(uint8_t point) override;
-	fpoint2_t	point();
+    MapVertex(double x, double y, SLADEMap *parent = nullptr);
 
-	int		intProperty(const string& key) override;
-	double	floatProperty(const string& key) override;
-	void	setIntProperty(const string& key, int value) override;
-	void	setFloatProperty(const string& key, double value) override;
-	bool	scriptCanModifyProp(const string& key) override;
 
-	void		connectLine(MapLine* line);
-	void		disconnectLine(MapLine* line);
-	unsigned	nConnectedLines() const { return connected_lines.size(); }
-	MapLine*	connectedLine(unsigned index);
-	
-	const vector<MapLine*>&	connectedLines() const { return connected_lines; }
+    ~MapVertex();
 
-	void	writeBackup(mobj_backup_t* backup) override;
-	void	readBackup(mobj_backup_t* backup) override;
 
-	operator Debuggable() const
-	{
-		if (!this)
-			return Debuggable("<vertex NULL>");
+    double xPos() const { return x; }
 
-		return Debuggable(S_FMT("<vertex %u>", index));
-	}
+
+    double yPos() const { return y; }
+
+
+    fpoint2_t getPoint(uint8_t point) override;
+
+
+    fpoint2_t point();
+
+
+    int intProperty(const string &key) override;
+
+
+    double floatProperty(const string &key) override;
+
+
+    void setIntProperty(const string &key, int value) override;
+
+
+    void setFloatProperty(const string &key, double value) override;
+
+
+    bool scriptCanModifyProp(const string &key) override;
+
+
+    void connectLine(MapLine *line);
+
+
+    void disconnectLine(MapLine *line);
+
+
+    unsigned nConnectedLines() const { return connected_lines.size(); }
+
+
+    MapLine *connectedLine(unsigned index);
+
+
+    const vector<MapLine *> &connectedLines() const { return connected_lines; }
+
+
+    void writeBackup(mobj_backup_t *backup) override;
+
+
+    void readBackup(mobj_backup_t *backup) override;
+
+
+    operator Debuggable() const {
+        if (!this)
+            return Debuggable("<vertex NULL>");
+
+        return Debuggable(S_FMT("<vertex %u>", index));
+    }
+
 
 private:
-	// Basic data
-	double		x;
-	double		y;
+    // Basic data
+    double x;
+    double y;
 
-	// Internal info
-	vector<MapLine*>	connected_lines;
+    // Internal info
+    vector<MapLine *> connected_lines;
 };
+
 
 #endif //__MAPVERTEX_H__

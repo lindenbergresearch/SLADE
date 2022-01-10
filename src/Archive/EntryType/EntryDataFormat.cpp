@@ -39,9 +39,11 @@
  *******************************************************************/
 // Declare hash map class to hold EntryDataFormats
 WX_DECLARE_STRING_HASH_MAP(EntryDataFormat*, EDFMap);
+
+
 EDFMap data_formats;
-EntryDataFormat*	edf_any = nullptr;
-EntryDataFormat*	edf_text = nullptr;
+EntryDataFormat *edf_any = nullptr;
+EntryDataFormat *edf_text = nullptr;
 
 
 /*******************************************************************
@@ -51,39 +53,38 @@ EntryDataFormat*	edf_text = nullptr;
 /* EntryDataFormat::EntryDataFormat
  * EntryDataFormat class constructor
  *******************************************************************/
-EntryDataFormat::EntryDataFormat(string id)
-{
-	// Init variables
-	size_min = 0;
-	this->id = id;
+EntryDataFormat::EntryDataFormat(string id) {
+    // Init variables
+    size_min = 0;
+    this->id = id;
 
-	// Add to hash map
-	data_formats[id] = this;
+    // Add to hash map
+    data_formats[id] = this;
 }
+
 
 /* EntryDataFormat::~EntryDataFormat
  * EntryDataFormat class destructor
  *******************************************************************/
-EntryDataFormat::~EntryDataFormat()
-{
+EntryDataFormat::~EntryDataFormat() {
 }
+
 
 /* EntryDataFormat::isThisFormat
  * To be overridden by specific data types, returns true if the data
  * in [mc] matches the data format
  *******************************************************************/
-int EntryDataFormat::isThisFormat(MemChunk& mc)
-{
-	return EDF_TRUE;
+int EntryDataFormat::isThisFormat(MemChunk &mc) {
+    return EDF_TRUE;
 }
+
 
 /* EntryDataFormat::copyToFormat
  * Copies data format properties to [target]
  *******************************************************************/
-void EntryDataFormat::copyToFormat(EntryDataFormat& target)
-{
-	target.patterns = patterns;
-	target.size_min = size_min;
+void EntryDataFormat::copyToFormat(EntryDataFormat &target) {
+    target.patterns = patterns;
+    target.size_min = size_min;
 }
 
 
@@ -95,81 +96,82 @@ void EntryDataFormat::copyToFormat(EntryDataFormat& target)
  * Returns the entry data format matching [id], or the 'any' type
  * if no match found
  *******************************************************************/
-EntryDataFormat* EntryDataFormat::getFormat(string id)
-{
-	EDFMap::iterator i = data_formats.find(id);
-	if (i == data_formats.end())
-		return edf_any;
-	else
-		return i->second;
+EntryDataFormat *EntryDataFormat::getFormat(string id) {
+    EDFMap::iterator i = data_formats.find(id);
+    if (i == data_formats.end())
+        return edf_any;
+    else
+        return i->second;
 }
+
 
 /* EntryDataFormat::anyFormat
  * Returns the 'any' data format
  *******************************************************************/
-EntryDataFormat* EntryDataFormat::anyFormat()
-{
-	return edf_any;
+EntryDataFormat *EntryDataFormat::anyFormat() {
+    return edf_any;
 }
+
 
 /* EntryDataFormat::textFormat
  * Returns the 'text' data format
  *******************************************************************/
-EntryDataFormat* EntryDataFormat::textFormat()
-{
-	return edf_text;
+EntryDataFormat *EntryDataFormat::textFormat() {
+    return edf_text;
 }
+
 
 /* EntryDataFormat::readDataFormatDefinition
  * Parses a user data format definition (unimplemented, currently)
  *******************************************************************/
-bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
-{
-	// Parse the definition
-	Parser p;
-	p.parseText(mc);
+bool EntryDataFormat::readDataFormatDefinition(MemChunk &mc) {
+    // Parse the definition
+    Parser p;
+    p.parseText(mc);
 
-	// Get data_formats tree
-	auto pt_formats = p.parseTreeRoot()->getChildPTN("data_formats");
+    // Get data_formats tree
+    auto pt_formats = p.parseTreeRoot()->getChildPTN("data_formats");
 
-	// Check it exists
-	if (!pt_formats)
-		return false;
+    // Check it exists
+    if (!pt_formats)
+        return false;
 
-	// Go through all parsed types
-	for (unsigned a = 0; a < pt_formats->nChildren(); a++)
-	{
-		// Get child as ParseTreeNode
-		auto formatnode = pt_formats->getChildPTN(a);
+    // Go through all parsed types
+    for (unsigned a = 0; a < pt_formats->nChildren(); a++) {
+        // Get child as ParseTreeNode
+        auto formatnode = pt_formats->getChildPTN(a);
 
-		// Create+add new data format
-		EntryDataFormat* edf = new EntryDataFormat(formatnode->getName().Lower());
+        // Create+add new data format
+        EntryDataFormat *edf = new EntryDataFormat(formatnode->getName().Lower());
 
-		/*
-		// Copy from existing type if inherited
-		if (!formatnode->getInherit().IsEmpty())
-		{
-			EntryType* parent_type = EntryType::getType(formatnode->getInherit());
+        /*
+        // Copy from existing type if inherited
+        if (!formatnode->getInherit().IsEmpty())
+        {
+            EntryType* parent_type = EntryType::getType(formatnode->getInherit());
 
-			if (parent_type != EntryType::unknownType())
-				parent_type->copyToType(ntype);
-			else
-				LOG_MESSAGE(1, "Warning: Entry type %s inherits from unknown type %s", ntype->getId(), typenode->getInherit());
-		}
-		*/
-	}
-	return true;
+            if (parent_type != EntryType::unknownType())
+                parent_type->copyToType(ntype);
+            else
+                LOG_MESSAGE(1, "Warning: Entry type %s inherits from unknown type %s", ntype->getId(), typenode->getInherit());
+        }
+        */
+    }
+    return true;
 }
+
 
 // Special format that always returns false on detection
 // Used when a format is requested that doesn't exist
-class AnyDataFormat : public EntryDataFormat
-{
+class AnyDataFormat : public EntryDataFormat {
 public:
-	AnyDataFormat() : EntryDataFormat("any") {}
-	~AnyDataFormat() {}
+    AnyDataFormat() : EntryDataFormat("any") {}
 
-	int isThisFormat(MemChunk& mc) { return EDF_FALSE; }
+
+    ~AnyDataFormat() {}
+
+
+    int isThisFormat(MemChunk &mc) { return EDF_FALSE; }
 };
 
 // Format enumeration moved to separate files
@@ -180,166 +182,165 @@ public:
 #include "DataFormats/MiscFormats.h"
 #include "DataFormats/ModelFormats.h"
 
+
 /* EntryDataFormat::initBuiltinFormats
  * Initialises all built-in data formats (this is currently all
  * formats, as externally defined formats are not implemented yet)
  *******************************************************************/
-void EntryDataFormat::initBuiltinFormats()
-{
-	// Create the 'any' format
-	edf_any = new AnyDataFormat();
+void EntryDataFormat::initBuiltinFormats() {
+    // Create the 'any' format
+    edf_any = new AnyDataFormat();
 
-	// Just need to create an instance of each builtin format class
-	// TODO: Ugly ugly ugly, need a better way of doing this, defining
-	// each data format in a single place etc
-	new PNGDataFormat();
-	new BMPDataFormat();
-	new GIFDataFormat();
-	new PCXDataFormat();
-	new TGADataFormat();
-	new TIFFDataFormat();
-	new JPEGDataFormat();
-	new ILBMDataFormat();
-	new DoomGfxDataFormat();
-	new DoomGfxAlphaDataFormat();
-	new DoomGfxBetaDataFormat();
-	new DoomSneaDataFormat();
-	new DoomArahDataFormat();
-	new DoomPSXDataFormat();
-	new DoomJaguarDataFormat();
-	new DoomJagTexDataFormat();
-	new DoomJagSpriteDataFormat();
-	new ShadowCasterSpriteFormat();
-	new ShadowCasterWallFormat();
-	new ShadowCasterGfxFormat();
-	new AnaMipImageFormat();
-	new BuildTileFormat();
-	new Heretic2M8Format();
-	new Heretic2M32Format();
-	new HalfLifeTextureFormat();
-	new IMGZDataFormat();
-	new QuakeGfxDataFormat();
-	new QuakeSpriteDataFormat();
-	new QuakeTexDataFormat();
-	new QuakeIIWalDataFormat();
-	new RottGfxDataFormat();
-	new RottTransGfxDataFormat();
-	new RottLBMDataFormat();
-	new RottRawDataFormat();
-	new RottPicDataFormat();
-	new WolfPicDataFormat();
-	new WolfSpriteDataFormat();
-	new JediBMFormat();
-	new JediFMEFormat();
-	new JediWAXFormat();
-	new JediFNTFormat();
-	new JediFONTFormat();
-	//new JediDELTFormat();
-	//new JediANIMFormat();
-	new WadDataFormat();
-	new ZipDataFormat();
-	new LibDataFormat();
-	new DatDataFormat();
-	new ResDataFormat();
-	new PakDataFormat();
-	new BSPDataFormat();
-	new GrpDataFormat();
-	new RffDataFormat();
-	new GobDataFormat();
-	new LfdDataFormat();
-	new HogDataFormat();
-	new ADatDataFormat();
-	new Wad2DataFormat();
-	new WadJDataFormat();
-	new WolfDataFormat();
-	new GZipDataFormat();
-	new BZip2DataFormat();
-	new TarDataFormat();
-	new DiskDataFormat();
-	new PodArchiveDataFormat();
-	new ChasmBinArchiveDataFormat();
-	new SinArchiveDataFormat();
-	new MUSDataFormat();
-	new MIDIDataFormat();
-	new XMIDataFormat();
-	new HMIDataFormat();
-	new HMPDataFormat();
-	new GMIDDataFormat();
-	new RMIDDataFormat();
-	new ITModuleDataFormat();
-	new XMModuleDataFormat();
-	new S3MModuleDataFormat();
-	new MODModuleDataFormat();
-	new OKTModuleDataFormat();
-	new DRODataFormat();
-	new RAWDataFormat();
-	new IMFDataFormat();
-	new IMFRawDataFormat();
-	new DoomSoundDataFormat();
-	new WolfSoundDataFormat();
-	new DoomMacSoundDataFormat();
-	new DoomPCSpeakerDataFormat();
-	new AudioTPCSoundDataFormat();
-	new AudioTAdlibSoundDataFormat();
-	new JaguarDoomSoundDataFormat();
-	new VocDataFormat();
-	new AYDataFormat();
-	new GBSDataFormat();
-	new GYMDataFormat();
-	new HESDataFormat();
-	new KSSDataFormat();
-	new NSFDataFormat();
-	new NSFEDataFormat();
-	new SAPDataFormat();
-	new SPCDataFormat();
-	new VGMDataFormat();
-	new VGZDataFormat();
-	new BloodSFXDataFormat();
-	new WAVDataFormat();
-	new SunSoundDataFormat();
-	new AIFFSoundDataFormat();
-	new OggDataFormat();
-	new FLACDataFormat();
-	new MP2DataFormat();
-	new MP3DataFormat();
-	new TextureXDataFormat();
-	new PNamesDataFormat();
-	new ACS0DataFormat();
-	new ACSEDataFormat();
-	new ACSeDataFormat();
-	new BoomAnimatedDataFormat();
-	new BoomSwitchesDataFormat();
-	new Font0DataFormat();
-	new Font1DataFormat();
-	new Font2DataFormat();
-	new BMFontDataFormat();
-	new FontWolfDataFormat();
-	new ZNodesDataFormat();
-	new ZGLNodesDataFormat();
-	new ZGLNodes2DataFormat();
-	new XNodesDataFormat();
-	new XGLNodesDataFormat();
-	new XGLNodes2DataFormat();
-	new DMDModelDataFormat();
-	new MDLModelDataFormat();
-	new MD2ModelDataFormat();
-	new MD3ModelDataFormat();
-	new VOXVoxelDataFormat();
-	new KVXVoxelDataFormat();
-	new RLE0DataFormat();
+    // Just need to create an instance of each builtin format class
+    // TODO: Ugly ugly ugly, need a better way of doing this, defining
+    // each data format in a single place etc
+    new PNGDataFormat();
+    new BMPDataFormat();
+    new GIFDataFormat();
+    new PCXDataFormat();
+    new TGADataFormat();
+    new TIFFDataFormat();
+    new JPEGDataFormat();
+    new ILBMDataFormat();
+    new DoomGfxDataFormat();
+    new DoomGfxAlphaDataFormat();
+    new DoomGfxBetaDataFormat();
+    new DoomSneaDataFormat();
+    new DoomArahDataFormat();
+    new DoomPSXDataFormat();
+    new DoomJaguarDataFormat();
+    new DoomJagTexDataFormat();
+    new DoomJagSpriteDataFormat();
+    new ShadowCasterSpriteFormat();
+    new ShadowCasterWallFormat();
+    new ShadowCasterGfxFormat();
+    new AnaMipImageFormat();
+    new BuildTileFormat();
+    new Heretic2M8Format();
+    new Heretic2M32Format();
+    new HalfLifeTextureFormat();
+    new IMGZDataFormat();
+    new QuakeGfxDataFormat();
+    new QuakeSpriteDataFormat();
+    new QuakeTexDataFormat();
+    new QuakeIIWalDataFormat();
+    new RottGfxDataFormat();
+    new RottTransGfxDataFormat();
+    new RottLBMDataFormat();
+    new RottRawDataFormat();
+    new RottPicDataFormat();
+    new WolfPicDataFormat();
+    new WolfSpriteDataFormat();
+    new JediBMFormat();
+    new JediFMEFormat();
+    new JediWAXFormat();
+    new JediFNTFormat();
+    new JediFONTFormat();
+    //new JediDELTFormat();
+    //new JediANIMFormat();
+    new WadDataFormat();
+    new ZipDataFormat();
+    new LibDataFormat();
+    new DatDataFormat();
+    new ResDataFormat();
+    new PakDataFormat();
+    new BSPDataFormat();
+    new GrpDataFormat();
+    new RffDataFormat();
+    new GobDataFormat();
+    new LfdDataFormat();
+    new HogDataFormat();
+    new ADatDataFormat();
+    new Wad2DataFormat();
+    new WadJDataFormat();
+    new WolfDataFormat();
+    new GZipDataFormat();
+    new BZip2DataFormat();
+    new TarDataFormat();
+    new DiskDataFormat();
+    new PodArchiveDataFormat();
+    new ChasmBinArchiveDataFormat();
+    new SinArchiveDataFormat();
+    new MUSDataFormat();
+    new MIDIDataFormat();
+    new XMIDataFormat();
+    new HMIDataFormat();
+    new HMPDataFormat();
+    new GMIDDataFormat();
+    new RMIDDataFormat();
+    new ITModuleDataFormat();
+    new XMModuleDataFormat();
+    new S3MModuleDataFormat();
+    new MODModuleDataFormat();
+    new OKTModuleDataFormat();
+    new DRODataFormat();
+    new RAWDataFormat();
+    new IMFDataFormat();
+    new IMFRawDataFormat();
+    new DoomSoundDataFormat();
+    new WolfSoundDataFormat();
+    new DoomMacSoundDataFormat();
+    new DoomPCSpeakerDataFormat();
+    new AudioTPCSoundDataFormat();
+    new AudioTAdlibSoundDataFormat();
+    new JaguarDoomSoundDataFormat();
+    new VocDataFormat();
+    new AYDataFormat();
+    new GBSDataFormat();
+    new GYMDataFormat();
+    new HESDataFormat();
+    new KSSDataFormat();
+    new NSFDataFormat();
+    new NSFEDataFormat();
+    new SAPDataFormat();
+    new SPCDataFormat();
+    new VGMDataFormat();
+    new VGZDataFormat();
+    new BloodSFXDataFormat();
+    new WAVDataFormat();
+    new SunSoundDataFormat();
+    new AIFFSoundDataFormat();
+    new OggDataFormat();
+    new FLACDataFormat();
+    new MP2DataFormat();
+    new MP3DataFormat();
+    new TextureXDataFormat();
+    new PNamesDataFormat();
+    new ACS0DataFormat();
+    new ACSEDataFormat();
+    new ACSeDataFormat();
+    new BoomAnimatedDataFormat();
+    new BoomSwitchesDataFormat();
+    new Font0DataFormat();
+    new Font1DataFormat();
+    new Font2DataFormat();
+    new BMFontDataFormat();
+    new FontWolfDataFormat();
+    new ZNodesDataFormat();
+    new ZGLNodesDataFormat();
+    new ZGLNodes2DataFormat();
+    new XNodesDataFormat();
+    new XGLNodesDataFormat();
+    new XGLNodes2DataFormat();
+    new DMDModelDataFormat();
+    new MDLModelDataFormat();
+    new MD2ModelDataFormat();
+    new MD3ModelDataFormat();
+    new VOXVoxelDataFormat();
+    new KVXVoxelDataFormat();
+    new RLE0DataFormat();
 
-	// And here are some dummy formats needed for certain image formats
-	// that can't be detected by anything but size (which is done in EntryType detection anyway)
-	new EntryDataFormat("img_raw");
-	new EntryDataFormat("img_rottwall");
-	new EntryDataFormat("img_planar");
-	new EntryDataFormat("img_4bitchunk");
-	new EntryDataFormat("font_mono");
+    // And here are some dummy formats needed for certain image formats
+    // that can't be detected by anything but size (which is done in EntryType detection anyway)
+    new EntryDataFormat("img_raw");
+    new EntryDataFormat("img_rottwall");
+    new EntryDataFormat("img_planar");
+    new EntryDataFormat("img_4bitchunk");
+    new EntryDataFormat("font_mono");
 
-	// Dummy for generic raw data format
-	new EntryDataFormat("rawdata");
+    // Dummy for generic raw data format
+    new EntryDataFormat("rawdata");
 
-	// Another dummy for the generic text format
-	edf_text = new EntryDataFormat("text");
+    // Another dummy for the generic text format
+    edf_text = new EntryDataFormat("text");
 }
-

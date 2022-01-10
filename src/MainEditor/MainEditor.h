@@ -1,34 +1,70 @@
 #pragma once
 
+
 // Forward declarations
 class Archive;
+
+
 class ArchiveEntry;
+
+
 class EntryPanel;
+
+
 class MainWindow;
+
+
 class Palette;
+
+
 class wxWindow;
 
-namespace MainEditor
-{
-	bool	init();
+namespace MainEditor {
+bool init();
 
-	MainWindow*				window();
-	wxWindow*				windowWx();
-	Archive*				currentArchive();
-	ArchiveEntry*			currentEntry();
-	vector<ArchiveEntry*>	currentEntrySelection();
-	Palette*			currentPalette(ArchiveEntry* entry = nullptr);
-	EntryPanel*				currentEntryPanel();
 
-	void	openTextureEditor(Archive* archive, ArchiveEntry* entry = nullptr);
-	void	openMapEditor(Archive* archive);
-	void	openArchiveTab(Archive* archive);
-	void	openEntry(ArchiveEntry* entry);
+MainWindow *window();
 
-	void	setGlobalPaletteFromArchive(Archive* archive);
+
+wxWindow *windowWx();
+
+
+Archive *currentArchive();
+
+
+ArchiveEntry *currentEntry();
+
+
+vector<ArchiveEntry *> currentEntrySelection();
+
+
+Palette *currentPalette(ArchiveEntry *entry = nullptr);
+
+
+EntryPanel *currentEntryPanel();
+
+
+void openTextureEditor(Archive *archive, ArchiveEntry *entry = nullptr);
+
+
+void openMapEditor(Archive *archive);
+
+
+void openArchiveTab(Archive *archive);
+
+
+void openEntry(ArchiveEntry *entry);
+
+
+void setGlobalPaletteFromArchive(Archive *archive);
+
 
 #ifdef USE_WEBVIEW_STARTPAGE
-	void	openDocs(string page_name = "");
+
+
+void openDocs(string page_name = "");
+
+
 #endif
 };
 

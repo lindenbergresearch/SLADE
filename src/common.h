@@ -115,7 +115,9 @@
 #endif
 
 #ifdef USE_WEBVIEW_STARTPAGE
+
 #include <wx/webview.h>
+
 #endif
 
 #ifdef __WXMSW__
@@ -124,7 +126,9 @@
 
 // other libraries
 #ifndef NO_FLUIDSYNTH
+
 #include <fluidsynth.h>
+
 #endif
 
 // SFML
@@ -137,6 +141,7 @@
 
 // Freeimage
 #define FREEIMAGE_LIB
+
 #include <FreeImage.h>
 
 // C++
@@ -152,4 +157,3 @@
 #include <locale.h>
 
 #endif // COMMON_H
-

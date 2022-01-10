@@ -46,43 +46,36 @@
 //
 // DockPanel class constructor
 // ----------------------------------------------------------------------------
-DockPanel::DockPanel(wxWindow* parent) : wxPanel(parent, -1)
-{
-	// Init variables
-	current_layout_ = Orient::Uninitialised;
+DockPanel::DockPanel(wxWindow *parent) : wxPanel(parent, -1) {
+    // Init variables
+    current_layout_ = Orient::Uninitialised;
 
-	// Size event
-	Bind(wxEVT_SIZE, [&](wxSizeEvent& e)
-	{
-		// Get parent's AUI manager (if it exists)
-		auto mgr = wxAuiManager::GetManager(GetParent());
-		if (!mgr)
-		{
-			e.Skip();
-			return;
-		}
+    // Size event
+    Bind(
+        wxEVT_SIZE, [&](wxSizeEvent &e) {
+            // Get parent's AUI manager (if it exists)
+            auto mgr = wxAuiManager::GetManager(GetParent());
+            if (!mgr) {
+                e.Skip();
+                return;
+            }
 
-		// Check if floating
-		if (mgr->GetPane(this).IsFloating())
-		{
-			if (current_layout_ != Orient::Normal) layoutNormal();
-			current_layout_ = Orient::Normal;
-		}
-		else
-		{
-			// Not floating, layout horizontally or vertically depending on size
-			if (GetSize().x >= GetSize().y)
-			{
-				if (current_layout_ != Orient::Horizontal) layoutHorizontal();
-				current_layout_ = Orient::Horizontal;
-			}
-			else
-			{
-				if (current_layout_ != Orient::Vertical) layoutVertical();
-				current_layout_ = Orient::Vertical;
-			}
-		}
+            // Check if floating
+            if (mgr->GetPane(this).IsFloating()) {
+                if (current_layout_ != Orient::Normal) layoutNormal();
+                current_layout_ = Orient::Normal;
+            } else {
+                // Not floating, layout horizontally or vertically depending on size
+                if (GetSize().x >= GetSize().y) {
+                    if (current_layout_ != Orient::Horizontal) layoutHorizontal();
+                    current_layout_ = Orient::Horizontal;
+                } else {
+                    if (current_layout_ != Orient::Vertical) layoutVertical();
+                    current_layout_ = Orient::Vertical;
+                }
+            }
 
-		e.Skip();
-	});
+            e.Skip();
+        }
+    );
 }

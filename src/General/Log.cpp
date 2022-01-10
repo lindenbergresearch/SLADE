@@ -39,10 +39,9 @@
 // Variables
 //
 // ----------------------------------------------------------------------------
-namespace Log
-{
-	vector<Message>	log;
-	std::ofstream	log_file;
+namespace Log {
+vector<Message> log;
+std::ofstream log_file;
 }
 CVAR(Int, log_verbosity, 1, CVAR_SAVE)
 
@@ -58,14 +57,13 @@ CVAR(Int, log_verbosity, 1, CVAR_SAVE)
 //
 // Allows us to catch FreeImage errors and log them
 // ----------------------------------------------------------------------------
-void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
-{
-	string error = "FreeImage: ";
-	if (fif != FIF_UNKNOWN)
-		error += S_FMT("[%s] ", FreeImage_GetFormatFromFIF(fif));
-	error += message;
+void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
+    string error = "FreeImage: ";
+    if (fif != FIF_UNKNOWN)
+        error += S_FMT("[%s] ", FreeImage_GetFormatFromFIF(fif));
+    error += message;
 
-	Log::error(error);
+    Log::error(error);
 }
 
 
@@ -81,9 +79,8 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
 // Returns the log entry as a formatted string:
 // HH:MM:SS: <message>
 // ----------------------------------------------------------------------------
-string Log::Message::formattedMessageLine() const
-{
-	return S_FMT("%s: %s", wxDateTime(timestamp).FormatISOTime(), CHR(message));
+string Log::Message::formattedMessageLine() const {
+    return S_FMT("%s: %s", wxDateTime(timestamp).FormatISOTime(), CHR(message));
 }
 
 
@@ -98,55 +95,56 @@ string Log::Message::formattedMessageLine() const
 //
 // Initialises the log file and logging stuff
 // ----------------------------------------------------------------------------
-void Log::init()
-{
-	// Redirect sf::err output to the log file
-	log_file.open(CHR(App::path("slade3.log", App::Dir::User)));
-	sf::err().rdbuf(log_file.rdbuf());
+void Log::init() {
+    // Redirect sf::err output to the log file
+    log_file.open(CHR(App::path("slade3.log", App::Dir::User)));
+    sf::err().rdbuf(log_file.rdbuf());
 
-	// Write logfile header
-	string year = wxNow().Right(4);
-	info("SLADE - It's a Doom Editor");
-	info(S_FMT("Version %s", App::version().toString()));
-	if (Global::sc_rev != "")
-		info(S_FMT("Git Revision %s", Global::sc_rev));
-	if (App::platform() == App::Platform::Windows)
-		info(S_FMT("%s Windows Build", App::isWin64Build() ? "64bit" : "32bit"));
+    // Write logfile header
+    string year = wxNow().Right(4);
+    info("SLADE - It's a Doom Editor");
+    info(S_FMT("Version %s", App::version().toString()));
+    if (Global::sc_rev != "")
+        info(S_FMT("Git Revision %s", Global::sc_rev));
+    if (App::platform() == App::Platform::Windows)
+        info(S_FMT("%s Windows Build", App::isWin64Build() ? "64bit" : "32bit"));
     info(S_FMT("Written by Simon Judd, 2008-%s", year));
     info(S_FMT("Apple M1 Version by Patrick Lindenberg, 2021-%s", year));
 #ifdef SFML_VERSION_MAJOR
-	info(S_FMT(
-		"Compiled with wxWidgets %i.%i.%i and SFML %i.%i.%i",
-		wxMAJOR_VERSION,
-		wxMINOR_VERSION,
-		wxRELEASE_NUMBER,
-		SFML_VERSION_MAJOR,
-		SFML_VERSION_MINOR,
-		SFML_VERSION_PATCH
-	));
+    info(
+        S_FMT(
+            "Compiled with wxWidgets %i.%i.%i and SFML %i.%i.%i",
+            wxMAJOR_VERSION,
+            wxMINOR_VERSION,
+            wxRELEASE_NUMBER,
+            SFML_VERSION_MAJOR,
+            SFML_VERSION_MINOR,
+            SFML_VERSION_PATCH
+        ));
 #else
-	info(S_FMT(
-		"Compiled with wxWidgets %i.%i.%i",
-		wxMAJOR_VERSION,
-		wxMINOR_VERSION,
-		wxRELEASE_NUMBER
-	));
+    info(S_FMT(
+        "Compiled with wxWidgets %i.%i.%i",
+        wxMAJOR_VERSION,
+        wxMINOR_VERSION,
+        wxRELEASE_NUMBER
+    ));
 #endif
-	info("--------------------------------");
+    info("--------------------------------");
 
-	// Set up FreeImage to use our log:
-	FreeImage_SetOutputMessage(FreeImageErrorHandler);
+    // Set up FreeImage to use our log:
+    FreeImage_SetOutputMessage(FreeImageErrorHandler);
 }
+
 
 // ----------------------------------------------------------------------------
 // Log::history
 //
 // Returns the log message history
 // ----------------------------------------------------------------------------
-const vector<Log::Message>& Log::history()
-{
-	return log;
+const vector<Log::Message> &Log::history() {
+    return log;
 }
+
 
 // ----------------------------------------------------------------------------
 // Log::verbosity
@@ -154,40 +152,40 @@ const vector<Log::Message>& Log::history()
 // Returns the current log verbosity level, log messages with a
 // higher level than the current verbosity will not be logged
 // ----------------------------------------------------------------------------
-int Log::verbosity()
-{
-	return log_verbosity;
+int Log::verbosity() {
+    return log_verbosity;
 }
+
 
 // ----------------------------------------------------------------------------
 // Log::setVerbosity
 //
 // Sets the log verbosity level to [verbosity]
 // ----------------------------------------------------------------------------
-void Log::setVerbosity(int verbosity)
-{
-	log_verbosity = verbosity;
+void Log::setVerbosity(int verbosity) {
+    log_verbosity = verbosity;
 }
+
 
 // ----------------------------------------------------------------------------
 // Log::message
 //
 // Logs a message [text] of [type]
 // ----------------------------------------------------------------------------
-void Log::message(MessageType type, const char* text)
-{
-	// Add log message
-	log.push_back({ text, type, wxDateTime::UNow() });
+void Log::message(MessageType type, const char *text) {
+    // Add log message
+    log.push_back({ text, type, wxDateTime::UNow() });
 
-	// Write to log file
-	if (log_file.is_open() && type != MessageType::Console)
-		sf::err() << log.back().formattedMessageLine() << "\n";
+    // Write to log file
+    if (log_file.is_open() && type != MessageType::Console)
+        sf::err() << log.back().formattedMessageLine() << "\n";
 }
 
-void Log::message(MessageType type, const wxString& text)
-{
-	message(type, CHR(text));
+
+void Log::message(MessageType type, const wxString &text) {
+    message(type, CHR(text));
 }
+
 
 // ----------------------------------------------------------------------------
 // Log::since
@@ -195,66 +193,65 @@ void Log::message(MessageType type, const wxString& text)
 // Returns a list of log messages of [type] that have been recorded since
 // [time]
 // ----------------------------------------------------------------------------
-vector<Log::Message*> Log::since(time_t time, MessageType type)
-{
-	vector<Message*> list;
-	for (auto& msg : log)
-		if (msg.timestamp >= time && (type == MessageType::Any || msg.type == type))
-			list.push_back(&msg);
-	return list;
+vector<Log::Message *> Log::since(time_t time, MessageType type) {
+    vector<Message *> list;
+    for (auto &msg : log)
+        if (msg.timestamp >= time && (type == MessageType::Any || msg.type == type))
+            list.push_back(&msg);
+    return list;
 }
+
 
 // ----------------------------------------------------------------------------
 // Log::debug
 //
 // Logs a debug message [text] at verbosity [level] only if debug mode is on
 // ----------------------------------------------------------------------------
-void Log::debug(int level, const char* text)
-{
-	if (Global::debug)
-		message(MessageType::Debug, level, text);
+void Log::debug(int level, const char *text) {
+    if (Global::debug)
+        message(MessageType::Debug, level, text);
 }
 
-void Log::debug(int level, const wxString& text)
-{
-	debug(level, CHR(text));
+
+void Log::debug(int level, const wxString &text) {
+    debug(level, CHR(text));
 }
+
 
 // ----------------------------------------------------------------------------
 // Log::debug
 //
 // Logs a debug message [text] only if debug mode is on
 // ----------------------------------------------------------------------------
-void Log::debug(const char* text)
-{
-	if (Global::debug)
-		message(MessageType::Debug, text);
+void Log::debug(const char *text) {
+    if (Global::debug)
+        message(MessageType::Debug, text);
 }
 
-void Log::debug(const wxString& text)
-{
-	debug(CHR(text));
+
+void Log::debug(const wxString &text) {
+    debug(CHR(text));
 }
+
 
 // ----------------------------------------------------------------------------
 // Log::message
 //
 // Logs a message [text] of [type] at verbosity [level]
 // ----------------------------------------------------------------------------
-void Log::message(MessageType type, int level, const char* text)
-{
-	if (level > log_verbosity)
-		return;
+void Log::message(MessageType type, int level, const char *text) {
+    if (level > log_verbosity)
+        return;
 
-	// Add log message
-	log.push_back({ text, type, wxDateTime::UNow() });
+    // Add log message
+    log.push_back({ text, type, wxDateTime::UNow() });
 
-	// Write to log file
-	if (log_file.is_open() && type != MessageType::Console)
-		sf::err() << log.back().formattedMessageLine() << "\n";
+    // Write to log file
+    if (log_file.is_open() && type != MessageType::Console)
+        sf::err() << log.back().formattedMessageLine() << "\n";
 }
 
-void Log::message(MessageType type, int level, const wxString& text)
-{
-	message(type, level, CHR(text));
+
+void Log::message(MessageType type, int level, const wxString &text) {
+    message(type, level, CHR(text));
 }

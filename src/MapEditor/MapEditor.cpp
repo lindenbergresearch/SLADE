@@ -14,308 +14,305 @@
 #include "UI/MapCanvas.h"
 #include "UI/WxUtils.h"
 
-namespace MapEditor
-{
-	std::unique_ptr<MapEditContext>	edit_context;
-	MapTextureManager				texture_manager;
-	Archive::MapDesc				current_map_desc;
-	MapEditorWindow*				map_window;
-	MapBackupManager				backup_manager;
+namespace MapEditor {
+std::unique_ptr<MapEditContext> edit_context;
+MapTextureManager texture_manager;
+Archive::MapDesc current_map_desc;
+MapEditorWindow *map_window;
+MapBackupManager backup_manager;
 }
 
-MapEditContext& MapEditor::editContext()
-{
-	if (!edit_context)
-		edit_context = std::make_unique<MapEditContext>();
 
-	return *edit_context;
+MapEditContext &MapEditor::editContext() {
+    if (!edit_context)
+        edit_context = std::make_unique<MapEditContext>();
+
+    return *edit_context;
 }
 
-MapTextureManager& MapEditor::textureManager()
-{
-	return texture_manager;
+
+MapTextureManager &MapEditor::textureManager() {
+    return texture_manager;
 }
 
-MapEditorWindow* MapEditor::window()
-{
-	if (!map_window)
-		init();
 
-	return map_window;
+MapEditorWindow *MapEditor::window() {
+    if (!map_window)
+        init();
+
+    return map_window;
 }
 
-wxWindow* MapEditor::windowWx()
-{
-	if (!map_window)
-		init();
 
-	return map_window;
+wxWindow *MapEditor::windowWx() {
+    if (!map_window)
+        init();
+
+    return map_window;
 }
 
-MapBackupManager& MapEditor::backupManager()
-{
-	return backup_manager;
+
+MapBackupManager &MapEditor::backupManager() {
+    return backup_manager;
 }
 
-void MapEditor::init()
-{
-	map_window = new MapEditorWindow();
-	texture_manager.init();
+
+void MapEditor::init() {
+    map_window = new MapEditorWindow();
+    texture_manager.init();
 }
 
-void MapEditor::forceRefresh(bool renderer)
-{
-	if (map_window)
-		map_window->forceRefresh(renderer);
+
+void MapEditor::forceRefresh(bool renderer) {
+    if (map_window)
+        map_window->forceRefresh(renderer);
 }
 
-bool MapEditor::chooseMap(Archive* archive)
-{
-	if (!map_window)
-		init();
 
-	return map_window->chooseMap(archive);
+bool MapEditor::chooseMap(Archive *archive) {
+    if (!map_window)
+        init();
+
+    return map_window->chooseMap(archive);
 }
 
-void MapEditor::setUndoManager(UndoManager* manager)
-{
-	map_window->setUndoManager(manager);
+
+void MapEditor::setUndoManager(UndoManager *manager) {
+    map_window->setUndoManager(manager);
 }
 
-void ::MapEditor::setStatusText(const string &text, int column)
-{
-	map_window->CallAfter(&MapEditorWindow::SetStatusText, text, column);
+
+void ::MapEditor::setStatusText(const string &text, int column) {
+    map_window->CallAfter(&MapEditorWindow::SetStatusText, text, column);
 }
 
-void MapEditor::lockMouse(bool lock)
-{
-	edit_context->canvas()->lockMouse(lock);
+
+void MapEditor::lockMouse(bool lock) {
+    edit_context->canvas()->lockMouse(lock);
 }
 
-void MapEditor::openContextMenu()
-{
-	// Context menu
-	wxMenu menu_context;
 
-	// Set 3d camera
-	SAction::fromId("mapw_camera_set")->addToMenu(&menu_context, true);
+void MapEditor::openContextMenu() {
+    // Context menu
+    wxMenu menu_context;
 
-	// Run from here
-	SAction::fromId("mapw_run_map_here")->addToMenu(&menu_context, true);
+    // Set 3d camera
+    SAction::fromId("mapw_camera_set")->addToMenu(&menu_context, true);
 
-	// Mode-specific
-	bool object_selected = edit_context->selection().hasHilightOrSelection();
-	if (edit_context->editMode() == Mode::Vertices)
-	{
-		menu_context.AppendSeparator();
-		SAction::fromId("mapw_vertex_create")->addToMenu(&menu_context, true);
-	}
-	else if (edit_context->editMode() == Mode::Lines)
-	{
-		if (object_selected)
-		{
-			menu_context.AppendSeparator();
-			SAction::fromId("mapw_line_changetexture")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_changespecial")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_tagedit")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_flip")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_correctsectors")->addToMenu(&menu_context, true);
-		}
-	}
-	else if (edit_context->editMode() == Mode::Things)
-	{
-		menu_context.AppendSeparator();
+    // Run from here
+    SAction::fromId("mapw_run_map_here")->addToMenu(&menu_context, true);
 
-		if (object_selected)
-			SAction::fromId("mapw_thing_changetype")->addToMenu(&menu_context, true);
+    // Mode-specific
+    bool object_selected = edit_context->selection().hasHilightOrSelection();
+    if (edit_context->editMode() == Mode::Vertices) {
+        menu_context.AppendSeparator();
+        SAction::fromId("mapw_vertex_create")->addToMenu(&menu_context, true);
+    } else if (edit_context->editMode() == Mode::Lines) {
+        if (object_selected) {
+            menu_context.AppendSeparator();
+            SAction::fromId("mapw_line_changetexture")->addToMenu(&menu_context, true);
+            SAction::fromId("mapw_line_changespecial")->addToMenu(&menu_context, true);
+            SAction::fromId("mapw_line_tagedit")->addToMenu(&menu_context, true);
+            SAction::fromId("mapw_line_flip")->addToMenu(&menu_context, true);
+            SAction::fromId("mapw_line_correctsectors")->addToMenu(&menu_context, true);
+        }
+    } else if (edit_context->editMode() == Mode::Things) {
+        menu_context.AppendSeparator();
 
-		SAction::fromId("mapw_thing_create")->addToMenu(&menu_context, true);
-	}
-	else if (edit_context->editMode() == Mode::Sectors)
-	{
-		if (object_selected)
-		{
-			SAction::fromId("mapw_sector_changetexture")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_sector_changespecial")->addToMenu(&menu_context, true);
-			if (edit_context->selection().size() > 1)
-			{
-				SAction::fromId("mapw_sector_join")->addToMenu(&menu_context, true);
-				SAction::fromId("mapw_sector_join_keep")->addToMenu(&menu_context, true);
-			}
-		}
+        if (object_selected)
+            SAction::fromId("mapw_thing_changetype")->addToMenu(&menu_context, true);
 
-		SAction::fromId("mapw_sector_create")->addToMenu(&menu_context, true);
-	}
+        SAction::fromId("mapw_thing_create")->addToMenu(&menu_context, true);
+    } else if (edit_context->editMode() == Mode::Sectors) {
+        if (object_selected) {
+            SAction::fromId("mapw_sector_changetexture")->addToMenu(&menu_context, true);
+            SAction::fromId("mapw_sector_changespecial")->addToMenu(&menu_context, true);
+            if (edit_context->selection().size() > 1) {
+                SAction::fromId("mapw_sector_join")->addToMenu(&menu_context, true);
+                SAction::fromId("mapw_sector_join_keep")->addToMenu(&menu_context, true);
+            }
+        }
 
-	if (object_selected)
-	{
-		// General edit
-		menu_context.AppendSeparator();
-		SAction::fromId("mapw_edit_objects")->addToMenu(&menu_context, true);
-		SAction::fromId("mapw_mirror_x")->addToMenu(&menu_context, true);
-		SAction::fromId("mapw_mirror_y")->addToMenu(&menu_context, true);
+        SAction::fromId("mapw_sector_create")->addToMenu(&menu_context, true);
+    }
 
-		// Properties
-		menu_context.AppendSeparator();
-		SAction::fromId("mapw_item_properties")->addToMenu(&menu_context, true);
-	}
+    if (object_selected) {
+        // General edit
+        menu_context.AppendSeparator();
+        SAction::fromId("mapw_edit_objects")->addToMenu(&menu_context, true);
+        SAction::fromId("mapw_mirror_x")->addToMenu(&menu_context, true);
+        SAction::fromId("mapw_mirror_y")->addToMenu(&menu_context, true);
 
-	map_window->PopupMenu(&menu_context);
+        // Properties
+        menu_context.AppendSeparator();
+        SAction::fromId("mapw_item_properties")->addToMenu(&menu_context, true);
+    }
+
+    map_window->PopupMenu(&menu_context);
 }
 
-void MapEditor::openObjectProperties(MapObject* object)
-{
-	map_window->propsPanel()->openObject(object);
+
+void MapEditor::openObjectProperties(MapObject *object) {
+    map_window->propsPanel()->openObject(object);
 }
 
-void MapEditor::openMultiObjectProperties(vector<MapObject*>& objects)
-{
-	map_window->propsPanel()->openObjects(objects);
+
+void MapEditor::openMultiObjectProperties(vector<MapObject *> &objects) {
+    map_window->propsPanel()->openObjects(objects);
 }
 
-void MapEditor::showShapeDrawPanel(bool show)
-{
-	map_window->showShapeDrawPanel(show);
+
+void MapEditor::showShapeDrawPanel(bool show) {
+    map_window->showShapeDrawPanel(show);
 }
 
-void MapEditor::showObjectEditPanel(bool show, ObjectEditGroup* group)
-{
-	map_window->showObjectEditPanel(show, group);
+
+void MapEditor::showObjectEditPanel(bool show, ObjectEditGroup *group) {
+    map_window->showObjectEditPanel(show, group);
 }
 
-string MapEditor::browseTexture(const string &init_texture, int tex_type, SLADEMap& map, const string& title)
-{
-	// Unlock cursor if locked
-	bool cursor_locked = edit_context->mouseLocked();
-	if (cursor_locked)
-		edit_context->lockMouse(false);
 
-	// Setup texture browser
-	MapTextureBrowser browser(map_window, tex_type, init_texture, &map);
-	browser.SetTitle(title);
+string MapEditor::browseTexture(const string &init_texture, int tex_type, SLADEMap &map, const string &title) {
+    // Unlock cursor if locked
+    bool cursor_locked = edit_context->mouseLocked();
+    if (cursor_locked)
+        edit_context->lockMouse(false);
 
-	// Get selected texture
-	string tex = init_texture;
-	if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
-		tex = browser.getSelectedItem()->name();
+    // Setup texture browser
+    MapTextureBrowser browser(map_window, tex_type, init_texture, &map);
+    browser.SetTitle(title);
 
-	// Re-lock cursor if needed
-	if (cursor_locked)
-		edit_context->lockMouse(true);
+    // Get selected texture
+    string tex = init_texture;
+    if (browser.ShowModal() == wxID_OK && browser.getSelectedItem())
+        tex = browser.getSelectedItem()->name();
 
-	return tex;
+    // Re-lock cursor if needed
+    if (cursor_locked)
+        edit_context->lockMouse(true);
+
+    return tex;
 }
 
-int MapEditor::browseThingType(int init_type, SLADEMap& map)
-{
-	// Unlock cursor if locked
-	bool cursor_locked = edit_context->mouseLocked();
-	if (cursor_locked)
-		edit_context->lockMouse(false);
 
-	// Setup thing browser
-	ThingTypeBrowser browser(map_window, init_type);
+int MapEditor::browseThingType(int init_type, SLADEMap &map) {
+    // Unlock cursor if locked
+    bool cursor_locked = edit_context->mouseLocked();
+    if (cursor_locked)
+        edit_context->lockMouse(false);
 
-	// Get selected type
-	int type = -1;
-	if (browser.ShowModal() == wxID_OK)
-		type = browser.getSelectedType();
+    // Setup thing browser
+    ThingTypeBrowser browser(map_window, init_type);
 
-	// Re-lock cursor if needed
-	if (cursor_locked)
-		edit_context->lockMouse(true);
+    // Get selected type
+    int type = -1;
+    if (browser.ShowModal() == wxID_OK)
+        type = browser.getSelectedType();
 
-	return type;
+    // Re-lock cursor if needed
+    if (cursor_locked)
+        edit_context->lockMouse(true);
+
+    return type;
 }
 
-bool MapEditor::editObjectProperties(vector<MapObject*>& list)
-{
-	string selsize = "";
-	string type = edit_context->modeString(false);
-	if (list.size() == 1)
-		type += S_FMT(" #%d", list[0]->getIndex());
-	else if (list.size() > 1)
-		selsize = S_FMT("(%lu selected)", list.size());
 
-	// Create dialog for properties panel
-	SDialog dlg(
-		MapEditor::window(),
-		S_FMT("%s Properties %s", type, selsize),
-		S_FMT("mobjprops_%s", CHR(edit_context->modeString(false))),
-		-1,
-		-1
-	);
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	dlg.SetSizer(sizer);
+bool MapEditor::editObjectProperties(vector<MapObject *> &list) {
+    string selsize = "";
+    string type = edit_context->modeString(false);
+    if (list.size() == 1)
+        type += S_FMT(" #%d", list[0]->getIndex());
+    else if (list.size() > 1)
+        selsize = S_FMT("(%lu selected)", list.size());
 
-	// Create/add properties panel
-	PropsPanelBase* panel_props = nullptr;
-	switch (edit_context->editMode())
-	{
-	case Mode::Lines:	panel_props = new LinePropsPanel(&dlg); break;
-	case Mode::Sectors:	panel_props = new SectorPropsPanel(&dlg); break;
-	case Mode::Things:	panel_props = new ThingPropsPanel(&dlg); break;
-	default:			panel_props = new MapObjectPropsPanel(&dlg, true);
-	}
-	sizer->Add(panel_props, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::padLarge());
+    // Create dialog for properties panel
+    SDialog dlg(
+        MapEditor::window(),
+        S_FMT("%s Properties %s", type, selsize),
+        S_FMT("mobjprops_%s", CHR(edit_context->modeString(false))),
+        -1,
+        -1
+    );
+    auto sizer = new wxBoxSizer(wxVERTICAL);
+    dlg.SetSizer(sizer);
 
-	// Add dialog buttons
-	sizer->AddSpacer(UI::pad());
-	sizer->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
+    // Create/add properties panel
+    PropsPanelBase *panel_props = nullptr;
+    switch (edit_context->editMode()) {
+        case Mode::Lines:
+            panel_props = new LinePropsPanel(&dlg);
+            break;
+        case Mode::Sectors:
+            panel_props = new SectorPropsPanel(&dlg);
+            break;
+        case Mode::Things:
+            panel_props = new ThingPropsPanel(&dlg);
+            break;
+        default:
+            panel_props = new MapObjectPropsPanel(&dlg, true);
+    }
+    sizer->Add(panel_props, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, UI::padLarge());
 
-	// Open current selection
-	panel_props->openObjects(list);
+    // Add dialog buttons
+    sizer->AddSpacer(UI::pad());
+    sizer->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
 
-	// Open the dialog and apply changes if OK was clicked
-	dlg.SetMinClientSize(sizer->GetMinSize());
-	dlg.CenterOnParent();
-	if (dlg.ShowModal() == wxID_OK)
-	{
-		panel_props->applyChanges();
-		return true;
-	}
+    // Open current selection
+    panel_props->openObjects(list);
 
-	return false;
+    // Open the dialog and apply changes if OK was clicked
+    dlg.SetMinClientSize(sizer->GetMinSize());
+    dlg.CenterOnParent();
+    if (dlg.ShowModal() == wxID_OK) {
+        panel_props->applyChanges();
+        return true;
+    }
+
+    return false;
 }
 
-void MapEditor::resetObjectPropertiesPanel()
-{
-	map_window->propsPanel()->clearGrid();
+
+void MapEditor::resetObjectPropertiesPanel() {
+    map_window->propsPanel()->clearGrid();
 }
 
-MapEditor::ItemType MapEditor::baseItemType(const ItemType& type)
-{
-	switch (type)
-	{
-	case ItemType::Vertex:		return ItemType::Vertex;
-	case ItemType::Line:		return ItemType::Line;
-	case ItemType::Side:
-	case ItemType::WallBottom:
-	case ItemType::WallMiddle:
-	case ItemType::WallTop:		return ItemType::Side;
-	case ItemType::Sector:
-	case ItemType::Ceiling:
-	case ItemType::Floor:		return ItemType::Sector;
-	case ItemType::Thing:		return ItemType::Thing;
-	default:					return ItemType::Any;
-	}
+
+MapEditor::ItemType MapEditor::baseItemType(const ItemType &type) {
+    switch (type) {
+        case ItemType::Vertex:
+            return ItemType::Vertex;
+        case ItemType::Line:
+            return ItemType::Line;
+        case ItemType::Side:
+        case ItemType::WallBottom:
+        case ItemType::WallMiddle:
+        case ItemType::WallTop:
+            return ItemType::Side;
+        case ItemType::Sector:
+        case ItemType::Ceiling:
+        case ItemType::Floor:
+            return ItemType::Sector;
+        case ItemType::Thing:
+            return ItemType::Thing;
+        default:
+            return ItemType::Any;
+    }
 }
 
-MapEditor::ItemType MapEditor::itemTypeFromObject(const MapObject* object)
-{
-	switch (object->getObjType())
-	{
-	case MOBJ_VERTEX:
-		return ItemType::Vertex;
-	case MOBJ_LINE:
-		return ItemType::Line;
-	case MOBJ_SIDE:
-		return ItemType::Side;
-	case MOBJ_SECTOR:
-		return ItemType::Sector;
-	case MOBJ_THING:
-		return ItemType::Thing;
-	default:
-		return ItemType::Any;
-	}
+
+MapEditor::ItemType MapEditor::itemTypeFromObject(const MapObject *object) {
+    switch (object->getObjType()) {
+        case MOBJ_VERTEX:
+            return ItemType::Vertex;
+        case MOBJ_LINE:
+            return ItemType::Line;
+        case MOBJ_SIDE:
+            return ItemType::Side;
+        case MOBJ_SECTOR:
+            return ItemType::Sector;
+        case MOBJ_THING:
+            return ItemType::Thing;
+        default:
+            return ItemType::Any;
+    }
 }

@@ -46,51 +46,49 @@
 //
 // ANSIEntryPanel class constructor
 // ----------------------------------------------------------------------------
-ANSIEntryPanel::ANSIEntryPanel(wxWindow* parent) : EntryPanel(parent, "ansi")
-{
-	// Get the VGA font
-	ansi_chardata_.assign(DATASIZE, 0);
-	ansi_canvas_ = new ANSICanvas(this, -1);
-	sizer_main_->Add(ansi_canvas_->toPanel(this), 1, wxEXPAND, 0);
+ANSIEntryPanel::ANSIEntryPanel(wxWindow *parent) : EntryPanel(parent, "ansi") {
+    // Get the VGA font
+    ansi_chardata_.assign(DATASIZE, 0);
+    ansi_canvas_ = new ANSICanvas(this, -1);
+    sizer_main_->Add(ansi_canvas_->toPanel(this), 1, wxEXPAND, 0);
 
-	// Hide toolbar (no reason for it on this panel, yet)
-	toolbar_->Show(false);
+    // Hide toolbar (no reason for it on this panel, yet)
+    toolbar_->Show(false);
 
-	Layout();
+    Layout();
 }
+
 
 // ----------------------------------------------------------------------------
 // ANSIEntryPanel::loadEntry
 //
 // Loads an entry to the panel
 // ----------------------------------------------------------------------------
-bool ANSIEntryPanel::loadEntry(ArchiveEntry* entry)
-{
-	// Check entry exists
-	if (!entry)
-		return false;
+bool ANSIEntryPanel::loadEntry(ArchiveEntry *entry) {
+    // Check entry exists
+    if (!entry)
+        return false;
 
-	if (entry->getSize() == DATASIZE)
-	{
-		ansi_chardata_.assign(entry->getData(), entry->getData() + DATASIZE);
-		ansi_canvas_->loadData(ansi_chardata_.data());
-		for (size_t i = 0; i < DATASIZE/2; i++)
-			ansi_canvas_->drawCharacter(i);
-		Layout();
-		Refresh();
-		return true;
-	}
+    if (entry->getSize() == DATASIZE) {
+        ansi_chardata_.assign(entry->getData(), entry->getData() + DATASIZE);
+        ansi_canvas_->loadData(ansi_chardata_.data());
+        for (size_t i = 0; i < DATASIZE / 2; i++)
+            ansi_canvas_->drawCharacter(i);
+        Layout();
+        Refresh();
+        return true;
+    }
 
-	return false;
+    return false;
 }
+
 
 // ----------------------------------------------------------------------------
 // ANSIEntryPanel::saveEntry
 //
 // Saves changes to the entry
 // ----------------------------------------------------------------------------
-bool ANSIEntryPanel::saveEntry()
-{
-	entry_->importMem(ansi_chardata_.data(), DATASIZE);
-	return true;
+bool ANSIEntryPanel::saveEntry() {
+    entry_->importMem(ansi_chardata_.data(), DATASIZE);
+    return true;
 }

@@ -21,9 +21,6 @@
 #include "dumb.h"
 
 
-
-void dumb_silence(sample_t *samples, long length)
-{
-	memset(samples, 0, length * sizeof(*samples));
+void dumb_silence(sample_t *samples, long length) {
+    memset(samples, 0, length * sizeof(*samples));
 }
-

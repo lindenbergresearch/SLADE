@@ -64,31 +64,26 @@
 
 template<class ClassType, class KeyType>
 inline
-const ClassType *BinarySearch (const ClassType *first, int max,
-	const KeyType ClassType::*keyptr, const KeyType key)
-{
-	int min = 0;
-	--max;
+const ClassType *BinarySearch(
+    const ClassType *first, int max,
+    const KeyType ClassType::*keyptr, const KeyType key
+) {
+    int min = 0;
+    --max;
 
-	while (min <= max)
-	{
-		int mid = (min + max) / 2;
-		const ClassType *probe = &first[mid];
-		const KeyType &seekey = probe->*keyptr;
-		if (seekey == key)
-		{
-			return probe;
-		}
-		else if (seekey < key)
-		{
-			min = mid + 1;
-		}
-		else
-		{
-			max = mid - 1;
-		}
-	}
-	return NULL;
+    while (min <= max) {
+        int mid = (min + max) / 2;
+        const ClassType *probe = &first[mid];
+        const KeyType &seekey = probe->*keyptr;
+        if (seekey == key) {
+            return probe;
+        } else if (seekey < key) {
+            min = mid + 1;
+        } else {
+            max = mid - 1;
+        }
+    }
+    return NULL;
 }
 
 //==========================================================================
@@ -118,29 +113,22 @@ const ClassType *BinarySearch (const ClassType *first, int max,
 
 template<class IndexType, class KeyType, class CompType>
 inline
-IndexType BinarySearchFlexible (IndexType max, const KeyType key, IndexType noIndex)
-{
-	IndexType min = 0;
-	--max;
+IndexType BinarySearchFlexible(IndexType max, const KeyType key, IndexType noIndex) {
+    IndexType min = 0;
+    --max;
 
-	while (min <= max)
-	{
-		IndexType mid = (min + max) / 2;
-		int lexx = CompType::DoCompare (mid, key);
-		if (lexx == 0)
-		{
-			return mid;
-		}
-		else if (lexx < 0)
-		{
-			min = mid + 1;
-		}
-		else
-		{
-			max = mid - 1;
-		}
-	}
-	return noIndex;
+    while (min <= max) {
+        IndexType mid = (min + max) / 2;
+        int lexx = CompType::DoCompare(mid, key);
+        if (lexx == 0) {
+            return mid;
+        } else if (lexx < 0) {
+            min = mid + 1;
+        } else {
+            max = mid - 1;
+        }
+    }
+    return noIndex;
 }
 
 //==========================================================================
@@ -154,11 +142,11 @@ IndexType BinarySearchFlexible (IndexType max, const KeyType key, IndexType noIn
 #undef MIN
 #endif
 
+
 template<class T>
 inline
-const T MIN (const T a, const T b)
-{
-	return a < b ? a : b;
+const T MIN(const T a, const T b) {
+    return a < b ? a : b;
 }
 
 //==========================================================================
@@ -172,11 +160,11 @@ const T MIN (const T a, const T b)
 #undef MAX
 #endif
 
+
 template<class T>
 inline
-const T MAX (const T a, const T b)
-{
-	return a > b ? a : b;
+const T MAX(const T a, const T b) {
+    return a > b ? a : b;
 }
 
 //==========================================================================
@@ -188,9 +176,8 @@ const T MAX (const T a, const T b)
 
 template<class T>
 inline
-T clamp (const T in, const T min, const T max)
-{
-	return in <= min ? min : in >= max ? max : in;
+T clamp(const T in, const T min, const T max) {
+    return in <= min ? min : in >= max ? max : in;
 }
 
 //==========================================================================
@@ -202,9 +189,11 @@ T clamp (const T in, const T min, const T max)
 
 template<class T>
 inline
-void swapvalues (T &a, T &b)
-{
-	T temp = a; a = b; b = temp;
+void swapvalues(T &a, T &b) {
+    T temp = a;
+    a = b;
+    b = temp;
 }
+
 
 #endif //__TEMPLATES_H__

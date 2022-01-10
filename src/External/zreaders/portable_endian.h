@@ -89,7 +89,7 @@
 
 #	elif BYTE_ORDER == BIG_ENDIAN
 
-		/* that would be xbox 360 */
+        /* that would be xbox 360 */
 #		define htobe16(x) (x)
 #		define htole16(x) __builtin_bswap16(x)
 #		define be16toh(x) (x)
@@ -124,18 +124,18 @@
 
 /* build 32 bit unsigned integer from 4 char */
 
-#define MAKE_ID(a,b,c,d) be32toh(((uint32_t)(d))|((c)<<8)|((b)<<16)|((a)<<24))
+#define MAKE_ID(a, b, c, d) be32toh(((uint32_t)(d))|((c)<<8)|((b)<<16)|((a)<<24))
 
 /* macros which receive a pointer to a memory buffer */
 
 #define BE_16U_TO_H(m) \
-	((uint16_t)(((uint8_t*)(m))[1])|(uint16_t)(((uint8_t*)(m))[0]<<8))
+    ((uint16_t)(((uint8_t*)(m))[1])|(uint16_t)(((uint8_t*)(m))[0]<<8))
 #define BE_32U_TO_H(m) \
-	((uint32_t)(((uint8_t*)(m))[3])|(uint32_t)(((uint8_t*)(m))[2]<<8)|(uint32_t)(((uint8_t*)(m))[1]<<16)|(uint32_t)(((uint8_t*)(m))[0]<<24))
+    ((uint32_t)(((uint8_t*)(m))[3])|(uint32_t)(((uint8_t*)(m))[2]<<8)|(uint32_t)(((uint8_t*)(m))[1]<<16)|(uint32_t)(((uint8_t*)(m))[0]<<24))
 #define LE_16U_TO_H(m) \
-	((uint16_t)(((uint8_t*)(m))[0])|(uint16_t)(((uint8_t*)(m))[1]<<8))
+    ((uint16_t)(((uint8_t*)(m))[0])|(uint16_t)(((uint8_t*)(m))[1]<<8))
 #define LE_32U_TO_H(m) \
-	((uint32_t)(((uint8_t*)(m))[0])|(uint32_t)(((uint8_t*)(m))[1]<<8)|(uint32_t)(((uint8_t*)(m))[2]<<16)|(uint32_t)(((uint8_t*)(m))[3]<<24))
+    ((uint32_t)(((uint8_t*)(m))[0])|(uint32_t)(((uint8_t*)(m))[1]<<8)|(uint32_t)(((uint8_t*)(m))[2]<<16)|(uint32_t)(((uint8_t*)(m))[3]<<24))
 
 #define BE_16I_TO_H(m) (int16_t)BE_16U_TO_H(m)
 #define BE_32I_TO_H(m) (int32_t)BE_32U_TO_H(m)

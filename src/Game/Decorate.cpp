@@ -46,9 +46,8 @@ using namespace Game;
 // Variables
 //
 // ----------------------------------------------------------------------------
-namespace
-{
-	EntryType* etype_decorate = nullptr;
+namespace {
+EntryType *etype_decorate = nullptr;
 }
 
 
@@ -57,185 +56,179 @@ namespace
 // Local Functions
 //
 // ----------------------------------------------------------------------------
-namespace
-{
+namespace {
 
 // ----------------------------------------------------------------------------
 // parseStates
 //
 // Parses a DECORATE 'States' block
 // ----------------------------------------------------------------------------
-void parseStates(Tokenizer& tz, PropertyList& props)
-{
-	vector<string> states;
-	string state_first;
-	std::map<string, string> state_sprites;
+void parseStates(Tokenizer &tz, PropertyList &props) {
+    vector<string> states;
+    string state_first;
+    std::map<string, string> state_sprites;
 
-	while (!tz.atEnd())
-	{
-		// Check for end of states block
-		if (tz.check("}"))
-			break;
+    while (!tz.atEnd()) {
+        // Check for end of states block
+        if (tz.check("}"))
+            break;
 
-		// Check for state label
-		if (tz.checkNext(":"))
-		{
-			// Add to list of current states
-			states.push_back(tz.current().text.Lower());
-			if (state_first.empty())
-				state_first = tz.current().text.Lower();
+        // Check for state label
+        if (tz.checkNext(":")) {
+            // Add to list of current states
+            states.push_back(tz.current().text.Lower());
+            if (state_first.empty())
+                state_first = tz.current().text.Lower();
 
-			tz.adv();
-		}
-		
-		// First token after a state label, should be a base sprite
-		else if (!states.empty())
-		{
-			// Ignore deleted state(s)
-			if (tz.checkNC("stop"))
-			{
-				states.clear();
-				tz.adv();
-				continue;
-			}
+            tz.adv();
+        }
 
-			// Set sprite for current states (if it is defined)
-			if (!(tz.current().text.Contains("#") || tz.current().text.Contains("-")))
-				for (auto& state : states)
-					state_sprites[state] = tz.current().text + tz.peek().text[0];
+            // First token after a state label, should be a base sprite
+        else if (!states.empty()) {
+            // Ignore deleted state(s)
+            if (tz.checkNC("stop")) {
+                states.clear();
+                tz.adv();
+                continue;
+            }
 
-			states.clear();
-			tz.adv();
-		}
+            // Set sprite for current states (if it is defined)
+            if (!(tz.current().text.Contains("#") || tz.current().text.Contains("-")))
+                for (auto &state : states)
+                    state_sprites[state] = tz.current().text + tz.peek().text[0];
 
-		// Skip anonymous functions
-		else if (tz.check("{"))
-		{
-			tz.adv();
-			tz.skipSection("{", "}");
-			continue;
-		}
+            states.clear();
+            tz.adv();
+        }
 
-		tz.adv();
-	}
+            // Skip anonymous functions
+        else if (tz.check("{")) {
+            tz.adv();
+            tz.skipSection("{", "}");
+            continue;
+        }
 
-	// Get sprite from highest priority state
-	if (!state_sprites["idle"].empty())
-		props["sprite"] = state_sprites["idle"] + "?";
-	if (!state_sprites["see"].empty())
-		props["sprite"] = state_sprites["see"] + "?";
-	if (!state_sprites["inactive"].empty())
-		props["sprite"] = state_sprites["inactive"] + "?";
-	if (!state_sprites["spawn"].empty())
-		props["sprite"] = state_sprites["spawn"] + "?";
-	if (!state_sprites[state_first].empty())
-		props["sprite"] = state_sprites[state_first] + "?";
+        tz.adv();
+    }
 
-	Log::debug(2, S_FMT("Parsed states, got sprite %s", CHR(props["sprite"].getStringValue())));
+    // Get sprite from highest priority state
+    if (!state_sprites["idle"].empty())
+        props["sprite"] = state_sprites["idle"] + "?";
+    if (!state_sprites["see"].empty())
+        props["sprite"] = state_sprites["see"] + "?";
+    if (!state_sprites["inactive"].empty())
+        props["sprite"] = state_sprites["inactive"] + "?";
+    if (!state_sprites["spawn"].empty())
+        props["sprite"] = state_sprites["spawn"] + "?";
+    if (!state_sprites[state_first].empty())
+        props["sprite"] = state_sprites[state_first] + "?";
+
+    Log::debug(2, S_FMT("Parsed states, got sprite %s", CHR(props["sprite"].getStringValue())));
 
 
 
 
-	//int lastpriority = 0;
-	//int priority = 0;
-	//int statecounter = 0;
-	//string laststate;
-	//string spritestate;
+    //int lastpriority = 0;
+    //int priority = 0;
+    //int statecounter = 0;
+    //string laststate;
+    //string spritestate;
 
-	//string token = tz.next().text;
-	//while (token != "}")
-	//{
-	//	// Idle, See, Inactive, Spawn, and finally first defined
-	//	if (priority < StateSprites::Idle)
-	//	{
-	//		string myspritestate = token;
-	//		token = tz.next().text;
-	//		while (token.Cmp(":") && token.Cmp("}"))
-	//		{
-	//			myspritestate = token;
-	//			token = tz.next().text;
-	//		}
-	//		if (S_CMPNOCASE(token, "}"))
-	//			break;
-	//		string sb = tz.next().text; // Sprite base
+    //string token = tz.next().text;
+    //while (token != "}")
+    //{
+    //	// Idle, See, Inactive, Spawn, and finally first defined
+    //	if (priority < StateSprites::Idle)
+    //	{
+    //		string myspritestate = token;
+    //		token = tz.next().text;
+    //		while (token.Cmp(":") && token.Cmp("}"))
+    //		{
+    //			myspritestate = token;
+    //			token = tz.next().text;
+    //		}
+    //		if (S_CMPNOCASE(token, "}"))
+    //			break;
+    //		string sb = tz.next().text; // Sprite base
 
-	//		// Handle removed states
-	//		if (S_CMPNOCASE(sb, "Stop"))
-	//			continue;
-	//		// Handle direct gotos, like ZDoom's dead monsters
-	//		if (S_CMPNOCASE(sb, "Goto"))
-	//		{
-	//			tz.adv();
-	//			// Skip scope and state
-	//			if (tz.peek() == ":")
-	//			{
-	//				tz.adv();	// first :
-	//				tz.adv(); // second :
-	//				tz.adv(); // state name
-	//			}
-	//			continue;
-	//		}
-	//		string sf = tz.next().text; // Sprite frame(s)
-	//		int mypriority = 0;
-	//		// If the same state is given several names, 
-	//		// don't read the next name as a sprite name!
-	//		// If "::" is encountered, it's a scope operator.
-	//		if ((!sf.Cmp(":")) && tz.peek().text.Cmp(":"))
-	//		{
-	//			if (S_CMPNOCASE(myspritestate, "spawn"))
-	//				mypriority = StateSprites::Spawn;
-	//			else if (S_CMPNOCASE(myspritestate, "inactive"))
-	//				mypriority = StateSprites::Inactive;
-	//			else if (S_CMPNOCASE(myspritestate, "see"))
-	//				mypriority = StateSprites::See;
-	//			else if (S_CMPNOCASE(myspritestate, "idle"))
-	//				mypriority = StateSprites::Idle;
-	//			if (mypriority > lastpriority)
-	//			{
-	//				laststate = myspritestate;
-	//				lastpriority = mypriority;
-	//			}
-	//			continue;
-	//		}
-	//		else
-	//		{
-	//			spritestate = myspritestate;
-	//			if (statecounter++ == 0)
-	//				mypriority = StateSprites::FirstDefined;
-	//			if (S_CMPNOCASE(spritestate, "spawn"))
-	//				mypriority = StateSprites::Spawn;
-	//			else if (S_CMPNOCASE(spritestate, "inactive"))
-	//				mypriority = StateSprites::Inactive;
-	//			else if (S_CMPNOCASE(spritestate, "see"))
-	//				mypriority = StateSprites::See;
-	//			else if (S_CMPNOCASE(spritestate, "idle"))
-	//				mypriority = StateSprites::Idle;
-	//			if (lastpriority > mypriority)
-	//			{
-	//				spritestate = laststate;
-	//				mypriority = lastpriority;
-	//			}
-	//		}
-	//		if (sb.length() == 4)
-	//		{
-	//			string sprite = sb + sf.Left(1) + "?";
-	//			if (mypriority > priority)
-	//			{
-	//				priority = mypriority;
-	//				props["sprite"] = sprite;
-	//				//LOG_MESSAGE(3, "Actor %s found sprite %s from state %s", name, sprite, spritestate);
-	//				lastpriority = -1;
-	//			}
-	//		}
-	//	}
-	//	else
-	//	{
-	//		tz.skipSection("{", "}");
-	//		break;
-	//	}
-	//	tz.adv();
-	//}
+    //		// Handle removed states
+    //		if (S_CMPNOCASE(sb, "Stop"))
+    //			continue;
+    //		// Handle direct gotos, like ZDoom's dead monsters
+    //		if (S_CMPNOCASE(sb, "Goto"))
+    //		{
+    //			tz.adv();
+    //			// Skip scope and state
+    //			if (tz.peek() == ":")
+    //			{
+    //				tz.adv();	// first :
+    //				tz.adv(); // second :
+    //				tz.adv(); // state name
+    //			}
+    //			continue;
+    //		}
+    //		string sf = tz.next().text; // Sprite frame(s)
+    //		int mypriority = 0;
+    //		// If the same state is given several names,
+    //		// don't read the next name as a sprite name!
+    //		// If "::" is encountered, it's a scope operator.
+    //		if ((!sf.Cmp(":")) && tz.peek().text.Cmp(":"))
+    //		{
+    //			if (S_CMPNOCASE(myspritestate, "spawn"))
+    //				mypriority = StateSprites::Spawn;
+    //			else if (S_CMPNOCASE(myspritestate, "inactive"))
+    //				mypriority = StateSprites::Inactive;
+    //			else if (S_CMPNOCASE(myspritestate, "see"))
+    //				mypriority = StateSprites::See;
+    //			else if (S_CMPNOCASE(myspritestate, "idle"))
+    //				mypriority = StateSprites::Idle;
+    //			if (mypriority > lastpriority)
+    //			{
+    //				laststate = myspritestate;
+    //				lastpriority = mypriority;
+    //			}
+    //			continue;
+    //		}
+    //		else
+    //		{
+    //			spritestate = myspritestate;
+    //			if (statecounter++ == 0)
+    //				mypriority = StateSprites::FirstDefined;
+    //			if (S_CMPNOCASE(spritestate, "spawn"))
+    //				mypriority = StateSprites::Spawn;
+    //			else if (S_CMPNOCASE(spritestate, "inactive"))
+    //				mypriority = StateSprites::Inactive;
+    //			else if (S_CMPNOCASE(spritestate, "see"))
+    //				mypriority = StateSprites::See;
+    //			else if (S_CMPNOCASE(spritestate, "idle"))
+    //				mypriority = StateSprites::Idle;
+    //			if (lastpriority > mypriority)
+    //			{
+    //				spritestate = laststate;
+    //				mypriority = lastpriority;
+    //			}
+    //		}
+    //		if (sb.length() == 4)
+    //		{
+    //			string sprite = sb + sf.Left(1) + "?";
+    //			if (mypriority > priority)
+    //			{
+    //				priority = mypriority;
+    //				props["sprite"] = sprite;
+    //				//LOG_MESSAGE(3, "Actor %s found sprite %s from state %s", name, sprite, spritestate);
+    //				lastpriority = -1;
+    //			}
+    //		}
+    //	}
+    //	else
+    //	{
+    //		tz.skipSection("{", "}");
+    //		break;
+    //	}
+    //	tz.adv();
+    //}
 }
+
 
 // ----------------------------------------------------------------------------
 // parseDecorateActor
@@ -243,391 +236,355 @@ void parseStates(Tokenizer& tz, PropertyList& props)
 // Parses a DECORATE 'actor' definition
 // ----------------------------------------------------------------------------
 void parseDecorateActor(
-	Tokenizer& tz,
-	std::map<int, ThingType>& types,
-	vector<ThingType >& parsed)
-{
-	// Get actor name
-	string name = tz.next().text;
-	string actor_name = name;
-	string parent;
+    Tokenizer &tz,
+    std::map<int, ThingType> &types,
+    vector<ThingType> &parsed
+) {
+    // Get actor name
+    string name = tz.next().text;
+    string actor_name = name;
+    string parent;
 
-	// Check for inheritance
-	//string next = tz.peekToken();
-	if (tz.advIfNext(":"))
-		parent = tz.next().text;
-		
-	// Check for replaces
-	if (tz.checkNextNC("replaces"))
-		tz.adv(2); // Skip 'replaces' and actor
+    // Check for inheritance
+    //string next = tz.peekToken();
+    if (tz.advIfNext(":"))
+        parent = tz.next().text;
 
-	// Skip "native" keyword if present
-	if (tz.checkNextNC("native"))
-		tz.adv();
+    // Check for replaces
+    if (tz.checkNextNC("replaces"))
+        tz.adv(2); // Skip 'replaces' and actor
 
-	// Check for no editor number (ie can't be placed in the map)
-	int ednum;
-	if (!tz.peek().isInteger())
-		ednum = -1;
-	else
-		tz.next().toInt(ednum);
-		
-	PropertyList found_props;
-	bool available = false;
-	bool filters_present = false;
-	bool sprite_given = false;
-	bool title_given = false;
-	string group;
+    // Skip "native" keyword if present
+    if (tz.checkNextNC("native"))
+        tz.adv();
 
-	// Skip "native" keyword if present
-	tz.advIfNextNC("native");
+    // Check for no editor number (ie can't be placed in the map)
+    int ednum;
+    if (!tz.peek().isInteger())
+        ednum = -1;
+    else
+        tz.next().toInt(ednum);
 
-	// Check for actor definition open
-	if (tz.advIfNext("{", 2))
-	{
-		while (!tz.check("}") && !tz.atEnd())
-		{
-			// Check for subsection
-			if (tz.advIf("{"))
-			{
-				tz.skipSection("{", "}");
-				continue;
-			}
+    PropertyList found_props;
+    bool available = false;
+    bool filters_present = false;
+    bool sprite_given = false;
+    bool title_given = false;
+    string group;
 
-			// Title
-			else if (tz.checkNC("//$Title"))
-			{
-				name = tz.getLine();
-				title_given = true;
-				continue;
-			}
+    // Skip "native" keyword if present
+    tz.advIfNextNC("native");
 
-			// Game filter
-			else if (tz.checkNC("game"))
-			{
-				filters_present = true;
-				if (gameDef(configuration().currentGame()).supportsFilter(tz.next().text))
-					available = true;
-			}
+    // Check for actor definition open
+    if (tz.advIfNext("{", 2)) {
+        while (!tz.check("}") && !tz.atEnd()) {
+            // Check for subsection
+            if (tz.advIf("{")) {
+                tz.skipSection("{", "}");
+                continue;
+            }
 
-			// Tag
-			else if (!title_given && tz.checkNC("tag"))
-				name = tz.next().text;
+                // Title
+            else if (tz.checkNC("//$Title")) {
+                name = tz.getLine();
+                title_given = true;
+                continue;
+            }
 
-			// Category
-			else if (tz.checkNC("//$Group") || tz.checkNC("//$Category"))
-			{
-				group = tz.getLine();
-				continue;
-			}
+                // Game filter
+            else if (tz.checkNC("game")) {
+                filters_present = true;
+                if (gameDef(configuration().currentGame()).supportsFilter(tz.next().text))
+                    available = true;
+            }
 
-			// Sprite
-			else if (tz.checkNC("//$EditorSprite") || tz.checkNC("//$Sprite"))
-			{
-				found_props["sprite"] = tz.next().text;
-				sprite_given = true;
-			}
+                // Tag
+            else if (!title_given && tz.checkNC("tag"))
+                name = tz.next().text;
 
-			// Radius
-			else if (tz.checkNC("radius"))
-				found_props["radius"] = tz.next().asInt();
+                // Category
+            else if (tz.checkNC("//$Group") || tz.checkNC("//$Category")) {
+                group = tz.getLine();
+                continue;
+            }
 
-			// Height
-			else if (tz.checkNC("height"))
-				found_props["height"] = tz.next().asInt();
+                // Sprite
+            else if (tz.checkNC("//$EditorSprite") || tz.checkNC("//$Sprite")) {
+                found_props["sprite"] = tz.next().text;
+                sprite_given = true;
+            }
 
-			// Scale
-			else if (tz.checkNC("scale"))
-				found_props["scalex"] = found_props["scaley"] = tz.next().asFloat();
-			else if (tz.checkNC("xscale"))
-				found_props["scalex"] = tz.next().asFloat();
-			else if (tz.checkNC("yscale"))
-				found_props["scaley"] = tz.next().asFloat();
+                // Radius
+            else if (tz.checkNC("radius"))
+                found_props["radius"] = tz.next().asInt();
 
-			// Angled
-			else if (tz.checkNC("//$Angled"))
-				found_props["angled"] = true;
-			else if (tz.checkNC("//$NotAngled"))
-				found_props["angled"] = false;
+                // Height
+            else if (tz.checkNC("height"))
+                found_props["height"] = tz.next().asInt();
 
-			// Monster
-			else if (tz.checkNC("monster"))
-			{
-				found_props["solid"] = true;		// Solid
-				found_props["decoration"] = false;	// Not a decoration
-			}
+                // Scale
+            else if (tz.checkNC("scale"))
+                found_props["scalex"] = found_props["scaley"] = tz.next().asFloat();
+            else if (tz.checkNC("xscale"))
+                found_props["scalex"] = tz.next().asFloat();
+            else if (tz.checkNC("yscale"))
+                found_props["scaley"] = tz.next().asFloat();
 
-			// Hanging
-			else if (tz.checkNC("+spawnceiling"))
-				found_props["hanging"] = true;
+                // Angled
+            else if (tz.checkNC("//$Angled"))
+                found_props["angled"] = true;
+            else if (tz.checkNC("//$NotAngled"))
+                found_props["angled"] = false;
 
-			// Fullbright
-			else if (tz.checkNC("+bright"))
-				found_props["bright"] = true;
+                // Monster
+            else if (tz.checkNC("monster")) {
+                found_props["solid"] = true;        // Solid
+                found_props["decoration"] = false;    // Not a decoration
+            }
 
-			// Is Decoration
-			else if (tz.checkNC("//$IsDecoration"))
-				found_props["decoration"] = true;
+                // Hanging
+            else if (tz.checkNC("+spawnceiling"))
+                found_props["hanging"] = true;
 
-			// Icon
-			else if (tz.checkNC("//$Icon"))
-				found_props["icon"] = tz.next().text;
+                // Fullbright
+            else if (tz.checkNC("+bright"))
+                found_props["bright"] = true;
 
-			// DB2 Color
-			else if (tz.checkNC("//$Color"))
-				found_props["color"] = tz.next().text;
+                // Is Decoration
+            else if (tz.checkNC("//$IsDecoration"))
+                found_props["decoration"] = true;
 
-			// SLADE 3 Colour (overrides DB2 color)
-			// Good thing US spelling differs from ABC (Aussie/Brit/Canuck) spelling! :p
-			else if (tz.checkNC("//$Colour"))
-			{
-				found_props["colour"] = tz.getLine();
-				continue;
-			}
+                // Icon
+            else if (tz.checkNC("//$Icon"))
+                found_props["icon"] = tz.next().text;
 
-			// Obsolete thing
-			else if (tz.checkNC("//$Obsolete"))
-				found_props["obsolete"] = true;
+                // DB2 Color
+            else if (tz.checkNC("//$Color"))
+                found_props["color"] = tz.next().text;
 
-			// Translation
-			else if (tz.checkNC("translation"))
-			{
-				string translation = "\"";
-				translation += tz.next().text;
-				while (tz.checkNext(","))
-				{
-					translation += tz.next().text; // ,
-					translation += tz.next().text; // next range
-				}
-				translation += "\"";
-				found_props["translation"] = translation;
-			}
+                // SLADE 3 Colour (overrides DB2 color)
+                // Good thing US spelling differs from ABC (Aussie/Brit/Canuck) spelling! :p
+            else if (tz.checkNC("//$Colour")) {
+                found_props["colour"] = tz.getLine();
+                continue;
+            }
 
-			// Solid
-			else if (tz.checkNC("+solid"))
-				found_props["solid"] = true;
+                // Obsolete thing
+            else if (tz.checkNC("//$Obsolete"))
+                found_props["obsolete"] = true;
 
-			// Unrecognised DB comment prop
-			else if (tz.current().text.StartsWith("//$"))
-			{
-				tz.advToNextLine();
-				continue;
-			}
+                // Translation
+            else if (tz.checkNC("translation")) {
+                string translation = "\"";
+                translation += tz.next().text;
+                while (tz.checkNext(",")) {
+                    translation += tz.next().text; // ,
+                    translation += tz.next().text; // next range
+                }
+                translation += "\"";
+                found_props["translation"] = translation;
+            }
 
-			// States
-			if (!sprite_given && tz.checkNC("states"))
-			{
-				tz.adv(2); // Skip past {
-				parseStates(tz, found_props);
-			}
+                // Solid
+            else if (tz.checkNC("+solid"))
+                found_props["solid"] = true;
 
-			tz.adv();
-		}
+                // Unrecognised DB comment prop
+            else if (tz.current().text.StartsWith("//$")) {
+                tz.advToNextLine();
+                continue;
+            }
 
-		LOG_MESSAGE(3, "Parsed actor %s: %d", name, ednum);
-	}
-	else
-		LOG_MESSAGE(1, "Warning: Invalid actor definition for %s", name);
+            // States
+            if (!sprite_given && tz.checkNC("states")) {
+                tz.adv(2); // Skip past {
+                parseStates(tz, found_props);
+            }
 
-	// Ignore actors filtered for other games, 
-	// and actors with a negative or null type
-	if (available || !filters_present)
-	{
-		string group_path = group.empty() ? "Decorate" : "Decorate/" + group;
+            tz.adv();
+        }
 
-		// Find existing definition or create it
-		ThingType* def = nullptr;
-		if (ednum <= 0)
-		{
-			for (auto& ptype : parsed)
-				if (S_CMPNOCASE(ptype.className(), actor_name))
-				{
-					def = &ptype;
-					break;
-				}
+        LOG_MESSAGE(3, "Parsed actor %s: %d", name, ednum);
+    } else
+        LOG_MESSAGE(1, "Warning: Invalid actor definition for %s", name);
 
-			if (!def)
-			{
-				parsed.push_back(ThingType(name, group_path, actor_name));
-				def = &parsed.back();
-			}
-		}
-		else
-			def = &types[ednum];
+    // Ignore actors filtered for other games,
+    // and actors with a negative or null type
+    if (available || !filters_present) {
+        string group_path = group.empty() ? "Decorate" : "Decorate/" + group;
 
-		// Add/update definition
-		def->define(ednum, name, group_path);
+        // Find existing definition or create it
+        ThingType *def = nullptr;
+        if (ednum <= 0) {
+            for (auto &ptype : parsed)
+                if (S_CMPNOCASE(ptype.className(), actor_name)) {
+                    def = &ptype;
+                    break;
+                }
 
-		// Set group defaults (if any)
-		if (!group.empty())
-		{
-			auto& group_defaults = configuration().thingTypeGroupDefaults(group);
-			if (!group_defaults.group().empty())
-				def->copy(group_defaults);
-		}
+            if (!def) {
+                parsed.push_back(ThingType(name, group_path, actor_name));
+                def = &parsed.back();
+            }
+        } else
+            def = &types[ednum];
 
-		// Inherit from parent
-		if (!parent.empty())
-			for (auto& ptype : parsed)
-				if (S_CMPNOCASE(ptype.className(), parent))
-				{
-					def->copy(ptype);
-					break;
-				}
+        // Add/update definition
+        def->define(ednum, name, group_path);
 
-		// Set parsed properties
-		def->loadProps(found_props);
-	}
+        // Set group defaults (if any)
+        if (!group.empty()) {
+            auto &group_defaults = configuration().thingTypeGroupDefaults(group);
+            if (!group_defaults.group().empty())
+                def->copy(group_defaults);
+        }
+
+        // Inherit from parent
+        if (!parent.empty())
+            for (auto &ptype : parsed)
+                if (S_CMPNOCASE(ptype.className(), parent)) {
+                    def->copy(ptype);
+                    break;
+                }
+
+        // Set parsed properties
+        def->loadProps(found_props);
+    }
 }
+
 
 // ----------------------------------------------------------------------------
 // parseDecorateOld
 //
 // Parses an old-style (non-actor) DECORATE definition
 // ----------------------------------------------------------------------------
-void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
-{
-	string name, sprite, group;
-	bool spritefound = false;
-	char frame;
-	bool framefound = false;
-	int type = -1;
-	PropertyList found_props;
-	if (tz.checkNext("{"))
-		name = tz.current().text;
-	// DamageTypes aren't old DECORATE format, but we handle them here to skip over them
-	else if (
-		tz.checkNC("pickup") ||
-		tz.checkNC("breakable") ||
-		tz.checkNC("projectile") ||
-		tz.checkNC("damagetype"))
-	{
-		group = tz.current().text;
-		name = tz.next().text;
-	}
-	tz.adv();	// skip '{'
-	do
-	{
-		tz.adv();
+void parseDecorateOld(Tokenizer &tz, std::map<int, ThingType> &types) {
+    string name, sprite, group;
+    bool spritefound = false;
+    char frame;
+    bool framefound = false;
+    int type = -1;
+    PropertyList found_props;
+    if (tz.checkNext("{"))
+        name = tz.current().text;
+        // DamageTypes aren't old DECORATE format, but we handle them here to skip over them
+    else if (
+        tz.checkNC("pickup") ||
+        tz.checkNC("breakable") ||
+        tz.checkNC("projectile") ||
+        tz.checkNC("damagetype")) {
+        group = tz.current().text;
+        name = tz.next().text;
+    }
+    tz.adv();    // skip '{'
+    do {
+        tz.adv();
 
-		//if (S_CMPNOCASE(token, "DoomEdNum"))
-		if (tz.checkNC("doomednum"))
-		{
-			//tz.getInteger(&type);
-			type = tz.next().asInt();
-		}
-		//else if (S_CMPNOCASE(token, "Sprite"))
-		else if (tz.checkNC("sprite"))
-		{
-			sprite = tz.next().text;
-			spritefound = true;
-		}
-		//else if (S_CMPNOCASE(token, "Frames"))
-		else if (tz.checkNC("frames"))
-		{
-			string frames = tz.next().text;
-			unsigned pos = 0;
-			if (frames.length() > 0)
-			{
-				if ((frames[0] < 'a' || frames[0] > 'z') && (frames[0] < 'A' || frames[0] > ']'))
-				{
-					pos = frames.find(':') + 1;
-					if (frames.length() <= pos)
-						pos = frames.length() + 1;
-					else if ((frames.length() >= pos + 2) && frames[pos + 1] == '*')
-						found_props["bright"] = true;
-				}
-			}
-			if (pos < frames.length())
-			{
-				frame = frames[pos];
-				framefound = true;
-			}
-		}
-		else if (tz.checkNC("radius"))
-			found_props["radius"] = tz.next().asInt();
-		else if (tz.checkNC("height"))
-			found_props["height"] = tz.next().asInt();
-		else if (tz.checkNC("solid"))
-			found_props["solid"] = true;
-		else if (tz.checkNC("spawnceiling"))
-			found_props["hanging"] = true;
-		else if (tz.checkNC("scale"))
-			found_props["scale"] = tz.next().asFloat();
-		else if (tz.checkNC("translation1"))
-			found_props["translation"] = S_FMT("doom%d", tz.next().asInt());
-	} while (!tz.check("}") && !tz.atEnd());
+        //if (S_CMPNOCASE(token, "DoomEdNum"))
+        if (tz.checkNC("doomednum")) {
+            //tz.getInteger(&type);
+            type = tz.next().asInt();
+        }
+            //else if (S_CMPNOCASE(token, "Sprite"))
+        else if (tz.checkNC("sprite")) {
+            sprite = tz.next().text;
+            spritefound = true;
+        }
+            //else if (S_CMPNOCASE(token, "Frames"))
+        else if (tz.checkNC("frames")) {
+            string frames = tz.next().text;
+            unsigned pos = 0;
+            if (frames.length() > 0) {
+                if ((frames[0] < 'a' || frames[0] > 'z') && (frames[0] < 'A' || frames[0] > ']')) {
+                    pos = frames.find(':') + 1;
+                    if (frames.length() <= pos)
+                        pos = frames.length() + 1;
+                    else if ((frames.length() >= pos + 2) && frames[pos + 1] == '*')
+                        found_props["bright"] = true;
+                }
+            }
+            if (pos < frames.length()) {
+                frame = frames[pos];
+                framefound = true;
+            }
+        } else if (tz.checkNC("radius"))
+            found_props["radius"] = tz.next().asInt();
+        else if (tz.checkNC("height"))
+            found_props["height"] = tz.next().asInt();
+        else if (tz.checkNC("solid"))
+            found_props["solid"] = true;
+        else if (tz.checkNC("spawnceiling"))
+            found_props["hanging"] = true;
+        else if (tz.checkNC("scale"))
+            found_props["scale"] = tz.next().asFloat();
+        else if (tz.checkNC("translation1"))
+            found_props["translation"] = S_FMT("doom%d", tz.next().asInt());
+    } while (!tz.check("}") && !tz.atEnd());
 
-	// Add only if a DoomEdNum is present
-	if (type > 0)
-	{
-		// Determine sprite
-		if (spritefound && framefound)
-			found_props["sprite"] = sprite + frame + '?';
+    // Add only if a DoomEdNum is present
+    if (type > 0) {
+        // Determine sprite
+        if (spritefound && framefound)
+            found_props["sprite"] = sprite + frame + '?';
 
-		// Add type
-		types[type].define(type, name, group.empty() ? "Decorate" : "Decorate/" + group);
+        // Add type
+        types[type].define(type, name, group.empty() ? "Decorate" : "Decorate/" + group);
 
-		// Set parsed properties
-		types[type].loadProps(found_props);
+        // Set parsed properties
+        types[type].loadProps(found_props);
 
-		LOG_MESSAGE(3, "Parsed %s %s: %d", group.length() ? group : "decoration", name, type);
-	}
-	else
-		LOG_MESSAGE(3, "Not adding %s %s, no editor number", group.length() ? group : "decoration", name);
+        LOG_MESSAGE(3, "Parsed %s %s: %d", group.length() ? group : "decoration", name, type);
+    } else
+        LOG_MESSAGE(3, "Not adding %s %s, no editor number", group.length() ? group : "decoration", name);
 }
+
 
 // ----------------------------------------------------------------------------
 // parseDecorateEntry
 //
 // Parses all DECORATE thing definitions in [entry] and adds them to [types]
 // ----------------------------------------------------------------------------
-void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, vector<ThingType>& parsed)
-{
-	// Init tokenizer
-	Tokenizer tz;
-	tz.setSpecialCharacters(":,{}");
-	tz.enableDecorate(true);
-	tz.openMem(entry->getMCData(), entry->getName());
+void parseDecorateEntry(ArchiveEntry *entry, std::map<int, ThingType> &types, vector<ThingType> &parsed) {
+    // Init tokenizer
+    Tokenizer tz;
+    tz.setSpecialCharacters(":,{}");
+    tz.enableDecorate(true);
+    tz.openMem(entry->getMCData(), entry->getName());
 
-	// --- Parse ---
-	while (!tz.atEnd())
-	{
-		// Check for #include
-		if (tz.checkNC("#include"))
-		{
-			auto inc_entry = entry->relativeEntry(tz.next().text);
+    // --- Parse ---
+    while (!tz.atEnd()) {
+        // Check for #include
+        if (tz.checkNC("#include")) {
+            auto inc_entry = entry->relativeEntry(tz.next().text);
 
-			// Check #include path could be resolved
-			if (!inc_entry)
-			{
-				Log::warning(
-					S_FMT(
-						"Warning parsing DECORATE entry %s: "
-						"Unable to find #included entry \"%s\" at line %d, skipping",
-						CHR(entry->getName()),
-						CHR(tz.current().text),
-						tz.current().line_no
-				));
-			}
-			else
-				parseDecorateEntry(inc_entry, types, parsed);
+            // Check #include path could be resolved
+            if (!inc_entry) {
+                Log::warning(
+                    S_FMT(
+                        "Warning parsing DECORATE entry %s: "
+                        "Unable to find #included entry \"%s\" at line %d, skipping",
+                        CHR(entry->getName()),
+                        CHR(tz.current().text),
+                        tz.current().line_no
+                    ));
+            } else
+                parseDecorateEntry(inc_entry, types, parsed);
 
-			tz.adv();
-		}
+            tz.adv();
+        }
 
-		// Check for actor definition
-		else if (tz.checkNC("actor"))
-			parseDecorateActor(tz, types, parsed);
-		else
-			parseDecorateOld(tz, types);	// Old DECORATE definitions might be found
+            // Check for actor definition
+        else if (tz.checkNC("actor"))
+            parseDecorateActor(tz, types, parsed);
+        else
+            parseDecorateOld(tz, types);    // Old DECORATE definitions might be found
 
-		tz.advIf("}");
-	}
+        tz.advIf("}");
+    }
 
-	// Set entry type
-	if (etype_decorate && entry->getType() != etype_decorate)
-		entry->setType(etype_decorate);
+    // Set entry type
+    if (etype_decorate && entry->getType() != etype_decorate)
+        entry->setType(etype_decorate);
 }
 
 } // namespace
@@ -645,63 +602,60 @@ void parseDecorateEntry(ArchiveEntry* entry, std::map<int, ThingType>& types, ve
 //
 // Parses all DECORATE thing definitions in [archive] and adds them to [types]
 // ----------------------------------------------------------------------------
-bool Game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, vector<ThingType>& parsed)
-{
-	if (!archive)
-		return false;
+bool Game::readDecorateDefs(Archive *archive, std::map<int, ThingType> &types, vector<ThingType> &parsed) {
+    if (!archive)
+        return false;
 
-	// Get base decorate file
-	Archive::SearchOptions opt;
-	opt.match_name = "decorate";
-	opt.ignore_ext = true;
-	vector<ArchiveEntry*> decorate_entries = archive->findAll(opt);
-	if (decorate_entries.empty())
-		return false;
+    // Get base decorate file
+    Archive::SearchOptions opt;
+    opt.match_name = "decorate";
+    opt.ignore_ext = true;
+    vector<ArchiveEntry *> decorate_entries = archive->findAll(opt);
+    if (decorate_entries.empty())
+        return false;
 
-	Log::info(2, S_FMT("Parsing DECORATE entries found in archive %s", archive->filename()));
+    Log::info(2, S_FMT("Parsing DECORATE entries found in archive %s", archive->filename()));
 
-	// Get DECORATE entry type (all parsed DECORATE entries will be set to this)
-	etype_decorate = EntryType::fromId("decorate");
-	if (etype_decorate == EntryType::unknownType())
-		etype_decorate = nullptr;
+    // Get DECORATE entry type (all parsed DECORATE entries will be set to this)
+    etype_decorate = EntryType::fromId("decorate");
+    if (etype_decorate == EntryType::unknownType())
+        etype_decorate = nullptr;
 
-	// Parse DECORATE entries
-	for (auto entry : decorate_entries)
-		parseDecorateEntry(entry, types, parsed);
+    // Parse DECORATE entries
+    for (auto entry : decorate_entries)
+        parseDecorateEntry(entry, types, parsed);
 
-	return true;
+    return true;
 }
-
 
 
 #include "General/Console/Console.h"
 #include "MainEditor/MainEditor.h"
-CONSOLE_COMMAND(test_decorate, 0, false)
-{
-	auto archive = MainEditor::currentArchive();
-	if (!archive)
-		return;
 
-	std::map<int, Game::ThingType> types;
-	vector<ThingType> parsed;
 
-	if (args.size() == 0)
-		Game::readDecorateDefs(archive, types, parsed);
-	else
-	{
-		auto entry = archive->entryAtPath(args[0]);
-		if (entry)
-			parseDecorateEntry(entry, types, parsed);
-		else
-			Log::console("Entry not found");
-	}
+CONSOLE_COMMAND(test_decorate, 0, false) {
+    auto archive = MainEditor::currentArchive();
+    if (!archive)
+        return;
 
-	for (auto& i : types)
-		Log::console(S_FMT("%d: %s", i.first, CHR(i.second.stringDesc())));
-	if (!parsed.empty())
-	{
-		Log::console("Parsed types with no DoomEdNum:");
-		for (auto& i : parsed)
-			Log::console(S_FMT("%s: %s", CHR(i.className()), CHR(i.stringDesc())));
-	}
+    std::map<int, Game::ThingType> types;
+    vector<ThingType> parsed;
+
+    if (args.size() == 0)
+        Game::readDecorateDefs(archive, types, parsed);
+    else {
+        auto entry = archive->entryAtPath(args[0]);
+        if (entry)
+            parseDecorateEntry(entry, types, parsed);
+        else
+            Log::console("Entry not found");
+    }
+
+    for (auto &i : types)
+        Log::console(S_FMT("%d: %s", i.first, CHR(i.second.stringDesc())));
+    if (!parsed.empty()) {
+        Log::console("Parsed types with no DoomEdNum:");
+        for (auto &i : parsed)
+            Log::console(S_FMT("%s: %s", CHR(i.className()), CHR(i.stringDesc())));
+    }
 }

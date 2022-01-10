@@ -4,20 +4,32 @@
 
 #include "WizardPageBase.h"
 
+
 class BaseResourceArchivesPanel;
-class BaseResourceWizardPage : public WizardPageBase
-{
+
+
+class BaseResourceWizardPage : public WizardPageBase {
 private:
-	BaseResourceArchivesPanel*	bra_panel;
+    BaseResourceArchivesPanel *bra_panel;
 
 public:
-	BaseResourceWizardPage(wxWindow* parent);
-	~BaseResourceWizardPage();
+    BaseResourceWizardPage(wxWindow *parent);
 
-	bool	canGoNext();
-	void	applyChanges();
-	string	getTitle() { return "Base Resource Archives"; }
-	string	getDescription();
+
+    ~BaseResourceWizardPage();
+
+
+    bool canGoNext();
+
+
+    void applyChanges();
+
+
+    string getTitle() { return "Base Resource Archives"; }
+
+
+    string getDescription();
 };
+
 
 #endif//__BASE_RESOURCE_WIZARD_PAGE_H__

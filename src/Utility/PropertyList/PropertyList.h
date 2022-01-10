@@ -5,28 +5,48 @@
 #include "common.h"
 #include "Property.h"
 
-class PropertyList
-{
+
+class PropertyList {
 private:
-	std::map<string, Property>	properties;
+    std::map<string, Property> properties;
 
 public:
-	PropertyList();
-	~PropertyList();
+    PropertyList();
 
-	// Operator for direct access to hash map
-	Property& operator[](const string& key) { return properties[key]; }
 
-	void	clear() { properties.clear(); }
-	bool	propertyExists(string key);
-	bool	removeProperty(string key);
-	void	copyTo(PropertyList& list);
-	void	addFlag(string key);
-	void	allProperties(vector<Property>& list);
-	void	allPropertyNames(vector<string>& list);
-	bool	isEmpty() { return properties.empty(); }
+    ~PropertyList();
 
-	string	toString(bool condensed = false);
+
+    // Operator for direct access to hash map
+    Property &operator[](const string &key) { return properties[key]; }
+
+
+    void clear() { properties.clear(); }
+
+
+    bool propertyExists(string key);
+
+
+    bool removeProperty(string key);
+
+
+    void copyTo(PropertyList &list);
+
+
+    void addFlag(string key);
+
+
+    void allProperties(vector<Property> &list);
+
+
+    void allPropertyNames(vector<string> &list);
+
+
+    bool isEmpty() { return properties.empty(); }
+
+
+    string toString(bool condensed = false);
 };
+
 
 #endif//__PROPERTY_LIST_H__

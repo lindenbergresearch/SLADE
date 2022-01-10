@@ -27,16 +27,12 @@
 #include "internal/dumb.h"
 
 
-
-long duh_get_length(DUH *duh)
-{
-	return duh ? duh->length : 0;
+long duh_get_length(DUH *duh) {
+    return duh ? duh->length : 0;
 }
 
 
-
-void duh_set_length(DUH *duh, long length)
-{
-	if (duh)
-		duh->length = length;
+void duh_set_length(DUH *duh, long length) {
+    if (duh)
+        duh->length = length;
 }

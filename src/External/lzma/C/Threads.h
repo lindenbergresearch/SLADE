@@ -58,14 +58,13 @@ WRes CriticalSection_Init(CCriticalSection *p);
 
 #include <pthread.h>
 
-typedef void* LPVOID;
+typedef void *LPVOID;
 
 /* #define DEBUG_SYNCHRO 1 */
 
-typedef struct _CThread
-{
-	pthread_t _tid;
-	int _created;
+typedef struct _CThread {
+    pthread_t _tid;
+    int _created;
 
 } CThread;
 
@@ -76,20 +75,19 @@ typedef unsigned THREAD_FUNC_RET_TYPE;
 #define THREAD_FUNC_CALL_TYPE
 #define THREAD_FUNC_DECL THREAD_FUNC_RET_TYPE THREAD_FUNC_CALL_TYPE
 
-typedef THREAD_FUNC_RET_TYPE (THREAD_FUNC_CALL_TYPE * THREAD_FUNC_TYPE)(void *);
+typedef THREAD_FUNC_RET_TYPE (THREAD_FUNC_CALL_TYPE *THREAD_FUNC_TYPE)(void *);
 WRes Thread_Create(CThread *p, THREAD_FUNC_TYPE func, LPVOID param);
 
 //WRes Thread_Create(CThread *thread, THREAD_FUNC_RET_TYPE (THREAD_FUNC_CALL_TYPE *startAddress)(void *), void *parameter);
 WRes Thread_Wait(CThread *thread);
 WRes Thread_Close(CThread *thread);
 
-typedef struct _CEvent
-{
-  int _created;
-  int _manual_reset;
-  int _state;
-  pthread_mutex_t _mutex;
-  pthread_cond_t  _cond;
+typedef struct _CEvent {
+    int _created;
+    int _manual_reset;
+    int _state;
+    pthread_mutex_t _mutex;
+    pthread_cond_t _cond;
 } CEvent;
 
 typedef CEvent CAutoResetEvent;
@@ -108,13 +106,12 @@ WRes Event_Wait(CEvent *event);
 WRes Event_Close(CEvent *event);
 
 
-typedef struct _CSemaphore
-{
-  int _created;
-  UInt32 _count;
-  UInt32 _maxCount;
-  pthread_mutex_t _mutex;
-  pthread_cond_t  _cond;
+typedef struct _CSemaphore {
+    int _created;
+    UInt32 _count;
+    UInt32 _maxCount;
+    pthread_mutex_t _mutex;
+    pthread_cond_t _cond;
 } CSemaphore;
 
 #define Semaphore_Construct(p) (p)->_created = 0
@@ -126,7 +123,7 @@ WRes Semaphore_Wait(CSemaphore *p);
 WRes Semaphore_Close(CSemaphore *p);
 
 typedef struct {
-	pthread_mutex_t _mutex;
+    pthread_mutex_t _mutex;
 } CCriticalSection;
 
 WRes CriticalSection_Init(CCriticalSection *p);

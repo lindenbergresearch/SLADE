@@ -58,85 +58,84 @@ CVAR(String, dir_last_pngtool, "", CVAR_SAVE)
 //
 // PNGPrefsPanel class constructor
 // ----------------------------------------------------------------------------
-PNGPrefsPanel::PNGPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
-{
-	// Create sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(sizer);
+PNGPrefsPanel::PNGPrefsPanel(wxWindow *parent) : PrefsPanelBase(parent) {
+    // Create sizer
+    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(sizer);
 
-	WxUtils::layoutVertically(
-		sizer,
-		vector<wxObject*>{
-			WxUtils::createLabelVBox(
-				this,
-				"Location of PNGout:",
-				flp_pngout_ = new FileLocationPanel(
-					this,
-					wxString(path_pngout),
-					true,
-					"Browse for PNGout Executable",
-					SFileDialog::executableExtensionString(),
-					SFileDialog::executableFileName("pngout")
-				)
-			),
-			WxUtils::createLabelVBox(
-				this,
-				"Location of PNGCrush:",
-				flp_pngcrush_= new FileLocationPanel(
-					this,
-					wxString(path_pngcrush),
-					true,
-					"Browse for PNGCrush Executable",
-					SFileDialog::executableExtensionString(),
-					SFileDialog::executableFileName("pngcrush")
-				)
-			),
-			WxUtils::createLabelVBox(
-				this,
-				"Location of DeflOpt:",
-				flp_deflopt_ = new FileLocationPanel(
-					this,
-					wxString(path_deflopt),
-					true,
-					"Browse for DeflOpt Executable",
-					SFileDialog::executableExtensionString(),
-					SFileDialog::executableFileName("deflopt")
-				)
-			)
-		},
-		wxSizerFlags(0).Expand()
-	);
+    WxUtils::layoutVertically(
+        sizer,
+        vector<wxObject *>{
+            WxUtils::createLabelVBox(
+                this,
+                "Location of PNGout:",
+                flp_pngout_ = new FileLocationPanel(
+                    this,
+                    wxString(path_pngout),
+                    true,
+                    "Browse for PNGout Executable",
+                    SFileDialog::executableExtensionString(),
+                    SFileDialog::executableFileName("pngout")
+                )
+            ),
+            WxUtils::createLabelVBox(
+                this,
+                "Location of PNGCrush:",
+                flp_pngcrush_ = new FileLocationPanel(
+                    this,
+                    wxString(path_pngcrush),
+                    true,
+                    "Browse for PNGCrush Executable",
+                    SFileDialog::executableExtensionString(),
+                    SFileDialog::executableFileName("pngcrush")
+                )
+            ),
+            WxUtils::createLabelVBox(
+                this,
+                "Location of DeflOpt:",
+                flp_deflopt_ = new FileLocationPanel(
+                    this,
+                    wxString(path_deflopt),
+                    true,
+                    "Browse for DeflOpt Executable",
+                    SFileDialog::executableExtensionString(),
+                    SFileDialog::executableFileName("deflopt")
+                )
+            )
+        },
+        wxSizerFlags(0).Expand()
+    );
 }
+
 
 // ----------------------------------------------------------------------------
 // PNGPrefsPanel::~PNGPrefsPanel
 //
 // PNGPrefsPanel class destructor
 // ----------------------------------------------------------------------------
-PNGPrefsPanel::~PNGPrefsPanel()
-{
+PNGPrefsPanel::~PNGPrefsPanel() {
 }
+
 
 // ----------------------------------------------------------------------------
 // PNGPrefsPanel::init
 //
 // Initialises panel controls
 // ----------------------------------------------------------------------------
-void PNGPrefsPanel::init()
-{
-	flp_pngout_->setLocation(wxString(path_pngout));
-	flp_pngcrush_->setLocation(wxString(path_pngcrush));
-	flp_deflopt_->setLocation(wxString(path_deflopt));
+void PNGPrefsPanel::init() {
+    flp_pngout_->setLocation(wxString(path_pngout));
+    flp_pngcrush_->setLocation(wxString(path_pngcrush));
+    flp_deflopt_->setLocation(wxString(path_deflopt));
 }
+
 
 // ----------------------------------------------------------------------------
 // PNGPrefsPanel::applyPreferences
 //
 // Applies preferences from the panel controls
 // ----------------------------------------------------------------------------
-void PNGPrefsPanel::applyPreferences()
-{
-	path_pngout = flp_pngout_->location();
-	path_pngcrush = flp_pngcrush_->location();
-	path_deflopt = flp_deflopt_->location();
+void PNGPrefsPanel::applyPreferences() {
+    path_pngout = flp_pngout_->location();
+    path_pngcrush = flp_pngcrush_->location();
+    path_deflopt = flp_deflopt_->location();
 }

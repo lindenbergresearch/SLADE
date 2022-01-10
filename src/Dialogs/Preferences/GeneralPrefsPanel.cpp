@@ -60,69 +60,70 @@ EXTERN_CVAR(Bool, backup_archives)
 //
 // GeneralPrefsPanel class constructor
 // ----------------------------------------------------------------------------
-GeneralPrefsPanel::GeneralPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
-{
-	// Create + Layout controls
-	SetSizer(
-		WxUtils::layoutVertically({
-			cb_archive_load_ = new wxCheckBox(this, -1, "Load all archive entry data to memory when opened"),
-			cb_archive_close_tab_ = new wxCheckBox(this, -1, "Close archive when its tab is closed"),
-			cb_wads_root_ = new wxCheckBox(this, -1, "Auto open nested wad archives"),
+GeneralPrefsPanel::GeneralPrefsPanel(wxWindow *parent) : PrefsPanelBase(parent) {
+    // Create + Layout controls
+    SetSizer(
+        WxUtils::layoutVertically(
+            {
+                cb_archive_load_ = new wxCheckBox(this, -1, "Load all archive entry data to memory when opened"),
+                cb_archive_close_tab_ = new wxCheckBox(this, -1, "Close archive when its tab is closed"),
+                cb_wads_root_ = new wxCheckBox(this, -1, "Auto open nested wad archives"),
 #ifdef __WXMSW__
-			cb_update_check_ = new wxCheckBox(this, -1, "Check for updates on startup"),
-			cb_update_check_beta_ = new wxCheckBox(this, -1, "Include beta versions when checking for updates"),
+                cb_update_check_ = new wxCheckBox(this, -1, "Check for updates on startup"),
+                cb_update_check_beta_ = new wxCheckBox(this, -1, "Include beta versions when checking for updates"),
 #endif
-			cb_confirm_exit_ = new wxCheckBox(this, -1, "Show confirmation dialog on exit"),
-			cb_backup_archives_ = new wxCheckBox(this, -1, "Back up archives")
-		})
-	);
+                cb_confirm_exit_ = new wxCheckBox(this, -1, "Show confirmation dialog on exit"),
+                cb_backup_archives_ = new wxCheckBox(this, -1, "Back up archives")
+            }
+        )
+    );
 
-	cb_wads_root_->SetToolTip(
-		"When opening a zip or folder archive, automatically open all wad entries in the root directory"
-	);
+    cb_wads_root_->SetToolTip(
+        "When opening a zip or folder archive, automatically open all wad entries in the root directory"
+    );
 }
+
 
 // ----------------------------------------------------------------------------
 // GeneralPrefsPanel::~GeneralPrefsPanel
 //
 // GeneralPrefsPanel class destructor
 // ----------------------------------------------------------------------------
-GeneralPrefsPanel::~GeneralPrefsPanel()
-{
+GeneralPrefsPanel::~GeneralPrefsPanel() {
 }
+
 
 // ----------------------------------------------------------------------------
 // GeneralPrefsPanel::init
 //
 // Initialises panel controls
 // ----------------------------------------------------------------------------
-void GeneralPrefsPanel::init()
-{
-	cb_archive_load_->SetValue(archive_load_data);
-	cb_archive_close_tab_->SetValue(close_archive_with_tab);
-	cb_wads_root_->SetValue(auto_open_wads_root);
+void GeneralPrefsPanel::init() {
+    cb_archive_load_->SetValue(archive_load_data);
+    cb_archive_close_tab_->SetValue(close_archive_with_tab);
+    cb_wads_root_->SetValue(auto_open_wads_root);
 #ifdef __WXMSW__
-	cb_update_check_->SetValue(update_check);
-	cb_update_check_beta_->SetValue(update_check_beta);
+    cb_update_check_->SetValue(update_check);
+    cb_update_check_beta_->SetValue(update_check_beta);
 #endif
-	cb_confirm_exit_->SetValue(confirm_exit);
-	cb_backup_archives_->SetValue(backup_archives);
+    cb_confirm_exit_->SetValue(confirm_exit);
+    cb_backup_archives_->SetValue(backup_archives);
 }
+
 
 // ----------------------------------------------------------------------------
 // GeneralPrefsPanel::applyPreferences
 //
 // Applies preference values from the controls to CVARs
 // ----------------------------------------------------------------------------
-void GeneralPrefsPanel::applyPreferences()
-{
-	archive_load_data = cb_archive_load_->GetValue();
-	close_archive_with_tab = cb_archive_close_tab_->GetValue();
-	auto_open_wads_root = cb_wads_root_->GetValue();
+void GeneralPrefsPanel::applyPreferences() {
+    archive_load_data = cb_archive_load_->GetValue();
+    close_archive_with_tab = cb_archive_close_tab_->GetValue();
+    auto_open_wads_root = cb_wads_root_->GetValue();
 #ifdef __WXMSW__
-	update_check = cb_update_check_->GetValue();
-	update_check_beta = cb_update_check_beta_->GetValue();
+    update_check = cb_update_check_->GetValue();
+    update_check_beta = cb_update_check_beta_->GetValue();
 #endif
-	confirm_exit = cb_confirm_exit_->GetValue();
-	backup_archives = cb_backup_archives_->GetValue();
+    confirm_exit = cb_confirm_exit_->GetValue();
+    backup_archives = cb_backup_archives_->GetValue();
 }

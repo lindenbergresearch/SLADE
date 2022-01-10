@@ -60,33 +60,27 @@ CVAR(Bool, use_zeth_icons, false, CVAR_SAVE)
 //
 // Loads the item image
 // ----------------------------------------------------------------------------
-bool ThingBrowserItem::loadImage()
-{
-	// Get sprite
-	GLTexture* tex = MapEditor::textureManager().getSprite(type_.sprite(), type_.translation(), type_.palette());
-	if (!tex && use_zeth_icons && type_.zethIcon() >= 0)
-	{
-		// Sprite not found, try the Zeth icon
-		tex = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", type_.zethIcon()));
-	}
-	if (!tex)
-	{
-		// Sprite not found, try an icon
-		tex = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", type_.icon()));
-	}
-	if (!tex)
-	{
-		// Icon not found either, use unknown icon
-		tex = MapEditor::textureManager().getEditorImage("thing/unknown");
-	}
+bool ThingBrowserItem::loadImage() {
+    // Get sprite
+    GLTexture *tex = MapEditor::textureManager().getSprite(type_.sprite(), type_.translation(), type_.palette());
+    if (!tex && use_zeth_icons && type_.zethIcon() >= 0) {
+        // Sprite not found, try the Zeth icon
+        tex = MapEditor::textureManager().getEditorImage(S_FMT("zethicons/zeth%02d", type_.zethIcon()));
+    }
+    if (!tex) {
+        // Sprite not found, try an icon
+        tex = MapEditor::textureManager().getEditorImage(S_FMT("thing/%s", type_.icon()));
+    }
+    if (!tex) {
+        // Icon not found either, use unknown icon
+        tex = MapEditor::textureManager().getEditorImage("thing/unknown");
+    }
 
-	if (tex)
-	{
-		image_ = tex;
-		return true;
-	}
-	else
-		return false;
+    if (tex) {
+        image_ = tex;
+        return true;
+    } else
+        return false;
 }
 
 
@@ -102,78 +96,72 @@ bool ThingBrowserItem::loadImage()
 //
 // ThingTypeBrowser class constructor
 // ----------------------------------------------------------------------------
-ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(parent)
-{
-	// Set window title
-	SetTitle("Browse Thing Types");
+ThingTypeBrowser::ThingTypeBrowser(wxWindow *parent, int type) : BrowserWindow(parent) {
+    // Set window title
+    SetTitle("Browse Thing Types");
 
-	// Add 'Details view' checkbox
-	cb_view_tiles_ = new wxCheckBox(this, -1, "Details view");
-	cb_view_tiles_->SetValue(browser_thing_tiles);
-	sizer_bottom_->Add(cb_view_tiles_, 0, wxEXPAND|wxRIGHT, UI::pad());
+    // Add 'Details view' checkbox
+    cb_view_tiles_ = new wxCheckBox(this, -1, "Details view");
+    cb_view_tiles_->SetValue(browser_thing_tiles);
+    sizer_bottom_->Add(cb_view_tiles_, 0, wxEXPAND | wxRIGHT, UI::pad());
 
-	// Populate tree
-	auto& types = Game::configuration().allThingTypes();
-	for (auto& i : types)
-		addItem(new ThingBrowserItem(i.second.name(), i.second, i.first), i.second.group());
-	populateItemTree();
+    // Populate tree
+    auto &types = Game::configuration().allThingTypes();
+    for (auto &i : types)
+        addItem(new ThingBrowserItem(i.second.name(), i.second, i.first), i.second.group());
+    populateItemTree();
 
-	// Set browser options
-	canvas_->setItemNameType(BrowserCanvas::NAMES_INDEX);
-	setupViewOptions();
+    // Set browser options
+    canvas_->setItemNameType(BrowserCanvas::NAMES_INDEX);
+    setupViewOptions();
 
-	// Select initial item if any
-	if (type >= 0)
-		selectItem(Game::configuration().thingType(type).name());
-	else
-		openTree(items_root_);	// Otherwise open 'all' category
+    // Select initial item if any
+    if (type >= 0)
+        selectItem(Game::configuration().thingType(type).name());
+    else
+        openTree(items_root_);    // Otherwise open 'all' category
 
 
-	// Bind events
-	cb_view_tiles_->Bind(wxEVT_CHECKBOX, &ThingTypeBrowser::onViewTilesClicked, this);
+    // Bind events
+    cb_view_tiles_->Bind(wxEVT_CHECKBOX, &ThingTypeBrowser::onViewTilesClicked, this);
 
-	Layout();
+    Layout();
 }
+
 
 // ----------------------------------------------------------------------------
 // ThingTypeBrowser::setupViewOptions
 //
 // Sets up appropriate browser view options
 // ----------------------------------------------------------------------------
-void ThingTypeBrowser::setupViewOptions()
-{
-	if (browser_thing_tiles)
-	{
-		setFont(Drawing::FONT_CONDENSED);
-		setItemSize(48);
-		setItemViewType(BrowserCanvas::ITEMS_TILES);
-	}
-	else
-	{
-		setFont(Drawing::FONT_BOLD);
-		setItemSize(80);
-		setItemViewType(BrowserCanvas::ITEMS_NORMAL);
-	}
+void ThingTypeBrowser::setupViewOptions() {
+    if (browser_thing_tiles) {
+        setFont(Drawing::FONT_CONDENSED);
+        setItemSize(48);
+        setItemViewType(BrowserCanvas::ITEMS_TILES);
+    } else {
+        setFont(Drawing::FONT_BOLD);
+        setItemSize(80);
+        setItemViewType(BrowserCanvas::ITEMS_NORMAL);
+    }
 
-	canvas_->updateLayout();
-	canvas_->showSelectedItem();
+    canvas_->updateLayout();
+    canvas_->showSelectedItem();
 }
+
 
 // ----------------------------------------------------------------------------
 // ThingTypeBrowser::getSelectedType
 //
 // Returns the currently selected thing type
 // ----------------------------------------------------------------------------
-int ThingTypeBrowser::getSelectedType()
-{
-	BrowserItem* selected = getSelectedItem();
-	if (selected)
-	{
-		LOG_MESSAGE(1, "Selected item %d", selected->index());
-		return selected->index();
-	}
-	else
-		return -1;
+int ThingTypeBrowser::getSelectedType() {
+    BrowserItem *selected = getSelectedItem();
+    if (selected) {
+        LOG_MESSAGE(1, "Selected item %d", selected->index());
+        return selected->index();
+    } else
+        return -1;
 }
 
 
@@ -189,9 +177,8 @@ int ThingTypeBrowser::getSelectedType()
 //
 // Called when the 'Details View' checkbox is changed
 // ----------------------------------------------------------------------------
-void ThingTypeBrowser::onViewTilesClicked(wxCommandEvent& e)
-{
-	browser_thing_tiles = cb_view_tiles_->GetValue();
-	setupViewOptions();
-	Refresh();
+void ThingTypeBrowser::onViewTilesClicked(wxCommandEvent &e) {
+    browser_thing_tiles = cb_view_tiles_->GetValue();
+    setupViewOptions();
+    Refresh();
 }

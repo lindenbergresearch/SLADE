@@ -44,154 +44,138 @@
 //
 //==========================================================================
 
-FileReader::FileReader ()
-: Status(0), Message("OK"), File(NULL), Length(0), StartPos(0), CloseOnDestruct(false)
-{
-}
-
-FileReader::FileReader (const FileReader &other, long length)
-: Status(other.Status), Message(other.Message), File(other.File), Length(length), CloseOnDestruct(false)
-{
-	FilePos = StartPos = ftell (other.File);
-}
-
-FileReader::FileReader (const char *filename)
-: Status(0), Message("OK"), File(NULL), Length(0), StartPos(0), FilePos(0), CloseOnDestruct(false)
-{
-	if (!Open(filename))
-	{
-		Status = -1;
-		Message = S_FMT("Could not open %s", filename);
-	}
-}
-
-FileReader::FileReader (FILE *file)
-: Status(0), Message("OK"), File(file), Length(0), StartPos(0), FilePos(0), CloseOnDestruct(false)
-{
-	Length = CalcFileLen();
-}
-
-FileReader::FileReader (FILE *file, long length)
-: Status(0), Message("OK"), File(file), Length(length), CloseOnDestruct(true)
-{
-	FilePos = StartPos = ftell (file);
-}
-
-FileReader::~FileReader ()
-{
-	if (CloseOnDestruct && File != NULL)
-	{
-		fclose (File);
-		File = NULL;
-	}
-}
-
-bool FileReader::Open (const char *filename)
-{
-	File = fopen (filename, "rb");
-	if (File == NULL) return false;
-	FilePos = 0;
-	StartPos = 0;
-	CloseOnDestruct = true;
-	Length = CalcFileLen();
-	return true;
+FileReader::FileReader()
+    : Status(0), Message("OK"), File(NULL), Length(0), StartPos(0), CloseOnDestruct(false) {
 }
 
 
-void FileReader::ResetFilePtr ()
-{
-	FilePos = ftell (File);
+FileReader::FileReader(const FileReader &other, long length)
+    : Status(other.Status), Message(other.Message), File(other.File), Length(length), CloseOnDestruct(false) {
+    FilePos = StartPos = ftell(other.File);
 }
 
-long FileReader::Tell () const
-{
-	return FilePos - StartPos;
+
+FileReader::FileReader(const char *filename)
+    : Status(0), Message("OK"), File(NULL), Length(0), StartPos(0), FilePos(0), CloseOnDestruct(false) {
+    if (!Open(filename)) {
+        Status = -1;
+        Message = S_FMT("Could not open %s", filename);
+    }
 }
 
-long FileReader::Seek (long offset, int origin)
-{
-	if (origin == SEEK_SET)
-	{
-		offset += StartPos;
-	}
-	else if (origin == SEEK_CUR)
-	{
-		offset += FilePos;
-	}
-	else if (origin == SEEK_END)
-	{
-		offset += StartPos + Length;
-	}
-	if (0 == fseek (File, offset, SEEK_SET))
-	{
-		FilePos = offset;
-		return 0;
-	}
-	return -1;
+
+FileReader::FileReader(FILE *file)
+    : Status(0), Message("OK"), File(file), Length(0), StartPos(0), FilePos(0), CloseOnDestruct(false) {
+    Length = CalcFileLen();
 }
 
-long FileReader::Read (void *buffer, long len)
-{
-	assert(len >= 0);
-	if (len <= 0) return 0;
-	if (FilePos + len > StartPos + Length)
-	{
-		len = Length - FilePos + StartPos;
-	}
-	len = (long)fread (buffer, 1, len, File);
-	FilePos += len;
-	return len;
+
+FileReader::FileReader(FILE *file, long length)
+    : Status(0), Message("OK"), File(file), Length(length), CloseOnDestruct(true) {
+    FilePos = StartPos = ftell(file);
 }
 
-char *FileReader::Gets(char *strbuf, int len)
-{
-	if (len <= 0) return 0;
-	char *p = fgets(strbuf, len, File);
-	if (p != NULL)
-	{
-		FilePos = ftell(File) - StartPos;
-	}
-	return p;
+
+FileReader::~FileReader() {
+    if (CloseOnDestruct && File != NULL) {
+        fclose(File);
+        File = NULL;
+    }
 }
 
-char *FileReader::GetsFromBuffer(const char * bufptr, char *strbuf, int len)
-{
-	if (len>Length-FilePos) len=Length-FilePos;
-	if (len <= 0) return NULL;
 
-	char *p = strbuf;
-	while (len > 1)
-	{
-		if (bufptr[FilePos] == 0)
-		{
-			FilePos++;
-			break;
-		}
-		if (bufptr[FilePos] != '\r')
-		{
-			*p++ = bufptr[FilePos];
-			len--;
-			if (bufptr[FilePos] == '\n') 
-			{
-				FilePos++;
-				break;
-			}
-		}
-		FilePos++;
-	}
-	if (p==strbuf) return NULL;
-	*p++=0;
-	return strbuf;
+bool FileReader::Open(const char *filename) {
+    File = fopen(filename, "rb");
+    if (File == NULL) return false;
+    FilePos = 0;
+    StartPos = 0;
+    CloseOnDestruct = true;
+    Length = CalcFileLen();
+    return true;
 }
 
-long FileReader::CalcFileLen() const
-{
-	long endpos;
 
-	fseek (File, 0, SEEK_END);
-	endpos = ftell (File);
-	fseek (File, 0, SEEK_SET);
-	return endpos;
+void FileReader::ResetFilePtr() {
+    FilePos = ftell(File);
+}
+
+
+long FileReader::Tell() const {
+    return FilePos - StartPos;
+}
+
+
+long FileReader::Seek(long offset, int origin) {
+    if (origin == SEEK_SET) {
+        offset += StartPos;
+    } else if (origin == SEEK_CUR) {
+        offset += FilePos;
+    } else if (origin == SEEK_END) {
+        offset += StartPos + Length;
+    }
+    if (0 == fseek(File, offset, SEEK_SET)) {
+        FilePos = offset;
+        return 0;
+    }
+    return -1;
+}
+
+
+long FileReader::Read(void *buffer, long len) {
+    assert(len >= 0);
+    if (len <= 0) return 0;
+    if (FilePos + len > StartPos + Length) {
+        len = Length - FilePos + StartPos;
+    }
+    len = (long) fread(buffer, 1, len, File);
+    FilePos += len;
+    return len;
+}
+
+
+char *FileReader::Gets(char *strbuf, int len) {
+    if (len <= 0) return 0;
+    char *p = fgets(strbuf, len, File);
+    if (p != NULL) {
+        FilePos = ftell(File) - StartPos;
+    }
+    return p;
+}
+
+
+char *FileReader::GetsFromBuffer(const char *bufptr, char *strbuf, int len) {
+    if (len > Length - FilePos) len = Length - FilePos;
+    if (len <= 0) return NULL;
+
+    char *p = strbuf;
+    while (len > 1) {
+        if (bufptr[FilePos] == 0) {
+            FilePos++;
+            break;
+        }
+        if (bufptr[FilePos] != '\r') {
+            *p++ = bufptr[FilePos];
+            len--;
+            if (bufptr[FilePos] == '\n') {
+                FilePos++;
+                break;
+            }
+        }
+        FilePos++;
+    }
+    if (p == strbuf) return NULL;
+    *p++ = 0;
+    return strbuf;
+}
+
+
+long FileReader::CalcFileLen() const {
+    long endpos;
+
+    fseek(File, 0, SEEK_END);
+    endpos = ftell(File);
+    fseek(File, 0, SEEK_SET);
+    return endpos;
 }
 
 //==========================================================================
@@ -203,66 +187,59 @@ long FileReader::CalcFileLen() const
 //
 //==========================================================================
 
-FileReaderZ::FileReaderZ (FileReader &file, int windowbits)
-: File(file), SawEOF(false)
-{
-	FillBuffer ();
+FileReaderZ::FileReaderZ(FileReader &file, int windowbits)
+    : File(file), SawEOF(false) {
+    FillBuffer();
 
-	Stream.zalloc = Z_NULL;
-	Stream.zfree = Z_NULL;
+    Stream.zalloc = Z_NULL;
+    Stream.zfree = Z_NULL;
 
-	if (!windowbits) Status = inflateInit (&Stream);
-	else Status = inflateInit2 (&Stream, windowbits);
+    if (!windowbits) Status = inflateInit (&Stream);
+    else Status = inflateInit2 (&Stream, windowbits);
 
-	if (Status != Z_OK)
-	{
-		Message = S_FMT("FileReaderZ: inflateInit failed: %s\n", Stream.msg);
-	}
+    if (Status != Z_OK) {
+        Message = S_FMT("FileReaderZ: inflateInit failed: %s\n", Stream.msg);
+    }
 }
 
-FileReaderZ::~FileReaderZ ()
-{
-	inflateEnd (&Stream);
+
+FileReaderZ::~FileReaderZ() {
+    inflateEnd(&Stream);
 }
 
-long FileReaderZ::Read (void *buffer, long len)
-{
-	Stream.next_out = (Bytef *)buffer;
-	Stream.avail_out = len;
 
-	do
-	{
-		Status = inflate (&Stream, Z_SYNC_FLUSH);
-		if (Stream.avail_in == 0 && !SawEOF)
-		{
-			FillBuffer ();
-		}
-	} while (Status == Z_OK && Stream.avail_out != 0);
+long FileReaderZ::Read(void *buffer, long len) {
+    Stream.next_out = (Bytef *) buffer;
+    Stream.avail_out = len;
 
-	if (Status != Z_OK && Status != Z_STREAM_END)
-	{
-		Message = S_FMT("Corrupt zlib stream: %s", Stream.msg);
-	}
+    do {
+        Status = inflate(&Stream, Z_SYNC_FLUSH);
+        if (Stream.avail_in == 0 && !SawEOF) {
+            FillBuffer();
+        }
+    } while (Status == Z_OK && Stream.avail_out != 0);
 
-	// Is this really a problem?
-	if (Stream.avail_out != 0)
-	{
-		Message = S_FMT ("Ran out of data in zlib stream: %s", Stream.msg);
-	}
+    if (Status != Z_OK && Status != Z_STREAM_END) {
+        Message = S_FMT("Corrupt zlib stream: %s", Stream.msg);
+    }
 
-	return len - Stream.avail_out;
+    // Is this really a problem?
+    if (Stream.avail_out != 0) {
+        Message = S_FMT("Ran out of data in zlib stream: %s", Stream.msg);
+    }
+
+    return len - Stream.avail_out;
 }
 
-void FileReaderZ::FillBuffer ()
-{
-	long numread = File.Read (InBuff, BUFF_SIZE);
 
-	if (numread < BUFF_SIZE)
-	{
-		SawEOF = true;
-	}
-	Stream.next_in = InBuff;
-	Stream.avail_in = numread;
+void FileReaderZ::FillBuffer() {
+    long numread = File.Read(InBuff, BUFF_SIZE);
+
+    if (numread < BUFF_SIZE) {
+        SawEOF = true;
+    }
+    Stream.next_in = InBuff;
+    Stream.avail_in = numread;
 }
 
 //==========================================================================
@@ -274,65 +251,58 @@ void FileReaderZ::FillBuffer ()
 //
 //==========================================================================
 
-FileReaderBZ2::FileReaderBZ2 (FileReader &file)
-: File(file), SawEOF(false)
-{
-	FillBuffer ();
+FileReaderBZ2::FileReaderBZ2(FileReader &file)
+    : File(file), SawEOF(false) {
+    FillBuffer();
 
-	Stream.bzalloc = NULL;
-	Stream.bzfree = NULL;
-	Stream.opaque = NULL;
+    Stream.bzalloc = NULL;
+    Stream.bzfree = NULL;
+    Stream.opaque = NULL;
 
-	Status = BZ2_bzDecompressInit(&Stream, 0, 0);
+    Status = BZ2_bzDecompressInit(&Stream, 0, 0);
 
-	if (Status != BZ_OK)
-	{
-		Message = S_FMT("FileReaderBZ2: bzDecompressInit failed: %d\n", Status);
-	}
+    if (Status != BZ_OK) {
+        Message = S_FMT("FileReaderBZ2: bzDecompressInit failed: %d\n", Status);
+    }
 }
 
-FileReaderBZ2::~FileReaderBZ2 ()
-{
-	BZ2_bzDecompressEnd (&Stream);
+
+FileReaderBZ2::~FileReaderBZ2() {
+    BZ2_bzDecompressEnd(&Stream);
 }
 
-long FileReaderBZ2::Read (void *buffer, long len)
-{
-	Stream.next_out = (char *)buffer;
-	Stream.avail_out = len;
 
-	do
-	{
-		Status = BZ2_bzDecompress(&Stream);
-		if (Stream.avail_in == 0 && !SawEOF)
-		{
-			FillBuffer ();
-		}
-	} while (Status == BZ_OK && Stream.avail_out != 0);
+long FileReaderBZ2::Read(void *buffer, long len) {
+    Stream.next_out = (char *) buffer;
+    Stream.avail_out = len;
 
-	if (Status != BZ_OK && Status != BZ_STREAM_END)
-	{
-		Message = S_FMT("Corrupt bzip2 stream");
-	}
+    do {
+        Status = BZ2_bzDecompress(&Stream);
+        if (Stream.avail_in == 0 && !SawEOF) {
+            FillBuffer();
+        }
+    } while (Status == BZ_OK && Stream.avail_out != 0);
 
-	if (Stream.avail_out != 0)
-	{
-		Message = S_FMT("Ran out of data in bzip2 stream");
-	}
+    if (Status != BZ_OK && Status != BZ_STREAM_END) {
+        Message = S_FMT("Corrupt bzip2 stream");
+    }
 
-	return len - Stream.avail_out;
+    if (Stream.avail_out != 0) {
+        Message = S_FMT("Ran out of data in bzip2 stream");
+    }
+
+    return len - Stream.avail_out;
 }
 
-void FileReaderBZ2::FillBuffer ()
-{
-	long numread = File.Read(InBuff, BUFF_SIZE);
 
-	if (numread < BUFF_SIZE)
-	{
-		SawEOF = true;
-	}
-	Stream.next_in = (char *)InBuff;
-	Stream.avail_in = numread;
+void FileReaderBZ2::FillBuffer() {
+    long numread = File.Read(InBuff, BUFF_SIZE);
+
+    if (numread < BUFF_SIZE) {
+        SawEOF = true;
+    }
+    Stream.next_in = (char *) InBuff;
+    Stream.avail_in = numread;
 }
 
 //==========================================================================
@@ -343,9 +313,8 @@ void FileReaderBZ2::FillBuffer ()
 //
 //==========================================================================
 
-extern "C" void bz_internal_error (int errcode)
-{
-	LOG_MESSAGE(1, "libbzip2: internal error number %d\n", errcode);
+extern "C" void bz_internal_error(int errcode) {
+    LOG_MESSAGE(1, "libbzip2: internal error number %d\n", errcode);
 }
 
 //==========================================================================
@@ -357,105 +326,106 @@ extern "C" void bz_internal_error (int errcode)
 //
 //==========================================================================
 
-static void *SzAlloc(void *p, size_t size) { p = p; return malloc(size); }
-static void SzFree(void *p, void *address) { p = p; free(address); }
+static void *SzAlloc(void *p, size_t size) {
+    p = p;
+    return malloc(size);
+}
+
+
+static void SzFree(void *p, void *address) {
+    p = p;
+    free(address);
+}
+
+
 ISzAlloc g_Alloc = { SzAlloc, SzFree };
 
-FileReaderLZMA::FileReaderLZMA (FileReader &file, size_t uncompressed_size, bool zip)
-: File(file), SawEOF(false)
-{
-	BYTE header[4 + LZMA_PROPS_SIZE];
 
-	assert(zip == true);
+FileReaderLZMA::FileReaderLZMA(FileReader &file, size_t uncompressed_size, bool zip)
+    : File(file), SawEOF(false) {
+    BYTE header[4 + LZMA_PROPS_SIZE];
 
-	Size = uncompressed_size;
-	OutProcessed = 0;
+    assert(zip == true);
 
-	// Read zip LZMA properties header
-	if (File.Read(header, sizeof(header)) < (long)sizeof(header))
-	{
-		Message = S_FMT("FileReaderLZMA: File too shart\n");
-	}
-	if (header[2] + header[3] * 256 != LZMA_PROPS_SIZE)
-	{
-		Message = S_FMT("FileReaderLZMA: LZMA props size is %d (expected %d)\n",
-			header[2] + header[3] * 256, LZMA_PROPS_SIZE);
-	}
+    Size = uncompressed_size;
+    OutProcessed = 0;
 
-	FillBuffer();
+    // Read zip LZMA properties header
+    if (File.Read(header, sizeof(header)) < (long) sizeof(header)) {
+        Message = S_FMT("FileReaderLZMA: File too shart\n");
+    }
+    if (header[2] + header[3] * 256 != LZMA_PROPS_SIZE) {
+        Message = S_FMT(
+            "FileReaderLZMA: LZMA props size is %d (expected %d)\n",
+            header[2] + header[3] * 256, LZMA_PROPS_SIZE
+        );
+    }
 
-	LzmaDec_Construct(&Stream);
-	Status = LzmaDec_Allocate(&Stream, header + 4, LZMA_PROPS_SIZE, &g_Alloc);
+    FillBuffer();
 
-	if (Status != SZ_OK)
-	{
-		Message = S_FMT("FileReaderLZMA: LzmaDec_Allocate failed: %d\n", Status);
-	}
+    LzmaDec_Construct(&Stream);
+    Status = LzmaDec_Allocate(&Stream, header + 4, LZMA_PROPS_SIZE, &g_Alloc);
 
-	LzmaDec_Init(&Stream);
+    if (Status != SZ_OK) {
+        Message = S_FMT("FileReaderLZMA: LzmaDec_Allocate failed: %d\n", Status);
+    }
+
+    LzmaDec_Init(&Stream);
 }
 
-FileReaderLZMA::~FileReaderLZMA ()
-{
-	LzmaDec_Free(&Stream, &g_Alloc);
+
+FileReaderLZMA::~FileReaderLZMA() {
+    LzmaDec_Free(&Stream, &g_Alloc);
 }
 
-long FileReaderLZMA::Read (void *buffer, long len)
-{
-	Byte *next_out = (Byte *)buffer;
 
-	do
-	{
-		ELzmaFinishMode finish_mode = LZMA_FINISH_ANY;
-		ELzmaStatus status;
-		size_t out_processed = len;
-		size_t in_processed = InSize;
+long FileReaderLZMA::Read(void *buffer, long len) {
+    Byte *next_out = (Byte *) buffer;
 
-		Status = LzmaDec_DecodeToBuf(&Stream, next_out, &out_processed, InBuff + InPos, &in_processed, finish_mode, &status);
-		InPos += in_processed;
-		InSize -= in_processed;
-		next_out += out_processed;
-		len = (long)(len - out_processed);
-		if (Status != SZ_OK)
-		{
-			Message = S_FMT("Corrupt LZMA stream");
-		}
-		if (in_processed == 0 && out_processed == 0)
-		{
-			if (status != LZMA_STATUS_FINISHED_WITH_MARK)
-			{
-				Message = S_FMT("Corrupt LZMA stream");
-			}
-		}
-		if (InSize == 0 && !SawEOF)
-		{
-			FillBuffer ();
-		}
-	} while (Status == SZ_OK && len != 0);
+    do {
+        ELzmaFinishMode finish_mode = LZMA_FINISH_ANY;
+        ELzmaStatus status;
+        size_t out_processed = len;
+        size_t in_processed = InSize;
 
-	if (Status != Z_OK && Status != Z_STREAM_END)
-	{
-		Message = S_FMT("Corrupt LZMA stream");
-	}
+        Status = LzmaDec_DecodeToBuf(&Stream, next_out, &out_processed, InBuff + InPos, &in_processed, finish_mode, &status);
+        InPos += in_processed;
+        InSize -= in_processed;
+        next_out += out_processed;
+        len = (long) (len - out_processed);
+        if (Status != SZ_OK) {
+            Message = S_FMT("Corrupt LZMA stream");
+        }
+        if (in_processed == 0 && out_processed == 0) {
+            if (status != LZMA_STATUS_FINISHED_WITH_MARK) {
+                Message = S_FMT("Corrupt LZMA stream");
+            }
+        }
+        if (InSize == 0 && !SawEOF) {
+            FillBuffer();
+        }
+    } while (Status == SZ_OK && len != 0);
 
-	if (len != 0)
-	{
-		Message = S_FMT("Ran out of data in LZMA stream");
-	}
+    if (Status != Z_OK && Status != Z_STREAM_END) {
+        Message = S_FMT("Corrupt LZMA stream");
+    }
 
-	return (long)(next_out - (Byte *)buffer);
+    if (len != 0) {
+        Message = S_FMT("Ran out of data in LZMA stream");
+    }
+
+    return (long) (next_out - (Byte *) buffer);
 }
 
-void FileReaderLZMA::FillBuffer ()
-{
-	long numread = File.Read(InBuff, BUFF_SIZE);
 
-	if (numread < BUFF_SIZE)
-	{
-		SawEOF = true;
-	}
-	InPos = 0;
-	InSize = numread;
+void FileReaderLZMA::FillBuffer() {
+    long numread = File.Read(InBuff, BUFF_SIZE);
+
+    if (numread < BUFF_SIZE) {
+        SawEOF = true;
+    }
+    InPos = 0;
+    InSize = numread;
 }
 
 //==========================================================================
@@ -466,56 +436,54 @@ void FileReaderLZMA::FillBuffer ()
 //
 //==========================================================================
 
-MemoryReader::MemoryReader (const char *buffer, long length)
-{
-	bufptr=buffer;
-	Length=length;
-	FilePos=0;
+MemoryReader::MemoryReader(const char *buffer, long length) {
+    bufptr = buffer;
+    Length = length;
+    FilePos = 0;
 }
 
-MemoryReader::MemoryReader (MemChunk& mem)
-{
-	bufptr=(const char *)mem.getData();
-	Length=mem.getSize();
-	FilePos=0;
+
+MemoryReader::MemoryReader(MemChunk &mem) {
+    bufptr = (const char *) mem.getData();
+    Length = mem.getSize();
+    FilePos = 0;
 }
 
-MemoryReader::~MemoryReader ()
-{
+
+MemoryReader::~MemoryReader() {
 }
 
-long MemoryReader::Tell () const
-{
-	return FilePos;
+
+long MemoryReader::Tell() const {
+    return FilePos;
 }
 
-long MemoryReader::Seek (long offset, int origin)
-{
-	switch (origin)
-	{
-	case SEEK_CUR:
-		offset+=FilePos;
-		break;
 
-	case SEEK_END:
-		offset+=Length;
-		break;
+long MemoryReader::Seek(long offset, int origin) {
+    switch (origin) {
+        case SEEK_CUR:
+            offset += FilePos;
+            break;
 
-	}
-	FilePos=clamp<long>(offset,0,Length-1);
-	return 0;
+        case SEEK_END:
+            offset += Length;
+            break;
+
+    }
+    FilePos = clamp<long>(offset, 0, Length - 1);
+    return 0;
 }
 
-long MemoryReader::Read (void *buffer, long len)
-{
-	if (len>Length-FilePos) len=Length-FilePos;
-	if (len<0) len=0;
-	memcpy(buffer,bufptr+FilePos,len);
-	FilePos+=len;
-	return len;
+
+long MemoryReader::Read(void *buffer, long len) {
+    if (len > Length - FilePos) len = Length - FilePos;
+    if (len < 0) len = 0;
+    memcpy(buffer, bufptr + FilePos, len);
+    FilePos += len;
+    return len;
 }
 
-char *MemoryReader::Gets(char *strbuf, int len)
-{
-	return GetsFromBuffer(bufptr, strbuf, len);
+
+char *MemoryReader::Gets(char *strbuf, int len) {
+    return GetsFromBuffer(bufptr, strbuf, len);
 }

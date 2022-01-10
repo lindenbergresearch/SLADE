@@ -32,7 +32,8 @@
 #include "Main.h"
 #include "Utility/MemChunk.h"
 
-bool mus2mid(MemChunk& musinput, MemChunk& midioutput);
+
+bool mus2mid(MemChunk &musinput, MemChunk &midioutput);
+
 
 #endif /* #ifndef MUS2MID_H */
-

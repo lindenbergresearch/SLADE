@@ -36,13 +36,13 @@
 #    include <limits.h>
 #    define BYFOUR
 #    if (UINT_MAX == 0xffffffffUL)
-       typedef unsigned int u4;
+typedef unsigned int u4;
 #    else
 #      if (ULONG_MAX == 0xffffffffUL)
-         typedef unsigned long u4;
+  typedef unsigned long u4;
 #      else
 #        if (USHRT_MAX == 0xffffffffUL)
-           typedef unsigned short u4;
+    typedef unsigned short u4;
 #        else
 #          undef BYFOUR     /* can't find a four-byte integer type! */
 #        endif
@@ -55,10 +55,10 @@
 #ifdef BYFOUR
 #  define REV(w) ((((w)>>24)&0xff)+(((w)>>8)&0xff00)+ \
                 (((w)&0xff00)<<8)+(((w)&0xff)<<24))
-   local unsigned long crc32_little OF((unsigned long,
-                        const unsigned char FAR *, unsigned));
-   local unsigned long crc32_big OF((unsigned long,
-                        const unsigned char FAR *, unsigned));
+local unsigned long crc32_little OF((unsigned long,
+                     const unsigned char FAR *, unsigned));
+local unsigned long crc32_big OF((unsigned long,
+                     const unsigned char FAR *, unsigned));
 #  define TBLS 8
 #else
 #  define TBLS 1
@@ -66,8 +66,12 @@
 
 /* Local functions for crc concatenation */
 local unsigned long gf2_matrix_times OF((unsigned long *mat,
-                                         unsigned long vec));
+                                            unsigned long vec));
+
+
 local void gf2_matrix_square OF((unsigned long *square, unsigned long *mat));
+
+
 local uLong crc32_combine_(uLong crc1, uLong crc2, z_off64_t len2);
 
 
@@ -199,18 +203,18 @@ local void write_table(out, table)
  * Tables of CRC-32s of all single-byte values, made by make_crc_table().
  */
 #include "crc32.h"
+
 #endif /* DYNAMIC_CRC_TABLE */
 
 /* =========================================================================
  * This function can be used by asm versions of crc32()
  */
-const unsigned long FAR * ZEXPORT get_crc_table()
-{
+const unsigned long FAR *ZEXPORT get_crc_table() {
 #ifdef DYNAMIC_CRC_TABLE
     if (crc_table_empty)
         make_crc_table();
 #endif /* DYNAMIC_CRC_TABLE */
-    return (const unsigned long FAR *)crc_table;
+    return (const unsigned long FAR *) crc_table;
 }
 
 /* ========================================================================= */
@@ -246,9 +250,10 @@ unsigned long ZEXPORT crc32(crc, buf, len)
         DO8;
         len -= 8;
     }
-    if (len) do {
-        DO1;
-    } while (--len);
+    if (len)
+        do {
+            DO1;
+        } while (--len);
     return crc ^ 0xffffffffUL;
 }
 

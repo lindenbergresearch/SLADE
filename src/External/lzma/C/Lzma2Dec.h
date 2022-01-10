@@ -12,16 +12,15 @@ extern "C" {
 
 /* ---------- State Interface ---------- */
 
-typedef struct
-{
-  CLzmaDec decoder;
-  UInt32 packSize;
-  UInt32 unpackSize;
-  int state;
-  Byte control;
-  Bool needInitDic;
-  Bool needInitState;
-  Bool needInitProp;
+typedef struct {
+    CLzmaDec decoder;
+    UInt32 packSize;
+    UInt32 unpackSize;
+    int state;
+    Byte control;
+    Bool needInitDic;
+    Bool needInitState;
+    Bool needInitProp;
 } CLzma2Dec;
 
 #define Lzma2Dec_Construct(p) LzmaDec_Construct(&(p)->decoder)
@@ -48,11 +47,15 @@ Returns:
   SZ_ERROR_DATA - Data error
 */
 
-SRes Lzma2Dec_DecodeToDic(CLzma2Dec *p, SizeT dicLimit,
-    const Byte *src, SizeT *srcLen, ELzmaFinishMode finishMode, ELzmaStatus *status);
+SRes Lzma2Dec_DecodeToDic(
+    CLzma2Dec *p, SizeT dicLimit,
+    const Byte *src, SizeT *srcLen, ELzmaFinishMode finishMode, ELzmaStatus *status
+);
 
-SRes Lzma2Dec_DecodeToBuf(CLzma2Dec *p, Byte *dest, SizeT *destLen,
-    const Byte *src, SizeT *srcLen, ELzmaFinishMode finishMode, ELzmaStatus *status);
+SRes Lzma2Dec_DecodeToBuf(
+    CLzma2Dec *p, Byte *dest, SizeT *destLen,
+    const Byte *src, SizeT *srcLen, ELzmaFinishMode finishMode, ELzmaStatus *status
+);
 
 
 /* ---------- One Call Interface ---------- */
@@ -74,8 +77,10 @@ Returns:
   SZ_ERROR_INPUT_EOF - It needs more bytes in input buffer (src).
 */
 
-SRes Lzma2Decode(Byte *dest, SizeT *destLen, const Byte *src, SizeT *srcLen,
-    Byte prop, ELzmaFinishMode finishMode, ELzmaStatus *status, ISzAlloc *alloc);
+SRes Lzma2Decode(
+    Byte *dest, SizeT *destLen, const Byte *src, SizeT *srcLen,
+    Byte prop, ELzmaFinishMode finishMode, ELzmaStatus *status, ISzAlloc *alloc
+);
 
 #ifdef __cplusplus
 }

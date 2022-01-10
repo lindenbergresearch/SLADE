@@ -43,46 +43,45 @@
 /* PaletteDialog::PaletteDialog
  * PaletteDialog class constructor
  *******************************************************************/
-PaletteDialog::PaletteDialog(Palette* palette)
-	: wxDialog(nullptr, -1, "Palette", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER)
-{
-	int size = UI::scalePx(400);
+PaletteDialog::PaletteDialog(Palette *palette)
+    : wxDialog(nullptr, -1, "Palette", wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER) {
+    int size = UI::scalePx(400);
 
-	wxBoxSizer* m_vbox = new wxBoxSizer(wxVERTICAL);
-	SetSizer(m_vbox);
+    wxBoxSizer *m_vbox = new wxBoxSizer(wxVERTICAL);
+    SetSizer(m_vbox);
 
-	pal_canvas = new PaletteCanvas(this, -1);
-	pal_canvas->getPalette().copyPalette(palette);
-	pal_canvas->SetInitialSize(wxSize(size, size));
-	pal_canvas->allowSelection(1);
-	m_vbox->Add(pal_canvas, 1, wxEXPAND|wxALL, UI::padLarge());
+    pal_canvas = new PaletteCanvas(this, -1);
+    pal_canvas->getPalette().copyPalette(palette);
+    pal_canvas->SetInitialSize(wxSize(size, size));
+    pal_canvas->allowSelection(1);
+    m_vbox->Add(pal_canvas, 1, wxEXPAND | wxALL, UI::padLarge());
 
-	m_vbox->AddSpacer(UI::pad());
-	m_vbox->Add(CreateStdDialogButtonSizer(wxOK|wxCANCEL), 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, UI::padLarge());
+    m_vbox->AddSpacer(UI::pad());
+    m_vbox->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::padLarge());
 
-	// Bind events
-	pal_canvas->Bind(wxEVT_LEFT_DCLICK, &PaletteDialog::onLeftDoubleClick, this);
+    // Bind events
+    pal_canvas->Bind(wxEVT_LEFT_DCLICK, &PaletteDialog::onLeftDoubleClick, this);
 
-	// Autosize to fit contents (and set this as the minimum size)
-	SetInitialSize(wxSize(-1, -1));
-	SetMinSize(GetSize());
+    // Autosize to fit contents (and set this as the minimum size)
+    SetInitialSize(wxSize(-1, -1));
+    SetMinSize(GetSize());
 }
+
 
 /* PaletteDialog::~PaletteDialog
  * PaletteDialog class destructor
  *******************************************************************/
-PaletteDialog::~PaletteDialog()
-{
-	if (pal_canvas)
-		delete pal_canvas;
+PaletteDialog::~PaletteDialog() {
+    if (pal_canvas)
+        delete pal_canvas;
 }
+
 
 /* PaletteDialog::getSelectedColour
  * Returns the currently selected coloir on the palette canvas
  *******************************************************************/
-rgba_t PaletteDialog::getSelectedColour()
-{
-	return pal_canvas->getSelectedColour();
+rgba_t PaletteDialog::getSelectedColour() {
+    return pal_canvas->getSelectedColour();
 }
 
 
@@ -93,7 +92,6 @@ rgba_t PaletteDialog::getSelectedColour()
 /* PaletteDialog::onLeftDoubleClick
  * Called when the palette canvas is double clicked
  *******************************************************************/
-void PaletteDialog::onLeftDoubleClick(wxMouseEvent& e)
-{
-	EndModal(wxID_OK);
+void PaletteDialog::onLeftDoubleClick(wxMouseEvent &e) {
+    EndModal(wxID_OK);
 }

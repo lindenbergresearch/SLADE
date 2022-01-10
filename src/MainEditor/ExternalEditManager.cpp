@@ -51,79 +51,78 @@
  * FileMonitor subclass to handle exporting, monitoring and
  * re-importing an entry
  */
-class ExternalEditFileMonitor : public FileMonitor, Listener
-{
+class ExternalEditFileMonitor : public FileMonitor, Listener {
 public:
-	ExternalEditFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager)
-		: FileMonitor("", false),
-		entry(entry),
-		manager(manager)
-	{
-		// Listen to entry parent archive
-		archive = entry->getParent();
-		listenTo(archive);
-	}
+    ExternalEditFileMonitor(ArchiveEntry *entry, ExternalEditManager *manager)
+        : FileMonitor("", false),
+          entry(entry),
+          manager(manager) {
+        // Listen to entry parent archive
+        archive = entry->getParent();
+        listenTo(archive);
+    }
 
-	virtual ~ExternalEditFileMonitor()
-	{
-		manager->monitorStopped(this);
-	}
 
-	ArchiveEntry*	getEntry() { return entry; }
-	void			fileModified() { updateEntry(); }
+    virtual ~ExternalEditFileMonitor() {
+        manager->monitorStopped(this);
+    }
 
-	virtual void updateEntry()
-	{
-		entry->importFile(filename);
-	}
 
-	virtual bool exportEntry()
-	{
-		// Determine export filename/path
-		wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
-		fn.SetExt(entry->getType()->extension());
+    ArchiveEntry *getEntry() { return entry; }
 
-		// Export entry and start monitoring
-		bool ok = entry->exportFile(fn.GetFullPath());
-		if (ok)
-		{
-			filename = fn.GetFullPath();
-			file_modified = wxFileModificationTime(filename);
-			Start(1000);
-		}
-		else
-			Global::error = "Failed to export entry";
 
-		return ok;
-	}
+    void fileModified() { updateEntry(); }
 
-	void onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
-	{
-		if (announcer != archive)
-			return;
 
-		bool finished = false;
+    virtual void updateEntry() {
+        entry->importFile(filename);
+    }
 
-		// Entry removed
-		if (event_name == "entry_removed")
-		{
-			int index;
-			wxUIntPtr ptr;
-			event_data.read(&index, sizeof(int));
-			event_data.read(&ptr, sizeof(wxUIntPtr));
-			if (wxUIntToPtr(ptr) == entry)
-				finished = true;
-		}
 
-		if (finished)
-			delete this;
-	}
+    virtual bool exportEntry() {
+        // Determine export filename/path
+        wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
+        fn.SetExt(entry->getType()->extension());
+
+        // Export entry and start monitoring
+        bool ok = entry->exportFile(fn.GetFullPath());
+        if (ok) {
+            filename = fn.GetFullPath();
+            file_modified = wxFileModificationTime(filename);
+            Start(1000);
+        } else
+            Global::error = "Failed to export entry";
+
+        return ok;
+    }
+
+
+    void onAnnouncement(Announcer *announcer, string event_name, MemChunk &event_data) {
+        if (announcer != archive)
+            return;
+
+        bool finished = false;
+
+        // Entry removed
+        if (event_name == "entry_removed") {
+            int index;
+            wxUIntPtr ptr;
+            event_data.read(&index, sizeof(int));
+            event_data.read(&ptr, sizeof(wxUIntPtr));
+            if (wxUIntToPtr(ptr) == entry)
+                finished = true;
+        }
+
+        if (finished)
+            delete this;
+    }
+
 
 protected:
-	ArchiveEntry*			entry;
-	Archive*                archive;
-	ExternalEditManager*	manager;
-	string					gfx_format;
+    ArchiveEntry *entry;
+    Archive *archive;
+    ExternalEditManager *manager;
+    string gfx_format;
 };
 
 
@@ -132,86 +131,81 @@ protected:
  *******************************************************************
  * ExternalEditFileMonitor subclass to handle gfx entries
  */
-class GfxExternalFileMonitor : public ExternalEditFileMonitor
-{
+class GfxExternalFileMonitor : public ExternalEditFileMonitor {
 public:
-	GfxExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager)
-		: ExternalEditFileMonitor(entry, manager) {}
-	virtual ~GfxExternalFileMonitor() {}
+    GfxExternalFileMonitor(ArchiveEntry *entry, ExternalEditManager *manager)
+        : ExternalEditFileMonitor(entry, manager) {}
 
-	void updateEntry()
-	{
-		// Read file
-		MemChunk data;
-		data.importFile(filename);
 
-		// Read image
-		SImage image;
-		image.open(data, 0, "png");
-		image.convertPaletted(&palette);
+    virtual ~GfxExternalFileMonitor() {}
 
-		// Convert image to entry gfx format
-		SIFormat* format = SIFormat::getFormat(gfx_format);
-		if (format)
-		{
-			MemChunk conv_data;
-			if (format->saveImage(image, conv_data, &palette))
-			{
-				// Update entry data
-				entry->importMemChunk(conv_data);
-				EntryOperations::setGfxOffsets(entry, offsets.x, offsets.y);
-			}
-			else
-			{
-				LOG_MESSAGE(1, "Unable to convert external png to %s", format->getName());
-			}
-		}
-	}
 
-	bool exportEntry()
-	{
-		wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
+    void updateEntry() {
+        // Read file
+        MemChunk data;
+        data.importFile(filename);
 
-		fn.SetExt("png");
+        // Read image
+        SImage image;
+        image.open(data, 0, "png");
+        image.convertPaletted(&palette);
 
-		// Create image from entry
-		SImage image;
-		if (!Misc::loadImageFromEntry(&image, entry))
-		{
-			Global::error = "Could not read graphic";
-			return false;
-		}
+        // Convert image to entry gfx format
+        SIFormat *format = SIFormat::getFormat(gfx_format);
+        if (format) {
+            MemChunk conv_data;
+            if (format->saveImage(image, conv_data, &palette)) {
+                // Update entry data
+                entry->importMemChunk(conv_data);
+                EntryOperations::setGfxOffsets(entry, offsets.x, offsets.y);
+            } else {
+                LOG_MESSAGE(1, "Unable to convert external png to %s", format->getName());
+            }
+        }
+    }
 
-		// Set export info
-		gfx_format = image.getFormat()->getId();
-		offsets = image.offset();
-		palette.copyPalette(MainEditor::currentPalette(entry));
 
-		// Write png data
-		MemChunk png;
-		SIFormat* fmt_png = SIFormat::getFormat("png");
-		if (!fmt_png->saveImage(image, png, &palette))
-		{
-			Global::error = "Error converting to png";
-			return false;
-		}
+    bool exportEntry() {
+        wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
 
-		// Export file and start monitoring if successful
-		filename = fn.GetFullPath();
-		if (png.exportFile(filename))
-		{
-			file_modified = wxFileModificationTime(filename);
-			Start(1000);
-			return true;
-		}
+        fn.SetExt("png");
 
-		return false;
-	}
+        // Create image from entry
+        SImage image;
+        if (!Misc::loadImageFromEntry(&image, entry)) {
+            Global::error = "Could not read graphic";
+            return false;
+        }
+
+        // Set export info
+        gfx_format = image.getFormat()->getId();
+        offsets = image.offset();
+        palette.copyPalette(MainEditor::currentPalette(entry));
+
+        // Write png data
+        MemChunk png;
+        SIFormat *fmt_png = SIFormat::getFormat("png");
+        if (!fmt_png->saveImage(image, png, &palette)) {
+            Global::error = "Error converting to png";
+            return false;
+        }
+
+        // Export file and start monitoring if successful
+        filename = fn.GetFullPath();
+        if (png.exportFile(filename)) {
+            file_modified = wxFileModificationTime(filename);
+            Start(1000);
+            return true;
+        }
+
+        return false;
+    }
+
 
 private:
-	string		gfx_format;
-	point2_t	offsets;
-	Palette	palette;
+    string gfx_format;
+    point2_t offsets;
+    Palette palette;
 };
 
 
@@ -220,71 +214,70 @@ private:
  *******************************************************************
  * ExternalEditFileMonitor subclass to handle MIDI entries
  */
-class MIDIExternalFileMonitor : public ExternalEditFileMonitor
-{
+class MIDIExternalFileMonitor : public ExternalEditFileMonitor {
 public:
-	MIDIExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager)
-		: ExternalEditFileMonitor(entry, manager) {}
-	virtual ~MIDIExternalFileMonitor() {}
+    MIDIExternalFileMonitor(ArchiveEntry *entry, ExternalEditManager *manager)
+        : ExternalEditFileMonitor(entry, manager) {}
 
-	void updateEntry()
-	{
-		// Can't convert back, just import the MIDI
-		entry->importFile(filename);
-	}
 
-	bool exportEntry()
-	{
-		wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
-		fn.SetExt("mid");
+    virtual ~MIDIExternalFileMonitor() {}
 
-		// Convert to MIDI data
-		MemChunk convdata;
 
-		// MUS
-		if (entry->getType()->formatId() == "midi_mus")
-			Conversions::musToMidi(entry->getMCData(), convdata);
+    void updateEntry() {
+        // Can't convert back, just import the MIDI
+        entry->importFile(filename);
+    }
 
-		// HMI/HMP/XMI
-		else if (entry->getType()->formatId() == "midi_xmi" || 
-			entry->getType()->formatId() == "midi_hmi" || entry->getType()->formatId() == "midi_hmp")
-			Conversions::zmusToMidi(entry->getMCData(), convdata, 0);
 
-		// GMID
-		else if (entry->getType()->formatId() == "midi_gmid")
-			Conversions::gmidToMidi(entry->getMCData(), convdata);
+    bool exportEntry() {
+        wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
+        fn.SetExt("mid");
 
-		else
-		{
-			Global::error = S_FMT("Type %s can not be converted to MIDI", CHR(entry->getType()->name()));
-			return false;
-		}
+        // Convert to MIDI data
+        MemChunk convdata;
 
-		// Export file and start monitoring if successful
-		filename = fn.GetFullPath();
-		if (convdata.exportFile(filename))
-		{
-			file_modified = wxFileModificationTime(filename);
-			Start(1000);
-			return true;
-		}
+        // MUS
+        if (entry->getType()->formatId() == "midi_mus")
+            Conversions::musToMidi(entry->getMCData(), convdata);
 
-		return false;
-	}
+            // HMI/HMP/XMI
+        else if (entry->getType()->formatId() == "midi_xmi" ||
+                 entry->getType()->formatId() == "midi_hmi" || entry->getType()->formatId() == "midi_hmp")
+            Conversions::zmusToMidi(entry->getMCData(), convdata, 0);
 
-	static bool canHandleEntry(ArchiveEntry* entry)
-	{
-		if (entry->getType()->formatId() == "midi" ||
-			entry->getType()->formatId() == "midi_mus" ||
-			entry->getType()->formatId() == "midi_xmi" ||
-			entry->getType()->formatId() == "midi_hmi" ||
-			entry->getType()->formatId() == "midi_hmp" ||
-			entry->getType()->formatId() == "midi_gmid"
-			)
-			return true;
-		
-		return false;
-	}
+            // GMID
+        else if (entry->getType()->formatId() == "midi_gmid")
+            Conversions::gmidToMidi(entry->getMCData(), convdata);
+
+        else {
+            Global::error = S_FMT("Type %s can not be converted to MIDI", CHR(entry->getType()->name()));
+            return false;
+        }
+
+        // Export file and start monitoring if successful
+        filename = fn.GetFullPath();
+        if (convdata.exportFile(filename)) {
+            file_modified = wxFileModificationTime(filename);
+            Start(1000);
+            return true;
+        }
+
+        return false;
+    }
+
+
+    static bool canHandleEntry(ArchiveEntry *entry) {
+        if (entry->getType()->formatId() == "midi" ||
+            entry->getType()->formatId() == "midi_mus" ||
+            entry->getType()->formatId() == "midi_xmi" ||
+            entry->getType()->formatId() == "midi_hmi" ||
+            entry->getType()->formatId() == "midi_hmp" ||
+            entry->getType()->formatId() == "midi_gmid"
+            )
+            return true;
+
+        return false;
+    }
 };
 
 
@@ -293,105 +286,103 @@ public:
  *******************************************************************
  * ExternalEditFileMonitor subclass to handle sfx entries
  */
-class SfxExternalFileMonitor : public ExternalEditFileMonitor
-{
+class SfxExternalFileMonitor : public ExternalEditFileMonitor {
 public:
-	SfxExternalFileMonitor(ArchiveEntry* entry, ExternalEditManager* manager)
-		: ExternalEditFileMonitor(entry, manager), doom_sound(true) {}
-	virtual ~SfxExternalFileMonitor() {}
+    SfxExternalFileMonitor(ArchiveEntry *entry, ExternalEditManager *manager)
+        : ExternalEditFileMonitor(entry, manager), doom_sound(true) {}
 
-	void updateEntry()
-	{
-		// Convert back to doom sound if it was originally
-		if (doom_sound)
-		{
-			MemChunk in, out;
-			in.importFile(filename);
-			if (Conversions::wavToDoomSnd(in, out))
-			{
-				// Import converted data to entry if successful
-				entry->importMemChunk(out);
-				return;
-			}
-		}
 
-		// Just import wav to entry if conversion to doom sound
-		// failed or the entry was not a convertable type
-		entry->importFile(filename);
-	}
+    virtual ~SfxExternalFileMonitor() {}
 
-	bool exportEntry()
-	{
-		wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
-		fn.SetExt("mid");
 
-		// Convert to WAV data
-		MemChunk convdata;
+    void updateEntry() {
+        // Convert back to doom sound if it was originally
+        if (doom_sound) {
+            MemChunk in, out;
+            in.importFile(filename);
+            if (Conversions::wavToDoomSnd(in, out)) {
+                // Import converted data to entry if successful
+                entry->importMemChunk(out);
+                return;
+            }
+        }
 
-		// Doom Sound
-		if (entry->getType()->formatId() == "snd_doom" ||
-			entry->getType()->formatId() == "snd_doom_mac")
-			Conversions::doomSndToWav(entry->getMCData(), convdata);
+        // Just import wav to entry if conversion to doom sound
+        // failed or the entry was not a convertable type
+        entry->importFile(filename);
+    }
 
-		// Doom PC Speaker Sound
-		else if (entry->getType()->formatId() == "snd_speaker")
-			Conversions::spkSndToWav(entry->getMCData(), convdata);
 
-		// AudioT PC Speaker Sound
-		else if (entry->getType()->formatId() == "snd_audiot")
-			Conversions::spkSndToWav(entry->getMCData(), convdata, true);
+    bool exportEntry() {
+        wxFileName fn(App::path(entry->getName(), App::Dir::Temp));
+        fn.SetExt("mid");
 
-		// Wolfenstein 3D Sound
-		else if (entry->getType()->formatId() == "snd_wolf")
-			Conversions::wolfSndToWav(entry->getMCData(), convdata);
+        // Convert to WAV data
+        MemChunk convdata;
 
-		// Creative Voice File
-		else if (entry->getType()->formatId() == "snd_voc")
-			Conversions::vocToWav(entry->getMCData(), convdata);
+        // Doom Sound
+        if (entry->getType()->formatId() == "snd_doom" ||
+            entry->getType()->formatId() == "snd_doom_mac")
+            Conversions::doomSndToWav(entry->getMCData(), convdata);
 
-		// Jaguar Doom Sound
-		else if (entry->getType()->formatId() == "snd_jaguar")
-			Conversions::jagSndToWav(entry->getMCData(), convdata);
+            // Doom PC Speaker Sound
+        else if (entry->getType()->formatId() == "snd_speaker")
+            Conversions::spkSndToWav(entry->getMCData(), convdata);
 
-		// Blood Sound
-		else if (entry->getType()->formatId() == "snd_bloodsfx")
-			Conversions::bloodToWav(entry, convdata);
+            // AudioT PC Speaker Sound
+        else if (entry->getType()->formatId() == "snd_audiot")
+            Conversions::spkSndToWav(entry->getMCData(), convdata, true);
 
-		else
-		{
-			Global::error = S_FMT("Type %s can not be converted to WAV", CHR(entry->getType()->name()));
-			return false;
-		}
+            // Wolfenstein 3D Sound
+        else if (entry->getType()->formatId() == "snd_wolf")
+            Conversions::wolfSndToWav(entry->getMCData(), convdata);
 
-		// Export file and start monitoring if successful
-		filename = fn.GetFullPath();
-		if (convdata.exportFile(filename))
-		{
-			file_modified = wxFileModificationTime(filename);
-			Start(1000);
-			return true;
-		}
+            // Creative Voice File
+        else if (entry->getType()->formatId() == "snd_voc")
+            Conversions::vocToWav(entry->getMCData(), convdata);
 
-		return false;
-	}
+            // Jaguar Doom Sound
+        else if (entry->getType()->formatId() == "snd_jaguar")
+            Conversions::jagSndToWav(entry->getMCData(), convdata);
 
-	static bool canHandleEntry(ArchiveEntry* entry)
-	{
-		if (entry->getType()->formatId() == "snd_doom" ||
-			entry->getType()->formatId() == "snd_doom_mac" ||
-			entry->getType()->formatId() == "snd_speaker" ||
-			entry->getType()->formatId() == "snd_audiot" ||
-			entry->getType()->formatId() == "snd_wolf" ||
-			entry->getType()->formatId() == "snd_voc" ||
-			entry->getType()->formatId() == "snd_jaguar" ||
-			entry->getType()->formatId() == "snd_bloodsfx")
-			return true;
+            // Blood Sound
+        else if (entry->getType()->formatId() == "snd_bloodsfx")
+            Conversions::bloodToWav(entry, convdata);
 
-		return false;
-	}
+        else {
+            Global::error = S_FMT("Type %s can not be converted to WAV", CHR(entry->getType()->name()));
+            return false;
+        }
+
+        // Export file and start monitoring if successful
+        filename = fn.GetFullPath();
+        if (convdata.exportFile(filename)) {
+            file_modified = wxFileModificationTime(filename);
+            Start(1000);
+            return true;
+        }
+
+        return false;
+    }
+
+
+    static bool canHandleEntry(ArchiveEntry *entry) {
+        if (entry->getType()->formatId() == "snd_doom" ||
+            entry->getType()->formatId() == "snd_doom_mac" ||
+            entry->getType()->formatId() == "snd_speaker" ||
+            entry->getType()->formatId() == "snd_audiot" ||
+            entry->getType()->formatId() == "snd_wolf" ||
+            entry->getType()->formatId() == "snd_voc" ||
+            entry->getType()->formatId() == "snd_jaguar" ||
+            entry->getType()->formatId() == "snd_bloodsfx")
+            return true;
+
+        return false;
+    }
+
 
 private:
-	bool	doom_sound;
+    bool doom_sound;
 };
 
 
@@ -402,89 +393,85 @@ private:
 /* ExternalEditManager::ExternalEditManager
  * ExternalEditManager class constructor
  *******************************************************************/
-ExternalEditManager::ExternalEditManager()
-{
+ExternalEditManager::ExternalEditManager() {
 }
+
 
 /* ExternalEditManager::~ExternalEditManager
  * ExternalEditManager class destructor
  *******************************************************************/
-ExternalEditManager::~ExternalEditManager()
-{
-	for (unsigned a = 0; a < file_monitors.size(); a++)
-		delete file_monitors[a];
+ExternalEditManager::~ExternalEditManager() {
+    for (unsigned a = 0; a < file_monitors.size(); a++)
+        delete file_monitors[a];
 }
+
 
 /* ExternalEditManager::openEntryExternal
  * Opens [entry] for external editing with [editor] for [category]
  *******************************************************************/
-bool ExternalEditManager::openEntryExternal(ArchiveEntry* entry, string editor, string category)
-{
-	// Check the entry isn't already opened externally
-	for (unsigned a = 0; a < file_monitors.size(); a++)
-		if (file_monitors[a]->getEntry() == entry)
-		{
-			LOG_MESSAGE(1, "Entry %s is already open in an external editor", entry->getName());
-			return true;
-		}
+bool ExternalEditManager::openEntryExternal(ArchiveEntry *entry, string editor, string category) {
+    // Check the entry isn't already opened externally
+    for (unsigned a = 0; a < file_monitors.size(); a++)
+        if (file_monitors[a]->getEntry() == entry) {
+            LOG_MESSAGE(1, "Entry %s is already open in an external editor", entry->getName());
+            return true;
+        }
 
-	// Setup file monitor depending on entry type
-	ExternalEditFileMonitor* monitor = nullptr;
+    // Setup file monitor depending on entry type
+    ExternalEditFileMonitor *monitor = nullptr;
 
-	// Gfx entry
-	if (entry->getType()->editor() == "gfx" && entry->getType()->id() != "png")
-		monitor = new GfxExternalFileMonitor(entry, this);
-	// MIDI entry
-	else if (MIDIExternalFileMonitor::canHandleEntry(entry))
-		monitor = new MIDIExternalFileMonitor(entry, this);
-	// Sfx entry
-	else if (SfxExternalFileMonitor::canHandleEntry(entry))
-		monitor = new SfxExternalFileMonitor(entry, this);
-	// Other entry
-	else
-		monitor = new ExternalEditFileMonitor(entry, this);
+    // Gfx entry
+    if (entry->getType()->editor() == "gfx" && entry->getType()->id() != "png")
+        monitor = new GfxExternalFileMonitor(entry, this);
+        // MIDI entry
+    else if (MIDIExternalFileMonitor::canHandleEntry(entry))
+        monitor = new MIDIExternalFileMonitor(entry, this);
+        // Sfx entry
+    else if (SfxExternalFileMonitor::canHandleEntry(entry))
+        monitor = new SfxExternalFileMonitor(entry, this);
+        // Other entry
+    else
+        monitor = new ExternalEditFileMonitor(entry, this);
 
-	// Export entry to temp file and start monitoring if successful
-	if (!monitor->exportEntry())
-	{
-		delete monitor;
-		return false;
-	}
+    // Export entry to temp file and start monitoring if successful
+    if (!monitor->exportEntry()) {
+        delete monitor;
+        return false;
+    }
 
-	// Get external editor path
-	string exe_path = Executables::getExternalExe(editor, category).path;
+    // Get external editor path
+    string exe_path = Executables::getExternalExe(editor, category).path;
 #ifdef WIN32
-	if (exe_path.IsEmpty() || !wxFileExists(exe_path))
+    if (exe_path.IsEmpty() || !wxFileExists(exe_path))
 #else
-	if (exe_path.IsEmpty())
+    if (exe_path.IsEmpty())
 #endif
-	{
-		Global::error = S_FMT("External editor %s has invalid path", editor);
-		delete monitor;
-		return false;
-	}
+    {
+        Global::error = S_FMT("External editor %s has invalid path", editor);
+        delete monitor;
+        return false;
+    }
 
-	// Run external editor
-	string command = S_FMT("\"%s\" \"%s\"", exe_path, monitor->getFilename());
-	long success = wxExecute(command, wxEXEC_ASYNC, monitor->getProcess());
-	if (success == 0)
-	{
-		Global::error = S_FMT("Failed to launch %s", editor);
-		delete monitor;
-		return false;
-	}
+    // Run external editor
+    string command = S_FMT("\"%s\" \"%s\"", exe_path, monitor->getFilename());
+    long success = wxExecute(command, wxEXEC_ASYNC, monitor->getProcess());
+    if (success == 0) {
+        Global::error = S_FMT("Failed to launch %s", editor);
+        delete monitor;
+        return false;
+    }
 
-	// Add to list of file monitors for tracking
-	file_monitors.push_back(monitor);
+    // Add to list of file monitors for tracking
+    file_monitors.push_back(monitor);
 
-	return true;
+    return true;
 }
+
 
 /* ExternalEditManager::monitorStopped
  * Called when a FileMonitor is stopped/deleted
  *******************************************************************/
-void ExternalEditManager::monitorStopped(ExternalEditFileMonitor* monitor)
-{
-	if (VECTOR_EXISTS(file_monitors, monitor))
-		VECTOR_REMOVE(file_monitors, monitor);
+void ExternalEditManager::monitorStopped(ExternalEditFileMonitor *monitor) {
+    if (VECTOR_EXISTS(file_monitors, monitor))
+        VECTOR_REMOVE(file_monitors, monitor);
 }

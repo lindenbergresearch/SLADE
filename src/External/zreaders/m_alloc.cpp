@@ -36,27 +36,29 @@
 #include <stdlib.h>
 #include <malloc_np.h>
 #elif defined(__APPLE__)
+
 #include <stdlib.h>
 #include <malloc/malloc.h>
+
 #else
 #include <malloc.h>
 #endif
 
 #include "Main.h"
+
 #define I_FatalError(...) Log::error(wxString::Format(__VA_ARGS__))
 
-namespace GC
-{
-	size_t AllocBytes;
+namespace GC {
+size_t AllocBytes;
 }
 
 #ifndef _MSC_VER
-#define _NORMAL_BLOCK			0
-#define _malloc_dbg(s,b,f,l)	malloc(s)
-#define _realloc_dbg(p,s,b,f,l)	realloc(p,s)
+#define _NORMAL_BLOCK            0
+#define _malloc_dbg(s, b, f, l)    malloc(s)
+#define _realloc_dbg(p, s, b, f, l)    realloc(p,s)
 #endif
 #if defined(__APPLE__)
-#define _msize(p)				malloc_size(p)
+#define _msize(p)                malloc_size(p)
 #elif defined(__sun)
 #define _msize(p)				(*((size_t*)(p)-1))
 #elif !defined(_WIN32)
@@ -65,68 +67,69 @@ namespace GC
 
 #ifndef _DEBUG
 #if !defined(__sun)
-void *M_Malloc(size_t size)
-{
-	void *block = malloc(size);
 
-	if (block == NULL)
-		I_FatalError("Could not malloc %zu bytes", size);
 
-	GC::AllocBytes += _msize(block);
-	return block;
+void *M_Malloc(size_t size) {
+    void *block = malloc(size);
+
+    if (block == NULL)
+        I_FatalError("Could not malloc %zu bytes", size);
+
+    GC::AllocBytes += _msize(block);
+    return block;
 }
 
-void *M_Realloc(void *memblock, size_t size)
-{
-	if (memblock != NULL)
-	{
-		GC::AllocBytes -= _msize(memblock);
-	}
-	void *block = realloc(memblock, size);
-	if (block == NULL)
-	{
-		I_FatalError("Could not realloc %zu bytes", size);
-	}
-	GC::AllocBytes += _msize(block);
-	return block;
+
+void *M_Realloc(void *memblock, size_t size) {
+    if (memblock != NULL) {
+        GC::AllocBytes -= _msize(memblock);
+    }
+    void *block = realloc(memblock, size);
+    if (block == NULL) {
+        I_FatalError("Could not realloc %zu bytes", size);
+    }
+    GC::AllocBytes += _msize(block);
+    return block;
 }
+
+
 #else
 void *M_Malloc(size_t size)
 {
-	void *block = malloc(size+sizeof(size_t));
+    void *block = malloc(size+sizeof(size_t));
 
-	if (block == NULL)
-		I_FatalError("Could not malloc %zu bytes", size);
+    if (block == NULL)
+        I_FatalError("Could not malloc %zu bytes", size);
 
-	size_t *sizeStore = (size_t *) block;
-	*sizeStore = size;
-	block = sizeStore+1;
+    size_t *sizeStore = (size_t *) block;
+    *sizeStore = size;
+    block = sizeStore+1;
 
-	GC::AllocBytes += _msize(block);
-	return block;
+    GC::AllocBytes += _msize(block);
+    return block;
 }
 
 void *M_Realloc(void *memblock, size_t size)
 {
-	if(memblock == NULL)
-		return M_Malloc(size);
+    if(memblock == NULL)
+        return M_Malloc(size);
 
-	if (memblock != NULL)
-	{
-		GC::AllocBytes -= _msize(memblock);
-	}
-	void *block = realloc(((size_t*) memblock)-1, size+sizeof(size_t));
-	if (block == NULL)
-	{
-		I_FatalError("Could not realloc %zu bytes", size);
-	}
+    if (memblock != NULL)
+    {
+        GC::AllocBytes -= _msize(memblock);
+    }
+    void *block = realloc(((size_t*) memblock)-1, size+sizeof(size_t));
+    if (block == NULL)
+    {
+        I_FatalError("Could not realloc %zu bytes", size);
+    }
 
-	size_t *sizeStore = (size_t *) block;
-	*sizeStore = size;
-	block = sizeStore+1;
+    size_t *sizeStore = (size_t *) block;
+    *sizeStore = size;
+    block = sizeStore+1;
 
-	GC::AllocBytes += _msize(block);
-	return block;
+    GC::AllocBytes += _msize(block);
+    return block;
 }
 #endif
 #else
@@ -137,88 +140,89 @@ void *M_Realloc(void *memblock, size_t size)
 #if !defined(__sun)
 void *M_Malloc_Dbg(size_t size, const char *file, int lineno)
 {
-	void *block = _malloc_dbg(size, _NORMAL_BLOCK, file, lineno);
+    void *block = _malloc_dbg(size, _NORMAL_BLOCK, file, lineno);
 
-	if (block == NULL)
-		I_FatalError("Could not malloc %zu bytes", size);
+    if (block == NULL)
+        I_FatalError("Could not malloc %zu bytes", size);
 
-	GC::AllocBytes += _msize(block);
-	return block;
+    GC::AllocBytes += _msize(block);
+    return block;
 }
 
 void *M_Realloc_Dbg(void *memblock, size_t size, const char *file, int lineno)
 {
-	if (memblock != NULL)
-	{
-		GC::AllocBytes -= _msize(memblock);
-	}
-	void *block = _realloc_dbg(memblock, size, _NORMAL_BLOCK, file, lineno);
-	if (block == NULL)
-	{
-		I_FatalError("Could not realloc %zu bytes", size);
-	}
-	GC::AllocBytes += _msize(block);
-	return block;
+    if (memblock != NULL)
+    {
+        GC::AllocBytes -= _msize(memblock);
+    }
+    void *block = _realloc_dbg(memblock, size, _NORMAL_BLOCK, file, lineno);
+    if (block == NULL)
+    {
+        I_FatalError("Could not realloc %zu bytes", size);
+    }
+    GC::AllocBytes += _msize(block);
+    return block;
 }
 #else
 void *M_Malloc_Dbg(size_t size, const char *file, int lineno)
 {
-	void *block = _malloc_dbg(size+sizeof(size_t), _NORMAL_BLOCK, file, lineno);
+    void *block = _malloc_dbg(size+sizeof(size_t), _NORMAL_BLOCK, file, lineno);
 
-	if (block == NULL)
-		I_FatalError("Could not malloc %zu bytes", size);
+    if (block == NULL)
+        I_FatalError("Could not malloc %zu bytes", size);
 
-	size_t *sizeStore = (size_t *) block;
-	*sizeStore = size;
-	block = sizeStore+1;
+    size_t *sizeStore = (size_t *) block;
+    *sizeStore = size;
+    block = sizeStore+1;
 
-	GC::AllocBytes += _msize(block);
-	return block;
+    GC::AllocBytes += _msize(block);
+    return block;
 }
 
 void *M_Realloc_Dbg(void *memblock, size_t size, const char *file, int lineno)
 {
-	if(memblock == NULL)
-		return M_Malloc_Dbg(size, file, lineno);
+    if(memblock == NULL)
+        return M_Malloc_Dbg(size, file, lineno);
 
-	if (memblock != NULL)
-	{
-		GC::AllocBytes -= _msize(memblock);
-	}
-	void *block = _realloc_dbg(((size_t*) memblock)-1, size+sizeof(size_t), _NORMAL_BLOCK, file, lineno);
+    if (memblock != NULL)
+    {
+        GC::AllocBytes -= _msize(memblock);
+    }
+    void *block = _realloc_dbg(((size_t*) memblock)-1, size+sizeof(size_t), _NORMAL_BLOCK, file, lineno);
 
-	if (block == NULL)
-	{
-		I_FatalError("Could not realloc %zu bytes", size);
-	}
+    if (block == NULL)
+    {
+        I_FatalError("Could not realloc %zu bytes", size);
+    }
 
-	size_t *sizeStore = (size_t *) block;
-	*sizeStore = size;
-	block = sizeStore+1;
+    size_t *sizeStore = (size_t *) block;
+    *sizeStore = size;
+    block = sizeStore+1;
 
-	GC::AllocBytes += _msize(block);
-	return block;
+    GC::AllocBytes += _msize(block);
+    return block;
 }
 #endif
 #endif
 
 #if !defined(__sun)
-void M_Free (void *block)
-{
-	if (block != NULL)
-	{
-		GC::AllocBytes -= _msize(block);
-		free(block);
-	}
+
+
+void M_Free(void *block) {
+    if (block != NULL) {
+        GC::AllocBytes -= _msize(block);
+        free(block);
+    }
 }
+
+
 #else
 void M_Free (void *block)
 {
-	if(block != NULL)
-	{
-		GC::AllocBytes -= _msize(block);
-		free(((size_t*) block)-1);
-	}
+    if(block != NULL)
+    {
+        GC::AllocBytes -= _msize(block);
+        free(((size_t*) block)-1);
+    }
 }
 #endif
-

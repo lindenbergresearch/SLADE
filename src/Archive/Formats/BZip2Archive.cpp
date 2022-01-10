@@ -41,227 +41,210 @@
 /* BZip2Archive::BZip2Archive
  * BZip2Archive class constructor
  *******************************************************************/
-BZip2Archive::BZip2Archive() : TreelessArchive("bz2")
-{
+BZip2Archive::BZip2Archive() : TreelessArchive("bz2") {
 }
+
 
 /* BZip2Archive::~BZip2Archive
  * BZip2Archive class destructor
  *******************************************************************/
-BZip2Archive::~BZip2Archive()
-{
+BZip2Archive::~BZip2Archive() {
 }
+
 
 /* BZip2Archive::open
  * Reads bzip2 format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool BZip2Archive::open(MemChunk& mc)
-{
-	size_t size = mc.getSize();
-	if (size < 14)
-		return false;
+bool BZip2Archive::open(MemChunk &mc) {
+    size_t size = mc.getSize();
+    if (size < 14)
+        return false;
 
-	// Read header
-	uint8_t header[4];
-	mc.read(header, 4);
+    // Read header
+    uint8_t header[4];
+    mc.read(header, 4);
 
-	// Check for BZip2 header (reject BZip1 headers)
-	if (!(header[0] == 'B' && header[1] == 'Z' && header[2] == 'h' && (header[3] >= '1' && header[3] <= '9')))
-		return false;
+    // Check for BZip2 header (reject BZip1 headers)
+    if (!(header[0] == 'B' && header[1] == 'Z' && header[2] == 'h' && (header[3] >= '1' && header[3] <= '9')))
+        return false;
 
-	// Build name from filename
-	string name = filename(false);
-	wxFileName fn(name);
-	if (!fn.GetExt().CmpNoCase("tbz") || !fn.GetExt().CmpNoCase("tb2") || !fn.GetExt().CmpNoCase("tbz2"))
-		fn.SetExt("tar");
-	else if (!fn.GetExt().CmpNoCase("bz2"))
-		fn.ClearExt();
-	name = fn.GetFullName();
+    // Build name from filename
+    string name = filename(false);
+    wxFileName fn(name);
+    if (!fn.GetExt().CmpNoCase("tbz") || !fn.GetExt().CmpNoCase("tb2") || !fn.GetExt().CmpNoCase("tbz2"))
+        fn.SetExt("tar");
+    else if (!fn.GetExt().CmpNoCase("bz2"))
+        fn.ClearExt();
+    name = fn.GetFullName();
 
-	// Let's create the entry
-	setMuted(true);
-	ArchiveEntry* entry = new ArchiveEntry(name, size);
-	MemChunk xdata;
-	if (Compression::BZip2Decompress(mc, xdata))
-	{
-		entry->importMemChunk(xdata);
-	}
-	else
-	{
-		delete entry;
-		setMuted(false);
-		return false;
-	}
-	rootDir()->addEntry(entry);
-	EntryType::detectEntryType(entry);
-	entry->setState(0);
+    // Let's create the entry
+    setMuted(true);
+    ArchiveEntry *entry = new ArchiveEntry(name, size);
+    MemChunk xdata;
+    if (Compression::BZip2Decompress(mc, xdata)) {
+        entry->importMemChunk(xdata);
+    } else {
+        delete entry;
+        setMuted(false);
+        return false;
+    }
+    rootDir()->addEntry(entry);
+    EntryType::detectEntryType(entry);
+    entry->setState(0);
 
-	setMuted(false);
-	setModified(false);
-	announce("opened");
+    setMuted(false);
+    setModified(false);
+    announce("opened");
 
-	// Finish
-	return true;
+    // Finish
+    return true;
 }
+
 
 /* BZip2Archive::write
  * Writes the BZip2 archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool BZip2Archive::write(MemChunk& mc, bool update)
-{
-	if (numEntries() == 1)
-	{
-		return Compression::BZip2Compress(getEntry(0)->getMCData(), mc);
-	}
-	return false;
+bool BZip2Archive::write(MemChunk &mc, bool update) {
+    if (numEntries() == 1) {
+        return Compression::BZip2Compress(getEntry(0)->getMCData(), mc);
+    }
+    return false;
 }
+
 
 /* BZip2Archive::loadEntryData
  * Loads an entry's data from the BZip2 file
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool BZip2Archive::loadEntryData(ArchiveEntry* entry)
-{
-	return false;
-	// Check the entry is valid and part of this archive
-	if (!checkEntry(entry))
-		return false;
+bool BZip2Archive::loadEntryData(ArchiveEntry *entry) {
+    return false;
+    // Check the entry is valid and part of this archive
+    if (!checkEntry(entry))
+        return false;
 
-	// Do nothing if the lump's size is zero,
-	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
+    // Do nothing if the lump's size is zero,
+    // or if it has already been loaded
+    if (entry->getSize() == 0 || entry->isLoaded()) {
+        entry->setLoaded();
+        return true;
+    }
 
-	// Open archive file
-	wxFile file(filename_);
+    // Open archive file
+    wxFile file(filename_);
 
-	// Check if opening the file failed
-	if (!file.IsOpened())
-	{
-		LOG_MESSAGE(1, "BZip2Archive::loadEntryData: Failed to open gzip file %s", filename_);
-		return false;
-	}
+    // Check if opening the file failed
+    if (!file.IsOpened()) {
+        LOG_MESSAGE(1, "BZip2Archive::loadEntryData: Failed to open gzip file %s", filename_);
+        return false;
+    }
 
-	// Seek to lump offset in file and read it in
-	entry->importFileStream(file, entry->getSize());
+    // Seek to lump offset in file and read it in
+    entry->importFileStream(file, entry->getSize());
 
-	// Set the lump to loaded
-	entry->setLoaded();
-	entry->setState(0);
+    // Set the lump to loaded
+    entry->setLoaded();
+    entry->setState(0);
 
-	return true;
+    return true;
 }
+
 
 /* BZip2Archive::findFirst
  * Returns the entry if it matches the search criteria in [options],
  * or NULL otherwise
  *******************************************************************/
-ArchiveEntry* BZip2Archive::findFirst(SearchOptions& options)
-{
-	// Init search variables
-	options.match_name = options.match_name.Lower();
-	ArchiveEntry* entry = getEntry(0);
-	if (entry == nullptr)
-		return entry;
+ArchiveEntry *BZip2Archive::findFirst(SearchOptions &options) {
+    // Init search variables
+    options.match_name = options.match_name.Lower();
+    ArchiveEntry *entry = getEntry(0);
+    if (entry == nullptr)
+        return entry;
 
-	// Check type
-	if (options.match_type)
-	{
-		if (entry->getType() == EntryType::unknownType())
-		{
-			if (!options.match_type->isThisType(entry))
-			{
-				return nullptr;
-			}
-		}
-		else if (options.match_type != entry->getType())
-		{
-			return nullptr;
-		}
-	}
+    // Check type
+    if (options.match_type) {
+        if (entry->getType() == EntryType::unknownType()) {
+            if (!options.match_type->isThisType(entry)) {
+                return nullptr;
+            }
+        } else if (options.match_type != entry->getType()) {
+            return nullptr;
+        }
+    }
 
-	// Check name
-	if (!options.match_name.IsEmpty())
-	{
-		if (!options.match_name.Matches(entry->getName().Lower()))
-		{
-			return nullptr;
-		}
-	}
+    // Check name
+    if (!options.match_name.IsEmpty()) {
+        if (!options.match_name.Matches(entry->getName().Lower())) {
+            return nullptr;
+        }
+    }
 
-	// Entry passed all checks so far, so we found a match
-	return entry;
+    // Entry passed all checks so far, so we found a match
+    return entry;
 }
+
 
 /* BZip2Archive::findLast
  * Same as findFirst since there's just one entry
  *******************************************************************/
-ArchiveEntry* BZip2Archive::findLast(SearchOptions& options)
-{
-	return findFirst(options);
+ArchiveEntry *BZip2Archive::findLast(SearchOptions &options) {
+    return findFirst(options);
 }
+
 
 /* BZip2Archive::findAll
  * Returns all entries matching the search criteria in [options]
  *******************************************************************/
-vector<ArchiveEntry*> BZip2Archive::findAll(SearchOptions& options)
-{
-	// Init search variables
-	options.match_name = options.match_name.Lower();
-	vector<ArchiveEntry*> ret;
-	if (findFirst(options))
-		ret.push_back(getEntry(0));
-	return ret;
+vector<ArchiveEntry *> BZip2Archive::findAll(SearchOptions &options) {
+    // Init search variables
+    options.match_name = options.match_name.Lower();
+    vector<ArchiveEntry *> ret;
+    if (findFirst(options))
+        ret.push_back(getEntry(0));
+    return ret;
 }
-
 
 
 /* BZip2Archive::isBZip2Archive
  * Checks if the given data is a valid BZip2 archive
  *******************************************************************/
-bool BZip2Archive::isBZip2Archive(MemChunk& mc)
-{
-	size_t size = mc.getSize();
-	if (size < 14)
-		return false;
+bool BZip2Archive::isBZip2Archive(MemChunk &mc) {
+    size_t size = mc.getSize();
+    if (size < 14)
+        return false;
 
-	// Read header
-	uint8_t header[4];
-	mc.read(header, 4);
+    // Read header
+    uint8_t header[4];
+    mc.read(header, 4);
 
-	// Check for BZip2 header (reject BZip1 headers)
-	if (header[0] == 'B' && header[1] == 'Z' && header[2] == 'h' && (header[3] >= '1' && header[3] <= '9'))
-		return true;
+    // Check for BZip2 header (reject BZip1 headers)
+    if (header[0] == 'B' && header[1] == 'Z' && header[2] == 'h' && (header[3] >= '1' && header[3] <= '9'))
+        return true;
 
-	return false;
+    return false;
 }
+
 
 /* BZip2Archive::isBZip2Archive
  * Checks if the file at [filename] is a valid BZip2 archive
  *******************************************************************/
-bool BZip2Archive::isBZip2Archive(string filename)
-{
-	// Open file for reading
-	wxFile file(filename);
+bool BZip2Archive::isBZip2Archive(string filename) {
+    // Open file for reading
+    wxFile file(filename);
 
-	// Check it opened ok
-	if (!file.IsOpened() || file.Length() < 14)
-	{
-		return false;
-	}
+    // Check it opened ok
+    if (!file.IsOpened() || file.Length() < 14) {
+        return false;
+    }
 
-	// Read header
-	uint8_t header[4];
-	file.Read(header, 4);
+    // Read header
+    uint8_t header[4];
+    file.Read(header, 4);
 
-	// Check for BZip2 header (reject BZip1 headers)
-	if (header[0] == 'B' && header[1] == 'Z' && header[2] == 'h' && (header[3] >= '1' && header[3] <= '9'))
-		return true;
+    // Check for BZip2 header (reject BZip1 headers)
+    if (header[0] == 'B' && header[1] == 'Z' && header[2] == 'h' && (header[3] >= '1' && header[3] <= '9'))
+        return true;
 
-	return false;
+    return false;
 }

@@ -34,24 +34,45 @@ const char hello[] = "hello, hello!";
 const char dictionary[] = "hello";
 uLong dictId; /* Adler32 value of the dictionary */
 
-void test_compress      OF((Byte *compr, uLong comprLen,
-                            Byte *uncompr, uLong uncomprLen));
-void test_gzio          OF((const char *fname,
-                            Byte *uncompr, uLong uncomprLen));
-void test_deflate       OF((Byte *compr, uLong comprLen));
-void test_inflate       OF((Byte *compr, uLong comprLen,
-                            Byte *uncompr, uLong uncomprLen));
-void test_large_deflate OF((Byte *compr, uLong comprLen,
-                            Byte *uncompr, uLong uncomprLen));
-void test_large_inflate OF((Byte *compr, uLong comprLen,
-                            Byte *uncompr, uLong uncomprLen));
-void test_flush         OF((Byte *compr, uLong *comprLen));
-void test_sync          OF((Byte *compr, uLong comprLen,
-                            Byte *uncompr, uLong uncomprLen));
-void test_dict_deflate  OF((Byte *compr, uLong comprLen));
-void test_dict_inflate  OF((Byte *compr, uLong comprLen,
-                            Byte *uncompr, uLong uncomprLen));
-int  main               OF((int argc, char *argv[]));
+void test_compress OF((Byte * compr, uLong comprLen,
+    Byte * uncompr, uLong uncomprLen));
+
+
+void test_gzio OF((const char *fname,
+                      Byte *uncompr, uLong uncomprLen));
+
+
+void test_deflate OF((Byte * compr, uLong comprLen));
+
+
+void test_inflate OF((Byte * compr, uLong comprLen,
+    Byte * uncompr, uLong uncomprLen));
+
+
+void test_large_deflate OF((Byte * compr, uLong comprLen,
+    Byte * uncompr, uLong uncomprLen));
+
+
+void test_large_inflate OF((Byte * compr, uLong comprLen,
+    Byte * uncompr, uLong uncomprLen));
+
+
+void test_flush OF((Byte * compr, uLong * comprLen));
+
+
+void test_sync OF((Byte * compr, uLong comprLen,
+    Byte * uncompr, uLong uncomprLen));
+
+
+void test_dict_deflate OF((Byte * compr, uLong comprLen));
+
+
+void test_dict_inflate OF((Byte * compr, uLong comprLen,
+    Byte * uncompr, uLong uncomprLen));
+
+
+int main OF((int argc, char *argv[]));
+
 
 /* ===========================================================================
  * Test compress() and uncompress()
@@ -61,21 +82,21 @@ void test_compress(compr, comprLen, uncompr, uncomprLen)
     uLong comprLen, uncomprLen;
 {
     int err;
-    uLong len = (uLong)strlen(hello)+1;
+    uLong len = (uLong) strlen(hello) + 1;
 
-    err = compress(compr, &comprLen, (const Bytef*)hello, len);
+    err = compress(compr, &comprLen, (const Bytef *) hello, len);
     CHECK_ERR(err, "compress");
 
-    strcpy((char*)uncompr, "garbage");
+    strcpy((char *) uncompr, "garbage");
 
     err = uncompress(uncompr, &uncomprLen, compr, comprLen);
     CHECK_ERR(err, "uncompress");
 
-    if (strcmp((char*)uncompr, hello)) {
+    if (strcmp((char *) uncompr, hello)) {
         fprintf(stderr, "bad uncompress\n");
         exit(1);
     } else {
-        printf("uncompress(): %s\n", (char *)uncompr);
+        printf("uncompress(): %s\n", (char *) uncompr);
     }
 }
 
@@ -83,15 +104,15 @@ void test_compress(compr, comprLen, uncompr, uncomprLen)
  * Test read/write of .gz files
  */
 void test_gzio(fname, uncompr, uncomprLen)
-    const char *fname; /* compressed file name */
-    Byte *uncompr;
-    uLong uncomprLen;
+const char *fname; /* compressed file name */
+      Byte *uncompr;
+      uLong uncomprLen;
 {
 #ifdef NO_GZCOMPRESS
     fprintf(stderr, "NO_GZCOMPRESS -- gz* functions cannot compress\n");
 #else
     int err;
-    int len = (int)strlen(hello)+1;
+    int len = (int) strlen(hello) + 1;
     gzFile file;
     z_off_t pos;
 
@@ -117,23 +138,24 @@ void test_gzio(fname, uncompr, uncomprLen)
         fprintf(stderr, "gzopen error\n");
         exit(1);
     }
-    strcpy((char*)uncompr, "garbage");
+    strcpy((char *) uncompr, "garbage");
 
-    if (gzread(file, uncompr, (unsigned)uncomprLen) != len) {
+    if (gzread(file, uncompr, (unsigned) uncomprLen) != len) {
         fprintf(stderr, "gzread err: %s\n", gzerror(file, &err));
         exit(1);
     }
-    if (strcmp((char*)uncompr, hello)) {
-        fprintf(stderr, "bad gzread: %s\n", (char*)uncompr);
+    if (strcmp((char *) uncompr, hello)) {
+        fprintf(stderr, "bad gzread: %s\n", (char *) uncompr);
         exit(1);
     } else {
-        printf("gzread(): %s\n", (char*)uncompr);
+        printf("gzread(): %s\n", (char *) uncompr);
     }
 
     pos = gzseek(file, -8L, SEEK_CUR);
     if (pos != 6 || gztell(file) != pos) {
-        fprintf(stderr, "gzseek error, pos=%ld, gztell=%ld\n",
-                (long)pos, (long)gztell(file));
+        fprintf(
+            stderr, "gzseek error, pos=%ld, gztell=%ld\n",
+            (long) pos, (long) gztell(file));
         exit(1);
     }
 
@@ -147,16 +169,16 @@ void test_gzio(fname, uncompr, uncomprLen)
         exit(1);
     }
 
-    gzgets(file, (char*)uncompr, (int)uncomprLen);
-    if (strlen((char*)uncompr) != 7) { /* " hello!" */
+    gzgets(file, (char *) uncompr, (int) uncomprLen);
+    if (strlen((char *) uncompr) != 7) { /* " hello!" */
         fprintf(stderr, "gzgets err after gzseek: %s\n", gzerror(file, &err));
         exit(1);
     }
-    if (strcmp((char*)uncompr, hello + 6)) {
+    if (strcmp((char *) uncompr, hello + 6)) {
         fprintf(stderr, "bad gzgets after gzseek\n");
         exit(1);
     } else {
-        printf("gzgets() after gzseek: %s\n", (char*)uncompr);
+        printf("gzgets() after gzseek: %s\n", (char *) uncompr);
     }
 
     gzclose(file);
@@ -172,16 +194,16 @@ void test_deflate(compr, comprLen)
 {
     z_stream c_stream; /* compression stream */
     int err;
-    uLong len = (uLong)strlen(hello)+1;
+    uLong len = (uLong) strlen(hello) + 1;
 
-    c_stream.zalloc = (alloc_func)0;
-    c_stream.zfree = (free_func)0;
-    c_stream.opaque = (voidpf)0;
+    c_stream.zalloc = (alloc_func) 0;
+    c_stream.zfree = (free_func) 0;
+    c_stream.opaque = (voidpf) 0;
 
     err = deflateInit(&c_stream, Z_DEFAULT_COMPRESSION);
     CHECK_ERR(err, "deflateInit");
 
-    c_stream.next_in  = (Bytef*)hello;
+    c_stream.next_in = (Bytef *) hello;
     c_stream.next_out = compr;
 
     while (c_stream.total_in != len && c_stream.total_out < comprLen) {
@@ -211,13 +233,13 @@ void test_inflate(compr, comprLen, uncompr, uncomprLen)
     int err;
     z_stream d_stream; /* decompression stream */
 
-    strcpy((char*)uncompr, "garbage");
+    strcpy((char *) uncompr, "garbage");
 
-    d_stream.zalloc = (alloc_func)0;
-    d_stream.zfree = (free_func)0;
-    d_stream.opaque = (voidpf)0;
+    d_stream.zalloc = (alloc_func) 0;
+    d_stream.zfree = (free_func) 0;
+    d_stream.opaque = (voidpf) 0;
 
-    d_stream.next_in  = compr;
+    d_stream.next_in = compr;
     d_stream.avail_in = 0;
     d_stream.next_out = uncompr;
 
@@ -234,11 +256,11 @@ void test_inflate(compr, comprLen, uncompr, uncomprLen)
     err = inflateEnd(&d_stream);
     CHECK_ERR(err, "inflateEnd");
 
-    if (strcmp((char*)uncompr, hello)) {
+    if (strcmp((char *) uncompr, hello)) {
         fprintf(stderr, "bad inflate\n");
         exit(1);
     } else {
-        printf("inflate(): %s\n", (char *)uncompr);
+        printf("inflate(): %s\n", (char *) uncompr);
     }
 }
 
@@ -252,21 +274,21 @@ void test_large_deflate(compr, comprLen, uncompr, uncomprLen)
     z_stream c_stream; /* compression stream */
     int err;
 
-    c_stream.zalloc = (alloc_func)0;
-    c_stream.zfree = (free_func)0;
-    c_stream.opaque = (voidpf)0;
+    c_stream.zalloc = (alloc_func) 0;
+    c_stream.zfree = (free_func) 0;
+    c_stream.opaque = (voidpf) 0;
 
     err = deflateInit(&c_stream, Z_BEST_SPEED);
     CHECK_ERR(err, "deflateInit");
 
     c_stream.next_out = compr;
-    c_stream.avail_out = (uInt)comprLen;
+    c_stream.avail_out = (uInt) comprLen;
 
     /* At this point, uncompr is still mostly zeroes, so it should compress
      * very well:
      */
     c_stream.next_in = uncompr;
-    c_stream.avail_in = (uInt)uncomprLen;
+    c_stream.avail_in = (uInt) uncomprLen;
     err = deflate(&c_stream, Z_NO_FLUSH);
     CHECK_ERR(err, "deflate");
     if (c_stream.avail_in != 0) {
@@ -277,14 +299,14 @@ void test_large_deflate(compr, comprLen, uncompr, uncomprLen)
     /* Feed in already compressed data and switch to no compression: */
     deflateParams(&c_stream, Z_NO_COMPRESSION, Z_DEFAULT_STRATEGY);
     c_stream.next_in = compr;
-    c_stream.avail_in = (uInt)comprLen/2;
+    c_stream.avail_in = (uInt) comprLen / 2;
     err = deflate(&c_stream, Z_NO_FLUSH);
     CHECK_ERR(err, "deflate");
 
     /* Switch back to compressing mode: */
     deflateParams(&c_stream, Z_BEST_COMPRESSION, Z_FILTERED);
     c_stream.next_in = uncompr;
-    c_stream.avail_in = (uInt)uncomprLen;
+    c_stream.avail_in = (uInt) uncomprLen;
     err = deflate(&c_stream, Z_NO_FLUSH);
     CHECK_ERR(err, "deflate");
 
@@ -307,21 +329,21 @@ void test_large_inflate(compr, comprLen, uncompr, uncomprLen)
     int err;
     z_stream d_stream; /* decompression stream */
 
-    strcpy((char*)uncompr, "garbage");
+    strcpy((char *) uncompr, "garbage");
 
-    d_stream.zalloc = (alloc_func)0;
-    d_stream.zfree = (free_func)0;
-    d_stream.opaque = (voidpf)0;
+    d_stream.zalloc = (alloc_func) 0;
+    d_stream.zfree = (free_func) 0;
+    d_stream.opaque = (voidpf) 0;
 
-    d_stream.next_in  = compr;
-    d_stream.avail_in = (uInt)comprLen;
+    d_stream.next_in = compr;
+    d_stream.avail_in = (uInt) comprLen;
 
     err = inflateInit(&d_stream);
     CHECK_ERR(err, "inflateInit");
 
     for (;;) {
         d_stream.next_out = uncompr;            /* discard the output */
-        d_stream.avail_out = (uInt)uncomprLen;
+        d_stream.avail_out = (uInt) uncomprLen;
         err = inflate(&d_stream, Z_NO_FLUSH);
         if (err == Z_STREAM_END) break;
         CHECK_ERR(err, "large inflate");
@@ -330,7 +352,7 @@ void test_large_inflate(compr, comprLen, uncompr, uncomprLen)
     err = inflateEnd(&d_stream);
     CHECK_ERR(err, "inflateEnd");
 
-    if (d_stream.total_out != 2*uncomprLen + comprLen/2) {
+    if (d_stream.total_out != 2 * uncomprLen + comprLen / 2) {
         fprintf(stderr, "bad large inflate: %ld\n", d_stream.total_out);
         exit(1);
     } else {
@@ -347,19 +369,19 @@ void test_flush(compr, comprLen)
 {
     z_stream c_stream; /* compression stream */
     int err;
-    uInt len = (uInt)strlen(hello)+1;
+    uInt len = (uInt) strlen(hello) + 1;
 
-    c_stream.zalloc = (alloc_func)0;
-    c_stream.zfree = (free_func)0;
-    c_stream.opaque = (voidpf)0;
+    c_stream.zalloc = (alloc_func) 0;
+    c_stream.zfree = (free_func) 0;
+    c_stream.opaque = (voidpf) 0;
 
     err = deflateInit(&c_stream, Z_DEFAULT_COMPRESSION);
     CHECK_ERR(err, "deflateInit");
 
-    c_stream.next_in  = (Bytef*)hello;
+    c_stream.next_in = (Bytef *) hello;
     c_stream.next_out = compr;
     c_stream.avail_in = 3;
-    c_stream.avail_out = (uInt)*comprLen;
+    c_stream.avail_out = (uInt) *comprLen;
     err = deflate(&c_stream, Z_FULL_FLUSH);
     CHECK_ERR(err, "deflate");
 
@@ -386,25 +408,25 @@ void test_sync(compr, comprLen, uncompr, uncomprLen)
     int err;
     z_stream d_stream; /* decompression stream */
 
-    strcpy((char*)uncompr, "garbage");
+    strcpy((char *) uncompr, "garbage");
 
-    d_stream.zalloc = (alloc_func)0;
-    d_stream.zfree = (free_func)0;
-    d_stream.opaque = (voidpf)0;
+    d_stream.zalloc = (alloc_func) 0;
+    d_stream.zfree = (free_func) 0;
+    d_stream.opaque = (voidpf) 0;
 
-    d_stream.next_in  = compr;
+    d_stream.next_in = compr;
     d_stream.avail_in = 2; /* just read the zlib header */
 
     err = inflateInit(&d_stream);
     CHECK_ERR(err, "inflateInit");
 
     d_stream.next_out = uncompr;
-    d_stream.avail_out = (uInt)uncomprLen;
+    d_stream.avail_out = (uInt) uncomprLen;
 
     inflate(&d_stream, Z_NO_FLUSH);
     CHECK_ERR(err, "inflate");
 
-    d_stream.avail_in = (uInt)comprLen-2;   /* read all compressed data */
+    d_stream.avail_in = (uInt) comprLen - 2;   /* read all compressed data */
     err = inflateSync(&d_stream);           /* but skip the damaged part */
     CHECK_ERR(err, "inflateSync");
 
@@ -417,7 +439,7 @@ void test_sync(compr, comprLen, uncompr, uncomprLen)
     err = inflateEnd(&d_stream);
     CHECK_ERR(err, "inflateEnd");
 
-    printf("after inflateSync(): hel%s\n", (char *)uncompr);
+    printf("after inflateSync(): hel%s\n", (char *) uncompr);
 }
 
 /* ===========================================================================
@@ -430,23 +452,24 @@ void test_dict_deflate(compr, comprLen)
     z_stream c_stream; /* compression stream */
     int err;
 
-    c_stream.zalloc = (alloc_func)0;
-    c_stream.zfree = (free_func)0;
-    c_stream.opaque = (voidpf)0;
+    c_stream.zalloc = (alloc_func) 0;
+    c_stream.zfree = (free_func) 0;
+    c_stream.opaque = (voidpf) 0;
 
     err = deflateInit(&c_stream, Z_BEST_COMPRESSION);
     CHECK_ERR(err, "deflateInit");
 
-    err = deflateSetDictionary(&c_stream,
-                               (const Bytef*)dictionary, sizeof(dictionary));
+    err = deflateSetDictionary(
+        &c_stream,
+        (const Bytef *) dictionary, sizeof(dictionary));
     CHECK_ERR(err, "deflateSetDictionary");
 
     dictId = c_stream.adler;
     c_stream.next_out = compr;
-    c_stream.avail_out = (uInt)comprLen;
+    c_stream.avail_out = (uInt) comprLen;
 
-    c_stream.next_in = (Bytef*)hello;
-    c_stream.avail_in = (uInt)strlen(hello)+1;
+    c_stream.next_in = (Bytef *) hello;
+    c_stream.avail_in = (uInt) strlen(hello) + 1;
 
     err = deflate(&c_stream, Z_FINISH);
     if (err != Z_STREAM_END) {
@@ -467,20 +490,20 @@ void test_dict_inflate(compr, comprLen, uncompr, uncomprLen)
     int err;
     z_stream d_stream; /* decompression stream */
 
-    strcpy((char*)uncompr, "garbage");
+    strcpy((char *) uncompr, "garbage");
 
-    d_stream.zalloc = (alloc_func)0;
-    d_stream.zfree = (free_func)0;
-    d_stream.opaque = (voidpf)0;
+    d_stream.zalloc = (alloc_func) 0;
+    d_stream.zfree = (free_func) 0;
+    d_stream.opaque = (voidpf) 0;
 
-    d_stream.next_in  = compr;
-    d_stream.avail_in = (uInt)comprLen;
+    d_stream.next_in = compr;
+    d_stream.avail_in = (uInt) comprLen;
 
     err = inflateInit(&d_stream);
     CHECK_ERR(err, "inflateInit");
 
     d_stream.next_out = uncompr;
-    d_stream.avail_out = (uInt)uncomprLen;
+    d_stream.avail_out = (uInt) uncomprLen;
 
     for (;;) {
         err = inflate(&d_stream, Z_NO_FLUSH);
@@ -490,8 +513,9 @@ void test_dict_inflate(compr, comprLen, uncompr, uncomprLen)
                 fprintf(stderr, "unexpected dictionary");
                 exit(1);
             }
-            err = inflateSetDictionary(&d_stream, (const Bytef*)dictionary,
-                                       sizeof(dictionary));
+            err = inflateSetDictionary(
+                &d_stream, (const Bytef *) dictionary,
+                sizeof(dictionary));
         }
         CHECK_ERR(err, "inflate with dict");
     }
@@ -499,11 +523,11 @@ void test_dict_inflate(compr, comprLen, uncompr, uncomprLen)
     err = inflateEnd(&d_stream);
     CHECK_ERR(err, "inflateEnd");
 
-    if (strcmp((char*)uncompr, hello)) {
+    if (strcmp((char *) uncompr, hello)) {
         fprintf(stderr, "bad inflate with dict\n");
         exit(1);
     } else {
-        printf("inflate with dictionary: %s\n", (char *)uncompr);
+        printf("inflate with dictionary: %s\n", (char *) uncompr);
     }
 }
 
@@ -516,9 +540,9 @@ int main(argc, argv)
     char *argv[];
 {
     Byte *compr, *uncompr;
-    uLong comprLen = 10000*sizeof(int); /* don't overflow on MSDOS */
+    uLong comprLen = 10000 * sizeof(int); /* don't overflow on MSDOS */
     uLong uncomprLen = comprLen;
-    static const char* myVersion = ZLIB_VERSION;
+    static const char *myVersion = ZLIB_VERSION;
 
     if (zlibVersion()[0] != myVersion[0]) {
         fprintf(stderr, "incompatible zlib version\n");
@@ -528,11 +552,12 @@ int main(argc, argv)
         fprintf(stderr, "warning: different zlib version\n");
     }
 
-    printf("zlib version %s = 0x%04x, compile flags = 0x%lx\n",
-            ZLIB_VERSION, ZLIB_VERNUM, zlibCompileFlags());
+    printf(
+        "zlib version %s = 0x%04x, compile flags = 0x%lx\n",
+        ZLIB_VERSION, ZLIB_VERNUM, zlibCompileFlags());
 
-    compr    = (Byte*)calloc((uInt)comprLen, 1);
-    uncompr  = (Byte*)calloc((uInt)uncomprLen, 1);
+    compr = (Byte *) calloc((uInt) comprLen, 1);
+    uncompr = (Byte *) calloc((uInt) uncomprLen, 1);
     /* compr and uncompr are cleared to avoid reading uninitialized
      * data and to ensure that uncompr compresses well.
      */
@@ -543,7 +568,8 @@ int main(argc, argv)
     test_compress(compr, comprLen, uncompr, uncomprLen);
 
     test_gzio((argc > 1 ? argv[1] : TESTFILE),
-              uncompr, uncomprLen);
+              uncompr, uncomprLen
+    );
 
     test_deflate(compr, comprLen);
     test_inflate(compr, comprLen, uncompr, uncomprLen);

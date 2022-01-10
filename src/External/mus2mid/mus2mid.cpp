@@ -32,32 +32,29 @@
 #include "mus2mid.h"
 
 // MUS event codes
-enum musevent
-{
-    mus_releasekey			= 0x00,
-    mus_presskey			= 0x10,
-    mus_pitchwheel			= 0x20,
-    mus_systemevent			= 0x30,
-    mus_changecontroller	= 0x40,
-    mus_scoreend			= 0x60
+enum musevent {
+    mus_releasekey = 0x00,
+    mus_presskey = 0x10,
+    mus_pitchwheel = 0x20,
+    mus_systemevent = 0x30,
+    mus_changecontroller = 0x40,
+    mus_scoreend = 0x60
 };
 
 // MIDI event codes
-enum midievent
-{
-    midi_releasekey			= 0x80,
-    midi_presskey			= 0x90,
-    midi_aftertouchkey		= 0xA0,
-    midi_changecontroller	= 0xB0,
-    midi_changepatch		= 0xC0,
-    midi_aftertouchchannel	= 0xD0,
-    midi_pitchwheel			= 0xE0
+enum midievent {
+    midi_releasekey = 0x80,
+    midi_presskey = 0x90,
+    midi_aftertouchkey = 0xA0,
+    midi_changecontroller = 0xB0,
+    midi_changepatch = 0xC0,
+    midi_aftertouchchannel = 0xD0,
+    midi_pitchwheel = 0xE0
 };
 
 // Structure to hold MUS file header
 #pragma pack(1)
-struct musheader
-{
+struct musheader {
     uint8_t id[4];
     unsigned short scorelength;
     unsigned short scorestart;
@@ -69,15 +66,15 @@ struct musheader
 
 // Standard MIDI type 0 header + track header
 const uint8_t midiheader[] =
-{
-    'M', 'T', 'h', 'd',		// Main header
-    0x00, 0x00, 0x00, 0x06,	// Header size
-    0x00, 0x00,				// MIDI type (0)
-    0x00, 0x01,				// Number of tracks
-    0x00, 0x46,				// Resolution
-    'M', 'T', 'r', 'k',		// Start of track
-    0x00, 0x00, 0x00, 0x00	// Placeholder for track length
-};
+    {
+        'M', 'T', 'h', 'd',        // Main header
+        0x00, 0x00, 0x00, 0x06,    // Header size
+        0x00, 0x00,                // MIDI type (0)
+        0x00, 0x01,                // Number of tracks
+        0x00, 0x46,                // Resolution
+        'M', 'T', 'r', 'k',        // Start of track
+        0x00, 0x00, 0x00, 0x00    // Placeholder for track length
+    };
 
 // Constants
 #define NUM_CHANNELS 16
@@ -87,10 +84,10 @@ const uint8_t midiheader[] =
 
 // Cached channel velocities
 uint8_t channelvelocities[] =
-{
-    127, 127, 127, 127, 127, 127, 127, 127,
-    127, 127, 127, 127, 127, 127, 127, 127
-};
+    {
+        127, 127, 127, 127, 127, 127, 127, 127,
+        127, 127, 127, 127, 127, 127, 127, 127
+    };
 
 // Timestamps between sequences of MUS events
 static unsigned int queuedtime = 0;
@@ -99,28 +96,26 @@ static unsigned int queuedtime = 0;
 static unsigned int tracksize;
 
 const uint8_t controller_map[] =
-{
-    0x00, 0x20, 0x01, 0x07, 0x0A, 0x0B, 0x5B, 0x5D,
-    0x40, 0x43, 0x78, 0x7B, 0x7E, 0x7F, 0x79
-};
+    {
+        0x00, 0x20, 0x01, 0x07, 0x0A, 0x0B, 0x5B, 0x5D,
+        0x40, 0x43, 0x78, 0x7B, 0x7E, 0x7F, 0x79
+    };
 
 int channel_map[NUM_CHANNELS];
 
+
 // Write timestamp to a MIDI file.
-static bool WriteTime(uint32_t time, MemChunk &midioutput)
-{
+static bool WriteTime(uint32_t time, MemChunk &midioutput) {
     uint32_t buffer = time & 0x7F;
     uint8_t writeval;
 
-    while ((time >>= 7) != 0)
-    {
+    while ((time >>= 7) != 0) {
         buffer <<= 8;
         buffer |= ((time & 0x7F) | 0x80);
     }
 
-    for (;;)
-    {
-        writeval = (uint8_t)(buffer & 0xFF);
+    for (;;) {
+        writeval = (uint8_t) (buffer & 0xFF);
 
         if (!midioutput.write(&writeval, 1))
             return false;
@@ -129,18 +124,17 @@ static bool WriteTime(uint32_t time, MemChunk &midioutput)
 
         if ((buffer & 0x80) != 0)
             buffer >>= 8;
-        else
-        {
+        else {
             queuedtime = 0;
             return true;
         }
     }
 }
 
+
 // Write the end of track marker
-static bool WriteEndTrack(MemChunk &midioutput)
-{
-    uint8_t endtrack[] = {0xFF, 0x2F, 0x00};
+static bool WriteEndTrack(MemChunk &midioutput) {
+    uint8_t endtrack[] = { 0xFF, 0x2F, 0x00 };
 
     if (!WriteTime(queuedtime, midioutput))
         return false;
@@ -152,24 +146,24 @@ static bool WriteEndTrack(MemChunk &midioutput)
     return true;
 }
 
+
 // Write a key press event
-static bool WritePressKey(uint8_t channel, uint8_t key, uint8_t velocity, MemChunk &midioutput)
-{
-	// Write queued time
+static bool WritePressKey(uint8_t channel, uint8_t key, uint8_t velocity, MemChunk &midioutput) {
+    // Write queued time
     if (!WriteTime(queuedtime, midioutput))
         return false;
 
-	// Write pressed key and channel
+    // Write pressed key and channel
     uint8_t working = midi_presskey | channel;
     if (!midioutput.write(&working, 1))
         return false;
 
-	// Write key
+    // Write key
     working = key & 0x7F;
     if (!midioutput.write(&working, 1))
         return false;
 
-	// Wite velocity
+    // Wite velocity
     working = velocity & 0x7F;
     if (!midioutput.write(&working, 1))
         return false;
@@ -179,25 +173,25 @@ static bool WritePressKey(uint8_t channel, uint8_t key, uint8_t velocity, MemChu
     return true;
 }
 
-// Write a key release event
-static bool WriteReleaseKey(uint8_t channel, uint8_t key, MemChunk &midioutput)
-{
 
-	// Write queued time
+// Write a key release event
+static bool WriteReleaseKey(uint8_t channel, uint8_t key, MemChunk &midioutput) {
+
+    // Write queued time
     if (!WriteTime(queuedtime, midioutput))
         return false;
 
-	// Write released key
+    // Write released key
     uint8_t working = midi_releasekey | channel;
     if (!midioutput.write(&working, 1))
         return false;
 
-	// Write key
+    // Write key
     working = key & 0x7F;
     if (!midioutput.write(&working, 1))
         return false;
 
-	// Dummy
+    // Dummy
     working = 0;
     if (!midioutput.write(&working, 1))
         return false;
@@ -207,10 +201,10 @@ static bool WriteReleaseKey(uint8_t channel, uint8_t key, MemChunk &midioutput)
     return true;
 }
 
+
 // Write a pitch wheel/bend event
-static bool WritePitchWheel(uint8_t channel, int16_t wheel, MemChunk &midioutput)
-{
-	// Write queued time
+static bool WritePitchWheel(uint8_t channel, int16_t wheel, MemChunk &midioutput) {
+    // Write queued time
     if (!WriteTime(queuedtime, midioutput))
         return false;
 
@@ -230,10 +224,10 @@ static bool WritePitchWheel(uint8_t channel, int16_t wheel, MemChunk &midioutput
     return true;
 }
 
+
 // Write a patch change event
-static bool WriteChangePatch(uint8_t channel, uint8_t patch, MemChunk &midioutput)
-{
-	// Write queued time
+static bool WriteChangePatch(uint8_t channel, uint8_t patch, MemChunk &midioutput) {
+    // Write queued time
     if (!WriteTime(queuedtime, midioutput))
         return false;
 
@@ -252,9 +246,8 @@ static bool WriteChangePatch(uint8_t channel, uint8_t patch, MemChunk &midioutpu
 
 // Write a valued controller change event
 
-static bool WriteChangeController_Valued(uint8_t channel, uint8_t control, uint8_t value, MemChunk &midioutput)
-{
-	// Write queued time
+static bool WriteChangeController_Valued(uint8_t channel, uint8_t control, uint8_t value, MemChunk &midioutput) {
+    // Write queued time
     if (!WriteTime(queuedtime, midioutput))
         return false;
 
@@ -267,7 +260,7 @@ static bool WriteChangeController_Valued(uint8_t channel, uint8_t control, uint8
         return false;
 
     // Quirk in vanilla DOOM? MUS controller values should be 7-bit, not 8-bit.
-	working = value & 0x80 ? 0x7F : value;
+    working = value & 0x80 ? 0x7F : value;
     if (!midioutput.write(&working, 1))
         return false;
 
@@ -276,15 +269,15 @@ static bool WriteChangeController_Valued(uint8_t channel, uint8_t control, uint8
     return true;
 }
 
+
 // Write a valueless controller change event
-static bool WriteChangeController_Valueless(uint8_t channel, uint8_t control, MemChunk &midioutput)
-{
+static bool WriteChangeController_Valueless(uint8_t channel, uint8_t control, MemChunk &midioutput) {
     return WriteChangeController_Valued(channel, control, 0, midioutput);
 }
 
+
 // Allocate a free MIDI channel.
-static int AllocateMIDIChannel()
-{
+static int AllocateMIDIChannel() {
     int result;
     int max;
     int i;
@@ -293,10 +286,8 @@ static int AllocateMIDIChannel()
 
     max = -1;
 
-    for (i=0; i<NUM_CHANNELS; ++i)
-    {
-        if (channel_map[i] > max)
-        {
+    for (i = 0; i < NUM_CHANNELS; ++i) {
+        if (channel_map[i] > max) {
             max = channel_map[i];
         }
     }
@@ -309,31 +300,26 @@ static int AllocateMIDIChannel()
 
     // Don't allocate the MIDI percussion channel!
 
-    if (result == MIDI_PERCUSSION_CHAN)
-    {
+    if (result == MIDI_PERCUSSION_CHAN) {
         ++result;
     }
 
     return result;
 }
 
+
 // Given a MUS channel number, get the MIDI channel number to use in the outputted file.
-static int GetMIDIChannel(int mus_channel)
-{
+static int GetMIDIChannel(int mus_channel) {
     // Find the MIDI channel to use for this MUS channel.
     // MUS channel 15 is the percusssion channel.
 
-    if (mus_channel == MUS_PERCUSSION_CHAN)
-    {
+    if (mus_channel == MUS_PERCUSSION_CHAN) {
         return MIDI_PERCUSSION_CHAN;
-    }
-    else
-    {
+    } else {
         // If a MIDI channel hasn't been allocated for this MUS channel
         // yet, allocate the next free MIDI channel.
 
-        if (channel_map[mus_channel] == -1)
-        {
+        if (channel_map[mus_channel] == -1) {
             channel_map[mus_channel] = AllocateMIDIChannel();
         }
 
@@ -341,13 +327,13 @@ static int GetMIDIChannel(int mus_channel)
     }
 }
 
-static bool ReadMusHeader(MemChunk& file, musheader *header)
-{
- 	if (file.getSize() >= sizeof(musheader)) {
-		const uint8_t * data = file.getData();
-		memcpy(header, data, sizeof(musheader));
-		return true;
-	}
+
+static bool ReadMusHeader(MemChunk &file, musheader *header) {
+    if (file.getSize() >= sizeof(musheader)) {
+        const uint8_t *data = file.getData();
+        memcpy(header, data, sizeof(musheader));
+        return true;
+    }
     return false;
 }
 
@@ -357,8 +343,7 @@ static bool ReadMusHeader(MemChunk& file, musheader *header)
 //
 // Returns true if successful, false otherwise
 
-bool mus2mid(MemChunk& musinput, MemChunk& midioutput)
-{
+bool mus2mid(MemChunk &musinput, MemChunk &midioutput) {
     // Header for the MUS file
     musheader musfileheader;
 
@@ -385,8 +370,7 @@ bool mus2mid(MemChunk& musinput, MemChunk& midioutput)
     unsigned int timedelay;
 
     // Initialise channel map to mark all channels as unused.
-    for (channel=0; channel<NUM_CHANNELS; ++channel)
-    {
+    for (channel = 0; channel < NUM_CHANNELS; ++channel) {
         channel_map[channel] = -1;
     }
 
@@ -396,28 +380,25 @@ bool mus2mid(MemChunk& musinput, MemChunk& midioutput)
 
     // Check MUS header
     if (musfileheader.id[0] != 'M' || musfileheader.id[1] != 'U'
-		|| musfileheader.id[2] != 'S' || musfileheader.id[3] != 0x1A)
-    {
+        || musfileheader.id[2] != 'S' || musfileheader.id[3] != 0x1A) {
         return false;
     }
 
     // Seek to where the data is held
-    if (!musinput.seek((long)musfileheader.scorestart, SEEK_SET))
+    if (!musinput.seek((long) musfileheader.scorestart, SEEK_SET))
         return false;
 
     // So, we can assume the MUS file is faintly legit. Let's start writing MIDI data...
 
-	midioutput.clear();
-	midioutput.write(midiheader, sizeof(midiheader));
+    midioutput.clear();
+    midioutput.write(midiheader, sizeof(midiheader));
     tracksize = 0;
 
     // Now, process the MUS file:
-    while (!hitscoreend)
-    {
+    while (!hitscoreend) {
         // Handle a block of events:
 
-        while (!hitscoreend)
-        {
+        while (!hitscoreend) {
             // Fetch channel number and event code:
 
             if (!musinput.read(&eventdescriptor, 1))
@@ -426,8 +407,7 @@ bool mus2mid(MemChunk& musinput, MemChunk& midioutput)
             channel = GetMIDIChannel(eventdescriptor & 0x0F);
             mus_event = eventdescriptor & 0x70;
 
-            switch (mus_event)
-            {
+            switch (mus_event) {
                 case mus_releasekey:
                     if (!musinput.read(&key, 1))
                         return false;
@@ -441,8 +421,7 @@ bool mus2mid(MemChunk& musinput, MemChunk& midioutput)
                     if (!musinput.read(&key, 1))
                         return false;
 
-                    if (key & 0x80)
-                    {
+                    if (key & 0x80) {
                         if (!musinput.read(&channelvelocities[channel], 1))
                             return false;
 
@@ -458,7 +437,7 @@ bool mus2mid(MemChunk& musinput, MemChunk& midioutput)
                     if (!musinput.read(&key, 1))
                         break;
 
-					if (!WritePitchWheel(channel, (short)(key * 64), midioutput))
+                    if (!WritePitchWheel(channel, (short) (key * 64), midioutput))
                         return false;
 
                     break;
@@ -467,7 +446,7 @@ bool mus2mid(MemChunk& musinput, MemChunk& midioutput)
                     if (!musinput.read(&controllernumber, 1))
                         return false;
 
-					if (controllernumber < 10 || controllernumber > 14)
+                    if (controllernumber < 10 || controllernumber > 14)
                         return false;
 
                     if (!WriteChangeController_Valueless(channel, controller_map[controllernumber], midioutput))
@@ -482,18 +461,17 @@ bool mus2mid(MemChunk& musinput, MemChunk& midioutput)
                     if (!musinput.read(&controllervalue, 1))
                         return false;
 
-                    if (controllernumber == 0)
-                    {
+                    if (controllernumber == 0) {
                         if (!WriteChangePatch(channel, controllervalue, midioutput))
                             return false;
-                    }
-                    else
-                    {
+                    } else {
                         if (controllernumber < 1 || controllernumber > 9)
                             return false;
 
-                        if (!WriteChangeController_Valued(channel, controller_map[controllernumber], 
-								controllervalue, midioutput))
+                        if (!WriteChangeController_Valued(
+                            channel, controller_map[controllernumber],
+                            controllervalue, midioutput
+                        ))
                             return false;
                     }
 
@@ -512,11 +490,9 @@ bool mus2mid(MemChunk& musinput, MemChunk& midioutput)
                 break;
         }
         // Now we need to read the time code:
-        if (!hitscoreend)
-        {
+        if (!hitscoreend) {
             timedelay = 0;
-            for (;;)
-            {
+            for (;;) {
                 if (!musinput.read(&working, 1))
                     return false;
 
@@ -529,14 +505,13 @@ bool mus2mid(MemChunk& musinput, MemChunk& midioutput)
     }
 
     // End of track
-    if (!WriteEndTrack(midioutput))
-    {
+    if (!WriteEndTrack(midioutput)) {
         return false;
     }
 
     // Write the track size into the stream
-	if (!midioutput.seek(MIDI_TRACKLENGTH_OFS, SEEK_SET))
-		return false;
+    if (!midioutput.seek(MIDI_TRACKLENGTH_OFS, SEEK_SET))
+        return false;
 
     tracksizebuffer[0] = (tracksize >> 24) & 0xff;
     tracksizebuffer[1] = (tracksize >> 16) & 0xff;

@@ -52,15 +52,13 @@ EXTERN_CVAR(Bool, web_dark_theme)
 // Local Functions
 //
 // ----------------------------------------------------------------------------
-namespace
-{
-	string docsUrl()
-	{
-		static const string docs_url =		"http://slade.mancubus.net/embedwiki.php";
-		static const string docs_url_dark =	"http://slade.mancubus.net/embedwiki-dark.php";
+namespace {
+string docsUrl() {
+    static const string docs_url = "http://slade.mancubus.net/embedwiki.php";
+    static const string docs_url_dark = "http://slade.mancubus.net/embedwiki-dark.php";
 
-		return web_dark_theme ? docs_url_dark : docs_url;
-	}
+    return web_dark_theme ? docs_url_dark : docs_url;
+}
 }
 
 
@@ -76,156 +74,154 @@ namespace
 //
 // DocsPage class constructor
 // ----------------------------------------------------------------------------
-DocsPage::DocsPage(wxWindow* parent) : wxPanel(parent, -1)
-{
-	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(sizer);
+DocsPage::DocsPage(wxWindow *parent) : wxPanel(parent, -1) {
+    // Setup sizer
+    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(sizer);
 
-	// Create toolbar
-	toolbar = new SToolBar(this);
-	sizer->Add(toolbar, 0, wxEXPAND);
+    // Create toolbar
+    toolbar = new SToolBar(this);
+    sizer->Add(toolbar, 0, wxEXPAND);
 
-	// Toolbar 'Navigation' group
-	SToolBarGroup* g_nav = new SToolBarGroup(toolbar, "Navigation");
-	tb_back = g_nav->addActionButton("back", "Back", "left", "Go back");
-	tb_forward = g_nav->addActionButton("forward", "Forward", "right", "Go forward");
-	toolbar->addGroup(g_nav);
+    // Toolbar 'Navigation' group
+    SToolBarGroup *g_nav = new SToolBarGroup(toolbar, "Navigation");
+    tb_back = g_nav->addActionButton("back", "Back", "left", "Go back");
+    tb_forward = g_nav->addActionButton("forward", "Forward", "right", "Go forward");
+    toolbar->addGroup(g_nav);
 
-	// Toolbar 'Links' group
-	SToolBarGroup* g_links = new SToolBarGroup(toolbar, "Links");
-	tb_home = g_links->addActionButton("home", "Home", "wiki", "Return to the SLADE Documentation Wiki main page", true);
-	g_links->addActionButton("tutorials", "Tutorials", "wiki", "Go to the tutorials index", true);
-	g_links->addActionButton("index", "Wiki Index", "wiki", "Go to the wiki index", true);
-	if (Global::debug)
-		g_links->addActionButton("edit", "Edit on GitHub", "wiki", "Edit this page on GitHub", true);
-	toolbar->addGroup(g_links);
+    // Toolbar 'Links' group
+    SToolBarGroup *g_links = new SToolBarGroup(toolbar, "Links");
+    tb_home = g_links->addActionButton("home", "Home", "wiki", "Return to the SLADE Documentation Wiki main page", true);
+    g_links->addActionButton("tutorials", "Tutorials", "wiki", "Go to the tutorials index", true);
+    g_links->addActionButton("index", "Wiki Index", "wiki", "Go to the wiki index", true);
+    if (Global::debug)
+        g_links->addActionButton("edit", "Edit on GitHub", "wiki", "Edit this page on GitHub", true);
+    toolbar->addGroup(g_links);
 
-	// Create browser
-	wv_browser = wxWebView::New(this, -1, wxEmptyString);
-	wv_browser->SetZoomType(wxWEBVIEW_ZOOM_TYPE_LAYOUT);
-	sizer->Add(wv_browser, 1, wxEXPAND);
+    // Create browser
+    wv_browser = wxWebView::New(this, -1, wxEmptyString);
+    wv_browser->SetZoomType(wxWEBVIEW_ZOOM_TYPE_LAYOUT);
+    sizer->Add(wv_browser, 1, wxEXPAND);
 
-	// Load initial docs page
-	wv_browser->ClearHistory();
-	wv_browser->LoadURL(docsUrl());
+    // Load initial docs page
+    wv_browser->ClearHistory();
+    wv_browser->LoadURL(docsUrl());
 
-	// Bind button events
-	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &DocsPage::onToolbarButton, this, toolbar->GetId());
-	wv_browser->Bind(wxEVT_WEBVIEW_NAVIGATING, &DocsPage::onHTMLLinkClicked, this);
-	wv_browser->Bind(wxEVT_WEBVIEW_LOADED, &DocsPage::onNavigationDone, this);
+    // Bind button events
+    Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &DocsPage::onToolbarButton, this, toolbar->GetId());
+    wv_browser->Bind(wxEVT_WEBVIEW_NAVIGATING, &DocsPage::onHTMLLinkClicked, this);
+    wv_browser->Bind(wxEVT_WEBVIEW_LOADED, &DocsPage::onNavigationDone, this);
 }
+
 
 // ----------------------------------------------------------------------------
 // DocsPage::~DocsPage
 //
 // DocsPage class destructor
 // ----------------------------------------------------------------------------
-DocsPage::~DocsPage()
-{
+DocsPage::~DocsPage() {
 }
+
 
 // ----------------------------------------------------------------------------
 // DocsPage::updateNavButtons
 //
 // Enables/disables the navigation buttons
 // ----------------------------------------------------------------------------
-void DocsPage::updateNavButtons()
-{
-	tb_back->Enable(wv_browser->CanGoBack());
-	tb_forward->Enable(wv_browser->CanGoForward());
-	toolbar->updateLayout(true);
+void DocsPage::updateNavButtons() {
+    tb_back->Enable(wv_browser->CanGoBack());
+    tb_forward->Enable(wv_browser->CanGoForward());
+    toolbar->updateLayout(true);
 
-	/*if (wv_browser->CanGoBack())
-		LOG_MESSAGE(0, "Can Go Back");
+    /*if (wv_browser->CanGoBack())
+        LOG_MESSAGE(0, "Can Go Back");
 
-	if (wv_browser->CanGoForward())
-		LOG_MESSAGE(0, "Can Go Forward");*/
+    if (wv_browser->CanGoForward())
+        LOG_MESSAGE(0, "Can Go Forward");*/
 }
+
 
 // ----------------------------------------------------------------------------
 // DocsPage::openPage
 //
 // Loads the wiki page [page_name]
 // ----------------------------------------------------------------------------
-void DocsPage::openPage(string page_name)
-{
-	wv_browser->LoadURL(docsUrl() + "?page=" + page_name);
+void DocsPage::openPage(string page_name) {
+    wv_browser->LoadURL(docsUrl() + "?page=" + page_name);
 }
+
 
 // ----------------------------------------------------------------------------
 // DocsPage::onToolbarButton
 //
 // Called when a toolbar button is clicked
 // ----------------------------------------------------------------------------
-void DocsPage::onToolbarButton(wxCommandEvent& e)
-{
-	string button = e.GetString();
+void DocsPage::onToolbarButton(wxCommandEvent &e) {
+    string button = e.GetString();
 
-	// Back
-	if (button == "back" && wv_browser->CanGoBack())
-		wv_browser->GoBack();
+    // Back
+    if (button == "back" && wv_browser->CanGoBack())
+        wv_browser->GoBack();
 
-	// Forward
-	else if (button == "forward" && wv_browser->CanGoForward())
-		wv_browser->GoForward();
+        // Forward
+    else if (button == "forward" && wv_browser->CanGoForward())
+        wv_browser->GoForward();
 
-	// Home
-	else if (button == "home")
-		wv_browser->LoadURL(docsUrl());
+        // Home
+    else if (button == "home")
+        wv_browser->LoadURL(docsUrl());
 
-	// Tutorials
-	else if (button == "tutorials")
-		wv_browser->LoadURL(docsUrl() + "?page=Tutorials");
+        // Tutorials
+    else if (button == "tutorials")
+        wv_browser->LoadURL(docsUrl() + "?page=Tutorials");
 
-	// Index
-	else if (button == "index")
-		wv_browser->LoadURL(docsUrl() + "?page=Wiki-Index");
+        // Index
+    else if (button == "index")
+        wv_browser->LoadURL(docsUrl() + "?page=Wiki-Index");
 
-	// Edit
-	else if (button == "edit")
-	{
-		// Stuff
-		string page = wv_browser->GetCurrentURL().AfterLast('=');
-		wxLaunchDefaultBrowser("https://github.com/sirjuddington/SLADE/wiki/" + page + "/_edit");
-	}
+        // Edit
+    else if (button == "edit") {
+        // Stuff
+        string page = wv_browser->GetCurrentURL().AfterLast('=');
+        wxLaunchDefaultBrowser("https://github.com/sirjuddington/SLADE/wiki/" + page + "/_edit");
+    }
 
-	// None
-	else
-		return;
+        // None
+    else
+        return;
 
-	updateNavButtons();
+    updateNavButtons();
 }
+
 
 // ----------------------------------------------------------------------------
 // DocsPage::onHTMLLinkClicked
 //
 // Called when a link is clicked in the browser
 // ----------------------------------------------------------------------------
-void DocsPage::onHTMLLinkClicked(wxEvent& e)
-{
-	wxWebViewEvent& ev = (wxWebViewEvent&)e;
-	string href = ev.GetURL();
+void DocsPage::onHTMLLinkClicked(wxEvent &e) {
+    wxWebViewEvent &ev = (wxWebViewEvent &) e;
+    string href = ev.GetURL();
 
-	// Open external links externally
-	if (!href.StartsWith(docsUrl()))
-	{
-		wxLaunchDefaultBrowser(href);
-		ev.Veto();
-	}
+    // Open external links externally
+    if (!href.StartsWith(docsUrl())) {
+        wxLaunchDefaultBrowser(href);
+        ev.Veto();
+    }
 }
+
 
 // ----------------------------------------------------------------------------
 // DocsPage::onNavigationDone
 //
 // Called when a page finishes loading in the browser
 // ----------------------------------------------------------------------------
-void DocsPage::onNavigationDone(wxEvent& e)
-{
-	updateNavButtons();
+void DocsPage::onNavigationDone(wxEvent &e) {
+    updateNavButtons();
 
-	//wxWebViewEvent& ev = (wxWebViewEvent&)e;
-	//LOG_MESSAGE(0, ev.GetURL());
+    //wxWebViewEvent& ev = (wxWebViewEvent&)e;
+    //LOG_MESSAGE(0, ev.GetURL());
 }
+
 
 #endif//USE_WEBVIEW_STARTPAGE

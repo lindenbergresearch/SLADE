@@ -23,16 +23,14 @@
 #include "internal/dumb.h"
 
 
+const char *duh_get_tag(DUH *duh, const char *key) {
+    int i;
+    ASSERT(key);
+    if (!duh || !duh->tag) return NULL;
 
-const char *duh_get_tag(DUH *duh, const char *key)
-{
-	int i;
-	ASSERT(key);
-	if (!duh || !duh->tag) return NULL;
+    for (i = 0; i < duh->n_tags; i++)
+        if (strcmp(key, duh->tag[i][0]) == 0)
+            return duh->tag[i][1];
 
-	for (i = 0; i < duh->n_tags; i++)
-		if (strcmp(key, duh->tag[i][0]) == 0)
-			return duh->tag[i][1];
-
-	return NULL;
+    return NULL;
 }

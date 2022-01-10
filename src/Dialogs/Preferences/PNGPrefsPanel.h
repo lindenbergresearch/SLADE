@@ -2,21 +2,29 @@
 
 #include "PrefsPanelBase.h"
 
+
 class FileLocationPanel;
 
-class PNGPrefsPanel : public PrefsPanelBase
-{
+
+class PNGPrefsPanel : public PrefsPanelBase {
 public:
-	PNGPrefsPanel(wxWindow* parent);
-	~PNGPrefsPanel();
+    PNGPrefsPanel(wxWindow *parent);
 
-	void	init() override;
-	void	applyPreferences() override;
 
-	string pageTitle() override { return "PNG Optimization Tools"; }
+    ~PNGPrefsPanel();
+
+
+    void init() override;
+
+
+    void applyPreferences() override;
+
+
+    string pageTitle() override { return "PNG Optimization Tools"; }
+
 
 private:
-	FileLocationPanel*	flp_pngout_;
-	FileLocationPanel*	flp_pngcrush_;
-	FileLocationPanel*	flp_deflopt_;
+    FileLocationPanel *flp_pngout_;
+    FileLocationPanel *flp_pngcrush_;
+    FileLocationPanel *flp_deflopt_;
 };

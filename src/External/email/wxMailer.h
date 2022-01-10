@@ -6,8 +6,8 @@
 
 #include "wxEmailMessage.h"
 
-class wxMailer
-{
+
+class wxMailer {
     wxString m_email;
     wxString m_password;
     wxString m_smtp;
@@ -20,14 +20,18 @@ public:
      * @param smtpURL the smtp URL, for gmail it will be something like:
      * "smtps://smtp.gmail.com:465"
      */
-    wxMailer(const wxString& email, const wxString& password, const wxString& smtpURL);
+    wxMailer(const wxString &email, const wxString &password, const wxString &smtpURL);
+
+
     virtual ~wxMailer();
+
 
     /**
      * @brief send an email
      * @param message
      */
-    bool Send(const wxEmailMessage& message);
+    bool Send(const wxEmailMessage &message);
 };
+
 
 #endif // WXMAILER_H

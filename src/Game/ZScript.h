@@ -3,197 +3,271 @@
 #include "Utility/PropertyList/PropertyList.h"
 #include "ThingType.h"
 
+
 class Archive;
+
+
 class ArchiveEntry;
+
+
 class Tokenizer;
 
-namespace ZScript
+namespace ZScript {
+struct ParsedStatement {
+    ArchiveEntry *entry = nullptr;
+    unsigned line;
+
+    vector<string> tokens;
+    vector<ParsedStatement> block;
+
+
+    bool parse(Tokenizer &tz);
+
+
+    void dump(int indent = 0);
+};
+
+
+class Enumerator {
+public:
+    Enumerator(string name = "") : name_{ name } {}
+
+
+    struct Value {
+        string name;
+        int value;
+        //Value() : name{name}, value{0} {}
+    };
+
+
+    bool parse(ParsedStatement &statement);
+
+
+private:
+    string name_;
+    vector<Value> values_;
+};
+
+
+class Identifier    // rename this
 {
-	struct ParsedStatement
-	{
-		ArchiveEntry*	entry = nullptr;
-		unsigned		line;
+public:
+    Identifier(string name = "") : name_{ name }, native_{ false } {}
 
-		vector<string>			tokens;
-		vector<ParsedStatement>	block;
 
-		bool	parse(Tokenizer& tz);
-		void	dump(int indent = 0);
-	};
+    virtual ~Identifier() {}
 
-	class Enumerator
-	{
-	public:
-		Enumerator(string name = "") : name_{ name } {}
 
-		struct Value
-		{
-			string	name;
-			int		value;
-			//Value() : name{name}, value{0} {}
-		};
+    string name() const { return name_; }
 
-		bool parse(ParsedStatement& statement);
 
-	private:
-		string			name_;
-		vector<Value>	values_;
-	};
+    bool native() const { return native_; }
 
-	class Identifier	// rename this
-	{
-	public:
-		Identifier(string name = "") : name_{ name }, native_{ false } {}
-		virtual ~Identifier() {}
 
-		string	name() const { return name_; }
-		bool	native() const { return native_; }
-		string	deprecated() const { return deprecated_; }
-		string	version() const { return version_; }
+    string deprecated() const { return deprecated_; }
 
-	protected:
-		string	name_;
-		bool	native_		= false;
-		string	deprecated_;
-		string	version_;
-	};
 
-	class Variable : public Identifier
-	{
-	public:
-		Variable(string name = "") : Identifier(name), type_{ "<unknown>" } {}
-		virtual ~Variable() {}
+    string version() const { return version_; }
 
-	private:
-		string	type_;
-	};
 
-	class Function : public Identifier
-	{
-	public:
-		Function(string name = {}, string def_class = {}) :
-			Identifier(name), return_type_{ "void" }, base_class_{ def_class }
-		{
-		}
-        
-		virtual ~Function() = default;
+protected:
+    string name_;
+    bool native_ = false;
+    string deprecated_;
+    string version_;
+};
 
-		struct Parameter
-		{
-			string name;
-			string type;
-			string default_value;
-			Parameter() : name{ "<unknown>" }, type{ "<unknown>" }, default_value{ "" } {}
 
-			unsigned parse(const vector<string>& tokens, unsigned start_index);
-		};
+class Variable : public Identifier {
+public:
+    Variable(string name = "") : Identifier(name), type_{ "<unknown>" } {}
 
-		const string&				returnType() const { return return_type_; }
-		const vector<Parameter>&	parameters() const { return parameters_; }
-		bool						isVirtual() const { return virtual_; }
-		bool						isStatic() const { return static_; }
-		bool						isAction() const { return action_; }
-		bool						isOverride() const { return override_; }
-		const string&               baseClass() const { return base_class_; }
 
-		bool	parse(ParsedStatement& statement);
-		string	asString();
+    virtual ~Variable() {}
 
-		static bool isFunction(ParsedStatement& block);
 
-	private:
-		vector<Parameter>	parameters_;
-		string				return_type_;
-		bool				virtual_	= false;
-		bool				static_		= false;
-		bool				action_		= false;
-		bool				override_	= false;
+private:
+    string type_;
+};
 
-		string base_class_; // This is needed to keep track of the class that originally defined the function, so we
-							// know if a function is inherited or not
-	};
 
-	struct State
-	{
-		struct Frame
-		{
-			string	sprite_base;
-			string	sprite_frame;
-			int		duration;
-		};
+class Function : public Identifier {
+public:
+    Function(string name = {}, string def_class = {}) :
+        Identifier(name), return_type_{ "void" }, base_class_{ def_class } {
+    }
 
-		string editorSprite();
 
-		vector<Frame>	frames;
-	};
+    virtual ~Function() = default;
 
-	class StateTable
-	{
-	public:
-		StateTable() {}
 
-		const string&	firstState() const { return state_first_; }
+    struct Parameter {
+        string name;
+        string type;
+        string default_value;
 
-		bool	parse(ParsedStatement& states);
-		string	editorSprite();
 
-	private:
-		std::map<string, State>	states_;
-		string					state_first_;
-	};
+        Parameter() : name{ "<unknown>" }, type{ "<unknown>" }, default_value{ "" } {}
 
-	class Class : public Identifier
-	{
-	public:
-		enum class Type
-		{
-			Class,
-			Struct
-		};
 
-		Class(Type type, string name = "") : Identifier{ name }, type_{ type } {}
-		virtual ~Class() {}
+        unsigned parse(const vector<string> &tokens, unsigned start_index);
+    };
 
-		const vector<Function>&	functions() const { return functions_; }
 
-		bool	parse(ParsedStatement& block, const vector<Class>& parsed_classes);
-		bool	extend(ParsedStatement& block);
-		void	inherit(const Class& parent);
-		void	toThingType(std::map<int, Game::ThingType>& types, vector<Game::ThingType>& parsed);
+    const string &returnType() const { return return_type_; }
 
-	private:
-		Type				type_;
-		string				inherits_class_;
-		vector<Variable>	variables_;
-		vector<Function>	functions_;
-		vector<Enumerator>	enumerators_;
-		PropertyList		default_properties_;
-		StateTable			states_;
 
-		vector<std::pair<string, string>>	db_properties_;
+    const vector<Parameter> &parameters() const { return parameters_; }
 
-		bool	parseClassBlock(vector<ParsedStatement>& block);
-		bool	parseDefaults(vector<ParsedStatement>& defaults);
-	};
 
-	class Definitions	// rename this also
-	{
-	public:
-		Definitions() {}
-		~Definitions() {}
+    bool isVirtual() const { return virtual_; }
 
-		const vector<Class>&	classes() const { return classes_; }
 
-		void	clear();
-		bool	parseZScript(ArchiveEntry* entry);
-		bool	parseZScript(Archive* archive);
+    bool isStatic() const { return static_; }
 
-		void	exportThingTypes(std::map<int, Game::ThingType>& types, vector<Game::ThingType>& parsed);
 
-	private:
-		vector<Class>		classes_;
-		vector<Enumerator>	enumerators_;
-		vector<Variable>	variables_;
-		vector<Function>	functions_;	// needed? dunno if global functions are a thing
-	};
+    bool isAction() const { return action_; }
+
+
+    bool isOverride() const { return override_; }
+
+
+    const string &baseClass() const { return base_class_; }
+
+
+    bool parse(ParsedStatement &statement);
+
+
+    string asString();
+
+
+    static bool isFunction(ParsedStatement &block);
+
+
+private:
+    vector<Parameter> parameters_;
+    string return_type_;
+    bool virtual_ = false;
+    bool static_ = false;
+    bool action_ = false;
+    bool override_ = false;
+
+    string base_class_; // This is needed to keep track of the class that originally defined the function, so we
+    // know if a function is inherited or not
+};
+
+
+struct State {
+    struct Frame {
+        string sprite_base;
+        string sprite_frame;
+        int duration;
+    };
+
+
+    string editorSprite();
+
+
+    vector<Frame> frames;
+};
+
+
+class StateTable {
+public:
+    StateTable() {}
+
+
+    const string &firstState() const { return state_first_; }
+
+
+    bool parse(ParsedStatement &states);
+
+
+    string editorSprite();
+
+
+private:
+    std::map<string, State> states_;
+    string state_first_;
+};
+
+
+class Class : public Identifier {
+public:
+    enum class Type {
+        Class,
+        Struct
+    };
+
+
+    Class(Type type, string name = "") : Identifier{ name }, type_{ type } {}
+
+
+    virtual ~Class() {}
+
+
+    const vector<Function> &functions() const { return functions_; }
+
+
+    bool parse(ParsedStatement &block, const vector<Class> &parsed_classes);
+
+
+    bool extend(ParsedStatement &block);
+
+
+    void inherit(const Class &parent);
+
+
+    void toThingType(std::map<int, Game::ThingType> &types, vector<Game::ThingType> &parsed);
+
+
+private:
+    Type type_;
+    string inherits_class_;
+    vector<Variable> variables_;
+    vector<Function> functions_;
+    vector<Enumerator> enumerators_;
+    PropertyList default_properties_;
+    StateTable states_;
+
+    vector<std::pair<string, string>> db_properties_;
+
+
+    bool parseClassBlock(vector<ParsedStatement> &block);
+
+
+    bool parseDefaults(vector<ParsedStatement> &defaults);
+};
+
+
+class Definitions    // rename this also
+{
+public:
+    Definitions() {}
+
+
+    ~Definitions() {}
+
+
+    const vector<Class> &classes() const { return classes_; }
+
+
+    void clear();
+
+
+    bool parseZScript(ArchiveEntry *entry);
+
+
+    bool parseZScript(Archive *archive);
+
+
+    void exportThingTypes(std::map<int, Game::ThingType> &types, vector<Game::ThingType> &parsed);
+
+
+private:
+    vector<Class> classes_;
+    vector<Enumerator> enumerators_;
+    vector<Variable> variables_;
+    vector<Function> functions_;    // needed? dunno if global functions are a thing
+};
 }

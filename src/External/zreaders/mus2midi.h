@@ -41,38 +41,37 @@
 //#include <stdio.h>
 //#include "doomtype.h"
 
-#define MIDI_SYSEX		((uint8_t)0xF0)		 // SysEx begin
-#define MIDI_SYSEXEND	((uint8_t)0xF7)		 // SysEx end
-#define MIDI_META		((uint8_t)0xFF)		 // Meta event begin
+#define MIDI_SYSEX        ((uint8_t)0xF0)         // SysEx begin
+#define MIDI_SYSEXEND    ((uint8_t)0xF7)         // SysEx end
+#define MIDI_META        ((uint8_t)0xFF)         // Meta event begin
 #define MIDI_META_TEMPO ((uint8_t)0x51)
-#define MIDI_META_EOT	((uint8_t)0x2F)		 // End-of-track
-#define MIDI_META_SSPEC	((uint8_t)0x7F)		 // System-specific event
+#define MIDI_META_EOT    ((uint8_t)0x2F)         // End-of-track
+#define MIDI_META_SSPEC    ((uint8_t)0x7F)         // System-specific event
 
-#define MIDI_NOTEOFF	((uint8_t)0x80)		 // + note + velocity
-#define MIDI_NOTEON 	((uint8_t)0x90)		 // + note + velocity
-#define MIDI_POLYPRESS	((uint8_t)0xA0)		 // + pressure (2 uint8_ts)
-#define MIDI_CTRLCHANGE ((uint8_t)0xB0)		 // + ctrlr + value
-#define MIDI_PRGMCHANGE ((uint8_t)0xC0)		 // + new patch
-#define MIDI_CHANPRESS	((uint8_t)0xD0)		 // + pressure (1 uint8_t)
-#define MIDI_PITCHBEND	((uint8_t)0xE0)		 // + pitch bend (2 uint8_ts)
+#define MIDI_NOTEOFF    ((uint8_t)0x80)         // + note + velocity
+#define MIDI_NOTEON    ((uint8_t)0x90)         // + note + velocity
+#define MIDI_POLYPRESS    ((uint8_t)0xA0)         // + pressure (2 uint8_ts)
+#define MIDI_CTRLCHANGE ((uint8_t)0xB0)         // + ctrlr + value
+#define MIDI_PRGMCHANGE ((uint8_t)0xC0)         // + new patch
+#define MIDI_CHANPRESS    ((uint8_t)0xD0)         // + pressure (1 uint8_t)
+#define MIDI_PITCHBEND    ((uint8_t)0xE0)         // + pitch bend (2 uint8_ts)
 
-#define MUS_NOTEOFF 	((uint8_t)0x00)
-#define MUS_NOTEON		((uint8_t)0x10)
-#define MUS_PITCHBEND	((uint8_t)0x20)
-#define MUS_SYSEVENT	((uint8_t)0x30)
-#define MUS_CTRLCHANGE	((uint8_t)0x40)
-#define MUS_SCOREEND	((uint8_t)0x60)
+#define MUS_NOTEOFF    ((uint8_t)0x00)
+#define MUS_NOTEON        ((uint8_t)0x10)
+#define MUS_PITCHBEND    ((uint8_t)0x20)
+#define MUS_SYSEVENT    ((uint8_t)0x30)
+#define MUS_CTRLCHANGE    ((uint8_t)0x40)
+#define MUS_SCOREEND    ((uint8_t)0x60)
 
-struct MUSHeader
-{
-	uint32_t Magic;
-	uint16_t SongLen;
-	uint16_t SongStart;
-	uint16_t NumChans;
-	uint16_t NumSecondaryChans;
-	uint16_t NumInstruments;
-	uint16_t Pad;
-	// uint16_t UsedInstruments[NumInstruments];
+struct MUSHeader {
+    uint32_t Magic;
+    uint16_t SongLen;
+    uint16_t SongStart;
+    uint16_t NumChans;
+    uint16_t NumSecondaryChans;
+    uint16_t NumInstruments;
+    uint16_t Pad;
+    // uint16_t UsedInstruments[NumInstruments];
 };
 
 #endif //__MUS2MIDI_H__

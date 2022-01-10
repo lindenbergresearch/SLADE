@@ -44,40 +44,40 @@
 
 // Used by SendCommand to check for unexpected end-of-track conditions.
 #define CHECK_FINISHED \
-	if (track->TrackP >= track->MaxTrackP) \
-	{ \
-		track->Finished = true; \
-		return events; \
-	}
+    if (track->TrackP >= track->MaxTrackP) \
+    { \
+        track->Finished = true; \
+        return events; \
+    }
 
 // TYPES -------------------------------------------------------------------
 
-struct MIDISong::TrackInfo
-{
-	const uint8_t *TrackBegin;
-	size_t TrackP;
-	size_t MaxTrackP;
-	uint32_t Delay;
-	uint32_t PlayedTime;
-	bool Finished;
-	uint8_t RunningStatus;
-	bool Designated;
-	bool EProgramChange;
-	bool EVolume;
-	uint16_t Designation;
+struct MIDISong::TrackInfo {
+    const uint8_t *TrackBegin;
+    size_t TrackP;
+    size_t MaxTrackP;
+    uint32_t Delay;
+    uint32_t PlayedTime;
+    bool Finished;
+    uint8_t RunningStatus;
+    bool Designated;
+    bool EProgramChange;
+    bool EVolume;
+    uint16_t Designation;
 
-	size_t LoopBegin;
-	uint32_t LoopDelay;
-	int LoopCount;
-	bool LoopFinished;
-    
-	uint32_t ReadVarLen ();
+    size_t LoopBegin;
+    uint32_t LoopDelay;
+    int LoopCount;
+    bool LoopFinished;
+
+
+    uint32_t ReadVarLen();
 };
 
 // PUBLIC DATA DEFINITIONS -------------------------------------------------
 
 char MIDI_EventLengths[7] = { 2, 2, 2, 2, 1, 1, 2 };
-char MIDI_CommonLengths[15] = { 0, 1, 2, 1, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0 };
+char MIDI_CommonLengths[15] = { 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 //==========================================================================
 //
@@ -87,86 +87,74 @@ char MIDI_CommonLengths[15] = { 0, 1, 2, 1, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0 };
 //
 //==========================================================================
 
-MIDISong::MIDISong (FILE *file, const uint8_t *musiccache, int len)
-: MIDIStreamer(), MusHeader(0), Tracks(0)
-{
-	int p;
-	int i;
+MIDISong::MIDISong(FILE *file, const uint8_t *musiccache, int len)
+    : MIDIStreamer(), MusHeader(0), Tracks(0) {
+    int p;
+    int i;
 
-	MusHeader = new uint8_t[len];
-	SongLen = len;
-	if (file != NULL)
-	{
-		if (fread(MusHeader, 1, len, file) != (size_t)len)
-			return;
-	}
-	else
-	{
-		memcpy(MusHeader, musiccache, len);
-	}
+    MusHeader = new uint8_t[len];
+    SongLen = len;
+    if (file != NULL) {
+        if (fread(MusHeader, 1, len, file) != (size_t) len)
+            return;
+    } else {
+        memcpy(MusHeader, musiccache, len);
+    }
 
-	// Do some validation of the MIDI file
-	if (MusHeader[4] != 0 || MusHeader[5] != 0 || MusHeader[6] != 0 || MusHeader[7] != 6)
-		return;
+    // Do some validation of the MIDI file
+    if (MusHeader[4] != 0 || MusHeader[5] != 0 || MusHeader[6] != 0 || MusHeader[7] != 6)
+        return;
 
-	if (MusHeader[8] != 0 || MusHeader[9] > 2)
-		return;
+    if (MusHeader[8] != 0 || MusHeader[9] > 2)
+        return;
 
-	Format = MusHeader[9];
+    Format = MusHeader[9];
 
-	if (Format == 0)
-	{
-		NumTracks = 1;
-	}
-	else
-	{
-		NumTracks = MusHeader[10] * 256 + MusHeader[11];
-	}
+    if (Format == 0) {
+        NumTracks = 1;
+    } else {
+        NumTracks = MusHeader[10] * 256 + MusHeader[11];
+    }
 
-	// The division is the number of pulses per quarter note (PPQN).
-	Division = MusHeader[12] * 256 + MusHeader[13];
-	if (Division == 0)
-	{ // PPQN is zero? Then the song cannot play because it never pulses.
-		return;
-	}
+    // The division is the number of pulses per quarter note (PPQN).
+    Division = MusHeader[12] * 256 + MusHeader[13];
+    if (Division == 0) { // PPQN is zero? Then the song cannot play because it never pulses.
+        return;
+    }
 
-	Tracks = new TrackInfo[NumTracks];
+    Tracks = new TrackInfo[NumTracks];
 
-	// Gather information about each track
-	for (i = 0, p = 14; i < NumTracks && p < len + 8; ++i)
-	{
-		uint32_t chunkLen =
-			(MusHeader[p+4]<<24) |
-			(MusHeader[p+5]<<16) |
-			(MusHeader[p+6]<<8)  |
-			(MusHeader[p+7]);
+    // Gather information about each track
+    for (i = 0, p = 14; i < NumTracks && p < len + 8; ++i) {
+        uint32_t chunkLen =
+            (MusHeader[p + 4] << 24) |
+            (MusHeader[p + 5] << 16) |
+            (MusHeader[p + 6] << 8) |
+            (MusHeader[p + 7]);
 
-		if (chunkLen + p + 8 > (uint32_t)len)
-		{ // Track too long, so truncate it
-			chunkLen = len - p - 8;
-		}
+        if (chunkLen + p + 8 > (uint32_t) len) { // Track too long, so truncate it
+            chunkLen = len - p - 8;
+        }
 
-		if (MusHeader[p+0] == 'M' &&
-			MusHeader[p+1] == 'T' &&
-			MusHeader[p+2] == 'r' &&
-			MusHeader[p+3] == 'k')
-		{
-			Tracks[i].TrackBegin = MusHeader + p + 8;
-			Tracks[i].TrackP = 0;
-			Tracks[i].MaxTrackP = chunkLen;
-		}
+        if (MusHeader[p + 0] == 'M' &&
+            MusHeader[p + 1] == 'T' &&
+            MusHeader[p + 2] == 'r' &&
+            MusHeader[p + 3] == 'k') {
+            Tracks[i].TrackBegin = MusHeader + p + 8;
+            Tracks[i].TrackP = 0;
+            Tracks[i].MaxTrackP = chunkLen;
+        }
 
-		p += chunkLen + 8;
-	}
+        p += chunkLen + 8;
+    }
 
-	// In case there were fewer actual chunks in the file than the
-	// header specified, update NumTracks with the current value of i
-	NumTracks = i;
+    // In case there were fewer actual chunks in the file than the
+    // header specified, update NumTracks with the current value of i
+    NumTracks = i;
 
-	if (NumTracks == 0)
-	{ // No tracks, so nothing to play
-		return;
-	}
+    if (NumTracks == 0) { // No tracks, so nothing to play
+        return;
+    }
 }
 
 //==========================================================================
@@ -175,16 +163,13 @@ MIDISong::MIDISong (FILE *file, const uint8_t *musiccache, int len)
 //
 //==========================================================================
 
-MIDISong::~MIDISong ()
-{
-	if (Tracks != NULL)
-	{
-		delete[] Tracks;
-	}
-	if (MusHeader != NULL)
-	{
-		delete[] MusHeader;
-	}
+MIDISong::~MIDISong() {
+    if (Tracks != NULL) {
+        delete[] Tracks;
+    }
+    if (MusHeader != NULL) {
+        delete[] MusHeader;
+    }
 }
 
 //==========================================================================
@@ -196,17 +181,13 @@ MIDISong::~MIDISong ()
 //
 //==========================================================================
 
-void MIDISong::CheckCaps(int tech)
-{
-	DesignationMask = 0xFF0F;
-	if (tech == MOD_FMSYNTH)
-	{
-		DesignationMask = 0x00F0;
-	}
-	else if (tech == MOD_MIDIPORT)
-	{
-		DesignationMask = 0x0001;
-	}
+void MIDISong::CheckCaps(int tech) {
+    DesignationMask = 0xFF0F;
+    if (tech == MOD_FMSYNTH) {
+        DesignationMask = 0x00F0;
+    } else if (tech == MOD_MIDIPORT) {
+        DesignationMask = 0x0001;
+    }
 }
 
 //==========================================================================
@@ -217,30 +198,27 @@ void MIDISong::CheckCaps(int tech)
 //
 //==========================================================================
 
-void MIDISong :: DoRestart()
-{
-	int i;
+void MIDISong::DoRestart() {
+    int i;
 
-	// Set initial state.
-	for (i = 0; i < NumTracks; ++i)
-	{
-		Tracks[i].TrackP = 0;
-		Tracks[i].Finished = false;
-		Tracks[i].RunningStatus = 0;
-		Tracks[i].Designated = false;
-		Tracks[i].Designation = 0;
-		Tracks[i].LoopCount = -1;
-		Tracks[i].EProgramChange = false;
-		Tracks[i].EVolume = false;
-		Tracks[i].PlayedTime = 0;
-	}
-	ProcessInitialMetaEvents ();
-	for (i = 0; i < NumTracks; ++i)
-	{
-		Tracks[i].Delay = Tracks[i].ReadVarLen();
-	}
-	TrackDue = Tracks;
-	TrackDue = FindNextDue();
+    // Set initial state.
+    for (i = 0; i < NumTracks; ++i) {
+        Tracks[i].TrackP = 0;
+        Tracks[i].Finished = false;
+        Tracks[i].RunningStatus = 0;
+        Tracks[i].Designated = false;
+        Tracks[i].Designation = 0;
+        Tracks[i].LoopCount = -1;
+        Tracks[i].EProgramChange = false;
+        Tracks[i].EVolume = false;
+        Tracks[i].PlayedTime = 0;
+    }
+    ProcessInitialMetaEvents();
+    for (i = 0; i < NumTracks; ++i) {
+        Tracks[i].Delay = Tracks[i].ReadVarLen();
+    }
+    TrackDue = Tracks;
+    TrackDue = FindNextDue();
 }
 
 //==========================================================================
@@ -249,9 +227,8 @@ void MIDISong :: DoRestart()
 //
 //==========================================================================
 
-bool MIDISong::CheckDone()
-{
-	return TrackDue == NULL;
+bool MIDISong::CheckDone() {
+    return TrackDue == NULL;
 }
 
 //==========================================================================
@@ -263,44 +240,37 @@ bool MIDISong::CheckDone()
 //
 //==========================================================================
 
-uint32_t *MIDISong::MakeEvents(uint32_t *events, uint32_t *max_event_p, uint32_t max_time)
-{
-	uint32_t *start_events;
-	uint32_t tot_time = 0;
-	uint32_t time = 0;
-	uint32_t delay;
+uint32_t *MIDISong::MakeEvents(uint32_t *events, uint32_t *max_event_p, uint32_t max_time) {
+    uint32_t *start_events;
+    uint32_t tot_time = 0;
+    uint32_t time = 0;
+    uint32_t delay;
 
-	start_events = events;
-	while (TrackDue && events < max_event_p && tot_time <= max_time)
-	{
-		// It's possible that this tick may be nothing but meta-events and
-		// not generate any real events. Repeat this until we actually
-		// get some output so we don't send an empty buffer to the MIDI
-		// device.
-		do
-		{
-			delay = TrackDue->Delay;
-			time += delay;
-			// Advance time for all tracks by the amount needed for the one up next.
-			tot_time += delay * Tempo / Division;
-			AdvanceTracks(delay);
-			// Play all events for this tick.
-			do
-			{
-				uint32_t *new_events = SendCommand(events, TrackDue, time);
-				TrackDue = FindNextDue();
-				if (new_events != events)
-				{
-					time = 0;
-				}
-				events = new_events;
-			}
-			while (TrackDue && TrackDue->Delay == 0 && events < max_event_p);
-		}
-		while (start_events == events && TrackDue);
-		time = 0;
-	}
-	return events;
+    start_events = events;
+    while (TrackDue && events < max_event_p && tot_time <= max_time) {
+        // It's possible that this tick may be nothing but meta-events and
+        // not generate any real events. Repeat this until we actually
+        // get some output so we don't send an empty buffer to the MIDI
+        // device.
+        do {
+            delay = TrackDue->Delay;
+            time += delay;
+            // Advance time for all tracks by the amount needed for the one up next.
+            tot_time += delay * Tempo / Division;
+            AdvanceTracks(delay);
+            // Play all events for this tick.
+            do {
+                uint32_t *new_events = SendCommand(events, TrackDue, time);
+                TrackDue = FindNextDue();
+                if (new_events != events) {
+                    time = 0;
+                }
+                events = new_events;
+            } while (TrackDue && TrackDue->Delay == 0 && events < max_event_p);
+        } while (start_events == events && TrackDue);
+        time = 0;
+    }
+    return events;
 }
 
 //==========================================================================
@@ -311,16 +281,13 @@ uint32_t *MIDISong::MakeEvents(uint32_t *events, uint32_t *max_event_p, uint32_t
 //
 //==========================================================================
 
-void MIDISong::AdvanceTracks(uint32_t time)
-{
-	for (int i = 0; i < NumTracks; ++i)
-	{
-		if (!Tracks[i].Finished)
-		{
-			Tracks[i].Delay -= time;
-			Tracks[i].PlayedTime += time;
-		}
-	}
+void MIDISong::AdvanceTracks(uint32_t time) {
+    for (int i = 0; i < NumTracks; ++i) {
+        if (!Tracks[i].Finished) {
+            Tracks[i].Delay -= time;
+            Tracks[i].PlayedTime += time;
+        }
+    }
 }
 
 //==========================================================================
@@ -331,280 +298,226 @@ void MIDISong::AdvanceTracks(uint32_t time)
 //
 //==========================================================================
 
-uint32_t *MIDISong::SendCommand (uint32_t *events, TrackInfo *track, uint32_t delay)
-{
-	uint32_t len;
-	uint8_t event, data1 = 0, data2 = 0;
-	int i;
+uint32_t *MIDISong::SendCommand(uint32_t *events, TrackInfo *track, uint32_t delay) {
+    uint32_t len;
+    uint8_t event, data1 = 0, data2 = 0;
+    int i;
 
-	CHECK_FINISHED
-	event = track->TrackBegin[track->TrackP++];
-	CHECK_FINISHED
+    CHECK_FINISHED
+    event = track->TrackBegin[track->TrackP++];
+    CHECK_FINISHED
 
-	if (event != MIDI_SYSEX && event != MIDI_META && event != MIDI_SYSEXEND)
-	{
-		// Normal short message
-		if ((event & 0xF0) == 0xF0)
-		{
-			if (MIDI_CommonLengths[event & 15] > 0)
-			{
-				data1 = track->TrackBegin[track->TrackP++];
-				if (MIDI_CommonLengths[event & 15] > 1)
-				{
-					data2 = track->TrackBegin[track->TrackP++];
-				}
-			}
-		}
-		else if ((event & 0x80) == 0)
-		{
-			data1 = event;
-			event = track->RunningStatus;
-		}
-		else
-		{
-			track->RunningStatus = event;
-			data1 = track->TrackBegin[track->TrackP++];
-		}
+    if (event != MIDI_SYSEX && event != MIDI_META && event != MIDI_SYSEXEND) {
+        // Normal short message
+        if ((event & 0xF0) == 0xF0) {
+            if (MIDI_CommonLengths[event & 15] > 0) {
+                data1 = track->TrackBegin[track->TrackP++];
+                if (MIDI_CommonLengths[event & 15] > 1) {
+                    data2 = track->TrackBegin[track->TrackP++];
+                }
+            }
+        } else if ((event & 0x80) == 0) {
+            data1 = event;
+            event = track->RunningStatus;
+        } else {
+            track->RunningStatus = event;
+            data1 = track->TrackBegin[track->TrackP++];
+        }
 
-		CHECK_FINISHED
+        CHECK_FINISHED
 
-		if (MIDI_EventLengths[(event&0x70)>>4] == 2)
-		{
-			data2 = track->TrackBegin[track->TrackP++];
-		}
+        if (MIDI_EventLengths[(event & 0x70) >> 4] == 2) {
+            data2 = track->TrackBegin[track->TrackP++];
+        }
 
-		switch (event & 0x70)
-		{
-		case MIDI_PRGMCHANGE & 0x70:
-			if (track->EProgramChange)
-			{
-				event = MIDI_META;
-			}
-			break;
+        switch (event & 0x70) {
+            case MIDI_PRGMCHANGE & 0x70:
+                if (track->EProgramChange) {
+                    event = MIDI_META;
+                }
+                break;
 
-		case MIDI_CTRLCHANGE & 0x70:
-			switch (data1)
-			{
-			case 7:		// Channel volume
-				if (track->EVolume)
-				{ // Tracks that use EMIDI volume ignore normal volume changes.
-					event = MIDI_META;
-				}
-				else
-				{
-					data2 = VolumeControllerChange(event & 15, data2);
-				}
-				break;
+            case MIDI_CTRLCHANGE & 0x70:
+                switch (data1) {
+                    case 7:        // Channel volume
+                        if (track->EVolume) { // Tracks that use EMIDI volume ignore normal volume changes.
+                            event = MIDI_META;
+                        } else {
+                            data2 = VolumeControllerChange(event & 15, data2);
+                        }
+                        break;
 
-			case 7+32:	// Channel volume (LSB)
-				if (track->EVolume)
-				{
-					event = MIDI_META;
-				}
-				// It should be safe to pass this straight through to the
-				// MIDI device, since it's a very fine amount.
-				break;
+                    case 7 + 32:    // Channel volume (LSB)
+                        if (track->EVolume) {
+                            event = MIDI_META;
+                        }
+                        // It should be safe to pass this straight through to the
+                        // MIDI device, since it's a very fine amount.
+                        break;
 
-			case 110:	// EMIDI Track Designation - InitBeat only
-				// Instruments 4, 5, 6, and 7 are all FM synth.
-				// The rest are all wavetable.
-				if (track->PlayedTime < (uint32_t)Division)
-				{
-					if (data2 == 127)
-					{
-						track->Designation = ~0;
-						track->Designated = true;
-					}
-					else if (data2 <= 9)
-					{
-						track->Designation |= 1 << data2;
-						track->Designated = true;
-					}
-					event = MIDI_META;
-				}
-				break;
+                    case 110:    // EMIDI Track Designation - InitBeat only
+                        // Instruments 4, 5, 6, and 7 are all FM synth.
+                        // The rest are all wavetable.
+                        if (track->PlayedTime < (uint32_t) Division) {
+                            if (data2 == 127) {
+                                track->Designation = ~0;
+                                track->Designated = true;
+                            } else if (data2 <= 9) {
+                                track->Designation |= 1 << data2;
+                                track->Designated = true;
+                            }
+                            event = MIDI_META;
+                        }
+                        break;
 
-			case 111:	// EMIDI Track Exclusion - InitBeat only
-				if (track->PlayedTime < (uint32_t)Division)
-				{
-					if (track->Designated && data2 <= 9)
-					{
-						track->Designation &= ~(1 << data2);
-					}
-					event = MIDI_META;
-				}
-				break;
+                    case 111:    // EMIDI Track Exclusion - InitBeat only
+                        if (track->PlayedTime < (uint32_t) Division) {
+                            if (track->Designated && data2 <= 9) {
+                                track->Designation &= ~(1 << data2);
+                            }
+                            event = MIDI_META;
+                        }
+                        break;
 
-			case 112:	// EMIDI Program Change
-				// Ignored unless it also appears in the InitBeat
-				if (track->PlayedTime < (uint32_t)Division || track->EProgramChange)
-				{
-					track->EProgramChange = true;
-					event = 0xC0 | (event & 0x0F);
-					data1 = data2;
-					data2 = 0;
-				}
-				break;
+                    case 112:    // EMIDI Program Change
+                        // Ignored unless it also appears in the InitBeat
+                        if (track->PlayedTime < (uint32_t) Division || track->EProgramChange) {
+                            track->EProgramChange = true;
+                            event = 0xC0 | (event & 0x0F);
+                            data1 = data2;
+                            data2 = 0;
+                        }
+                        break;
 
-			case 113:	// EMIDI Volume
-				// Ignored unless it also appears in the InitBeat
-				if (track->PlayedTime < (uint32_t)Division || track->EVolume)
-				{
-					track->EVolume = true;
-					data1 = 7;
-					data2 = VolumeControllerChange(event & 15, data2);
-				}
-				break;
+                    case 113:    // EMIDI Volume
+                        // Ignored unless it also appears in the InitBeat
+                        if (track->PlayedTime < (uint32_t) Division || track->EVolume) {
+                            track->EVolume = true;
+                            data1 = 7;
+                            data2 = VolumeControllerChange(event & 15, data2);
+                        }
+                        break;
 
-			case 116:	// EMIDI Loop Begin
-				{
-					// We convert the loop count to XMIDI conventions before clamping.
-					// Then we convert it back to EMIDI conventions after clamping.
-					// (XMIDI can create "loops" that don't loop. EMIDI cannot.)
-					int loopcount = ClampLoopCount(data2 == 0 ? 0 : data2 + 1);
-					if (loopcount != 1)
-					{
-						track->LoopBegin = track->TrackP;
-						track->LoopDelay = 0;
-						track->LoopCount = loopcount == 0 ? 0 : loopcount - 1;
-						track->LoopFinished = track->Finished;
-					}
-				}
-				event = MIDI_META;
-				break;
+                    case 116:    // EMIDI Loop Begin
+                    {
+                        // We convert the loop count to XMIDI conventions before clamping.
+                        // Then we convert it back to EMIDI conventions after clamping.
+                        // (XMIDI can create "loops" that don't loop. EMIDI cannot.)
+                        int loopcount = ClampLoopCount(data2 == 0 ? 0 : data2 + 1);
+                        if (loopcount != 1) {
+                            track->LoopBegin = track->TrackP;
+                            track->LoopDelay = 0;
+                            track->LoopCount = loopcount == 0 ? 0 : loopcount - 1;
+                            track->LoopFinished = track->Finished;
+                        }
+                    }
+                        event = MIDI_META;
+                        break;
 
-			case 117:	// EMIDI Loop End
-				if (track->LoopCount >= 0 && data2 == 127)
-				{
-					if (track->LoopCount == 0)
-					{
-						track->Finished = true;
-					}
-					else
-					{
-						if (track->LoopCount > 0 && --track->LoopCount == 0)
-						{
-							track->LoopCount = -1;
-						}
-						track->TrackP = track->LoopBegin;
-						track->Delay = track->LoopDelay;
-						track->Finished = track->LoopFinished;
-					}
-				}
-				event = MIDI_META;
-				break;
+                    case 117:    // EMIDI Loop End
+                        if (track->LoopCount >= 0 && data2 == 127) {
+                            if (track->LoopCount == 0) {
+                                track->Finished = true;
+                            } else {
+                                if (track->LoopCount > 0 && --track->LoopCount == 0) {
+                                    track->LoopCount = -1;
+                                }
+                                track->TrackP = track->LoopBegin;
+                                track->Delay = track->LoopDelay;
+                                track->Finished = track->LoopFinished;
+                            }
+                        }
+                        event = MIDI_META;
+                        break;
 
-			case 118:	// EMIDI Global Loop Begin
-				{
-					int loopcount = ClampLoopCount(data2 == 0 ? 0 : data2 + 1);
-					if (loopcount != 1)
-					{
-						for (i = 0; i < NumTracks; ++i)
-						{
-							Tracks[i].LoopBegin = Tracks[i].TrackP;
-							Tracks[i].LoopDelay = Tracks[i].Delay;
-							Tracks[i].LoopCount = loopcount == 0 ? 0 : loopcount - 1;
-							Tracks[i].LoopFinished = Tracks[i].Finished;
-						}
-					}
-				}
-				event = MIDI_META;
-				break;
+                    case 118:    // EMIDI Global Loop Begin
+                    {
+                        int loopcount = ClampLoopCount(data2 == 0 ? 0 : data2 + 1);
+                        if (loopcount != 1) {
+                            for (i = 0; i < NumTracks; ++i) {
+                                Tracks[i].LoopBegin = Tracks[i].TrackP;
+                                Tracks[i].LoopDelay = Tracks[i].Delay;
+                                Tracks[i].LoopCount = loopcount == 0 ? 0 : loopcount - 1;
+                                Tracks[i].LoopFinished = Tracks[i].Finished;
+                            }
+                        }
+                    }
+                        event = MIDI_META;
+                        break;
 
-			case 119:	// EMIDI Global Loop End
-				if (data2 == 127)
-				{
-					for (i = 0; i < NumTracks; ++i)
-					{
-						if (Tracks[i].LoopCount >= 0)
-						{
-							if (Tracks[i].LoopCount == 0)
-							{
-								Tracks[i].Finished = true;
-							}
-							else
-							{
-								if (Tracks[i].LoopCount > 0 && --Tracks[i].LoopCount == 0)
-								{
-									Tracks[i].LoopCount = -1;
-								}
-								Tracks[i].TrackP = Tracks[i].LoopBegin;
-								Tracks[i].Delay = Tracks[i].LoopDelay;
-								Tracks[i].Finished = Tracks[i].LoopFinished;
-							}
-						}
-					}
-				}
-				event = MIDI_META;
-				break;
-			}
-		}
-		events[0] = delay;
-		events[1] = 0;
-		if (event != MIDI_META && (!track->Designated || (track->Designation & DesignationMask)))
-		{
-			events[2] = event | (data1<<8) | (data2<<16);
-		}
-		else
-		{
-			events[2] = MEVT_NOP << 24;
-		}
-		events += 3;
-	}
-	else
-	{
-		// Skip SysEx events just because I don't want to bother with them.
-		// The old MIDI player ignored them too, so this won't break
-		// anything that played before.
-		if (event == MIDI_SYSEX || event == MIDI_SYSEXEND)
-		{
-			len = track->ReadVarLen ();
-			track->TrackP += len;
-		}
-		else if (event == MIDI_META)
-		{
-			// It's a meta-event
-			event = track->TrackBegin[track->TrackP++];
-			CHECK_FINISHED
-			len = track->ReadVarLen ();
-			CHECK_FINISHED
+                    case 119:    // EMIDI Global Loop End
+                        if (data2 == 127) {
+                            for (i = 0; i < NumTracks; ++i) {
+                                if (Tracks[i].LoopCount >= 0) {
+                                    if (Tracks[i].LoopCount == 0) {
+                                        Tracks[i].Finished = true;
+                                    } else {
+                                        if (Tracks[i].LoopCount > 0 && --Tracks[i].LoopCount == 0) {
+                                            Tracks[i].LoopCount = -1;
+                                        }
+                                        Tracks[i].TrackP = Tracks[i].LoopBegin;
+                                        Tracks[i].Delay = Tracks[i].LoopDelay;
+                                        Tracks[i].Finished = Tracks[i].LoopFinished;
+                                    }
+                                }
+                            }
+                        }
+                        event = MIDI_META;
+                        break;
+                }
+        }
+        events[0] = delay;
+        events[1] = 0;
+        if (event != MIDI_META && (!track->Designated || (track->Designation & DesignationMask))) {
+            events[2] = event | (data1 << 8) | (data2 << 16);
+        } else {
+            events[2] = MEVT_NOP << 24;
+        }
+        events += 3;
+    } else {
+        // Skip SysEx events just because I don't want to bother with them.
+        // The old MIDI player ignored them too, so this won't break
+        // anything that played before.
+        if (event == MIDI_SYSEX || event == MIDI_SYSEXEND) {
+            len = track->ReadVarLen();
+            track->TrackP += len;
+        } else if (event == MIDI_META) {
+            // It's a meta-event
+            event = track->TrackBegin[track->TrackP++];
+            CHECK_FINISHED
+            len = track->ReadVarLen();
+            CHECK_FINISHED
 
-			if (track->TrackP + len <= track->MaxTrackP)
-			{
-				switch (event)
-				{
-				case MIDI_META_EOT:
-					track->Finished = true;
-					break;
+            if (track->TrackP + len <= track->MaxTrackP) {
+                switch (event) {
+                    case MIDI_META_EOT:
+                        track->Finished = true;
+                        break;
 
-				case MIDI_META_TEMPO:
-					Tempo =
-						(track->TrackBegin[track->TrackP+0]<<16) |
-						(track->TrackBegin[track->TrackP+1]<<8)  |
-						(track->TrackBegin[track->TrackP+2]);
-					events[0] = delay;
-					events[1] = 0;
-					events[2] = (MEVT_TEMPO << 24) | Tempo;
-					events += 3;
-					break;
-				}
-				track->TrackP += len;
-				if (track->TrackP == track->MaxTrackP)
-				{
-					track->Finished = true;
-				}
-			}
-			else
-			{
-				track->Finished = true;
-			}
-		}
-	}
-	if (!track->Finished)
-	{
-		track->Delay = track->ReadVarLen();
-	}
-	return events;
+                    case MIDI_META_TEMPO:
+                        Tempo =
+                            (track->TrackBegin[track->TrackP + 0] << 16) |
+                            (track->TrackBegin[track->TrackP + 1] << 8) |
+                            (track->TrackBegin[track->TrackP + 2]);
+                        events[0] = delay;
+                        events[1] = 0;
+                        events[2] = (MEVT_TEMPO << 24) | Tempo;
+                        events += 3;
+                        break;
+                }
+                track->TrackP += len;
+                if (track->TrackP == track->MaxTrackP) {
+                    track->Finished = true;
+                }
+            } else {
+                track->Finished = true;
+            }
+        }
+    }
+    if (!track->Finished) {
+        track->Delay = track->ReadVarLen();
+    }
+    return events;
 }
 
 //==========================================================================
@@ -615,48 +528,42 @@ uint32_t *MIDISong::SendCommand (uint32_t *events, TrackInfo *track, uint32_t de
 //
 //==========================================================================
 
-void MIDISong::ProcessInitialMetaEvents ()
-{
-	TrackInfo *track;
-	int i;
-	uint8_t event;
-	uint32_t len;
+void MIDISong::ProcessInitialMetaEvents() {
+    TrackInfo *track;
+    int i;
+    uint8_t event;
+    uint32_t len;
 
-	for (i = 0; i < NumTracks; ++i)
-	{
-		track = &Tracks[i];
-		while (!track->Finished &&
-				track->TrackP < track->MaxTrackP - 4 &&
-				track->TrackBegin[track->TrackP] == 0 &&
-				track->TrackBegin[track->TrackP+1] == 0xFF)
-		{
-			event = track->TrackBegin[track->TrackP+2];
-			track->TrackP += 3;
-			len = track->ReadVarLen ();
-			if (track->TrackP + len <= track->MaxTrackP)
-			{
-				switch (event)
-				{
-				case MIDI_META_EOT:
-					track->Finished = true;
-					break;
+    for (i = 0; i < NumTracks; ++i) {
+        track = &Tracks[i];
+        while (!track->Finished &&
+               track->TrackP < track->MaxTrackP - 4 &&
+               track->TrackBegin[track->TrackP] == 0 &&
+               track->TrackBegin[track->TrackP + 1] == 0xFF) {
+            event = track->TrackBegin[track->TrackP + 2];
+            track->TrackP += 3;
+            len = track->ReadVarLen();
+            if (track->TrackP + len <= track->MaxTrackP) {
+                switch (event) {
+                    case MIDI_META_EOT:
+                        track->Finished = true;
+                        break;
 
-				case MIDI_META_TEMPO:
-					SetTempo(
-						(track->TrackBegin[track->TrackP+0]<<16) |
-						(track->TrackBegin[track->TrackP+1]<<8)  |
-						(track->TrackBegin[track->TrackP+2])
-					);
-					break;
-				}
-			}
-			track->TrackP += len;
-		}
-		if (track->TrackP >= track->MaxTrackP - 4)
-		{
-			track->Finished = true;
-		}
-	}
+                    case MIDI_META_TEMPO:
+                        SetTempo(
+                            (track->TrackBegin[track->TrackP + 0] << 16) |
+                            (track->TrackBegin[track->TrackP + 1] << 8) |
+                            (track->TrackBegin[track->TrackP + 2])
+                        );
+                        break;
+                }
+            }
+            track->TrackP += len;
+        }
+        if (track->TrackP >= track->MaxTrackP - 4) {
+            track->Finished = true;
+        }
+    }
 }
 
 //==========================================================================
@@ -667,16 +574,14 @@ void MIDISong::ProcessInitialMetaEvents ()
 //
 //==========================================================================
 
-uint32_t MIDISong::TrackInfo::ReadVarLen ()
-{
-	uint32_t time = 0, t = 0x80;
+uint32_t MIDISong::TrackInfo::ReadVarLen() {
+    uint32_t time = 0, t = 0x80;
 
-	while ((t & 0x80) && TrackP < MaxTrackP)
-	{
-		t = TrackBegin[TrackP++];
-		time = (time << 7) | (t & 127);
-	}
-	return time;
+    while ((t & 0x80) && TrackP < MaxTrackP) {
+        t = TrackBegin[TrackP++];
+        time = (time << 7) | (t & 127);
+    }
+    return time;
 }
 
 //==========================================================================
@@ -688,46 +593,39 @@ uint32_t MIDISong::TrackInfo::ReadVarLen ()
 //
 //==========================================================================
 
-MIDISong::TrackInfo *MIDISong::FindNextDue ()
-{
-	TrackInfo *track;
-	uint32_t best;
-	int i;
+MIDISong::TrackInfo *MIDISong::FindNextDue() {
+    TrackInfo *track;
+    uint32_t best;
+    int i;
 
-	// Give precedence to whichever track last had events taken from it.
-	if (!TrackDue->Finished && TrackDue->Delay == 0)
-	{
-		return TrackDue;
-	}
+    // Give precedence to whichever track last had events taken from it.
+    if (!TrackDue->Finished && TrackDue->Delay == 0) {
+        return TrackDue;
+    }
 
-	switch (Format)
-	{
-	case 0:
-		return Tracks[0].Finished ? NULL : Tracks;
-		
-	case 1:
-		track = NULL;
-		best = 0xFFFFFFFF;
-		for (i = 0; i < NumTracks; ++i)
-		{
-			if (!Tracks[i].Finished)
-			{
-				if (Tracks[i].Delay < best)
-				{
-					best = Tracks[i].Delay;
-					track = &Tracks[i];
-				}
-			}
-		}
-		return track;
+    switch (Format) {
+        case 0:
+            return Tracks[0].Finished ? NULL : Tracks;
 
-	case 2:
-		track = TrackDue;
-		if (track->Finished)
-		{
-			track++;
-		}
-		return track < &Tracks[NumTracks] ? track : NULL;
-	}
-	return NULL;
+        case 1:
+            track = NULL;
+            best = 0xFFFFFFFF;
+            for (i = 0; i < NumTracks; ++i) {
+                if (!Tracks[i].Finished) {
+                    if (Tracks[i].Delay < best) {
+                        best = Tracks[i].Delay;
+                        track = &Tracks[i];
+                    }
+                }
+            }
+            return track;
+
+        case 2:
+            track = TrackDue;
+            if (track->Finished) {
+                track++;
+            }
+            return track < &Tracks[NumTracks] ? track : NULL;
+    }
+    return NULL;
 }

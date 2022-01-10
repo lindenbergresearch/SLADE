@@ -4,18 +4,28 @@
 
 #include "common.h"
 
-class WizardPageBase : public wxPanel
-{
+
+class WizardPageBase : public wxPanel {
 private:
 
 public:
-	WizardPageBase(wxWindow* parent) : wxPanel(parent, -1) {}
-	~WizardPageBase() {}
+    WizardPageBase(wxWindow *parent) : wxPanel(parent, -1) {}
 
-	virtual bool	canGoNext() { return true; }
-	virtual void	applyChanges() {}
-	virtual string	getTitle() { return "Page Title"; }
-	virtual string	getDescription() { return ""; }
+
+    ~WizardPageBase() {}
+
+
+    virtual bool canGoNext() { return true; }
+
+
+    virtual void applyChanges() {}
+
+
+    virtual string getTitle() { return "Page Title"; }
+
+
+    virtual string getDescription() { return ""; }
 };
+
 
 #endif//__WIZARD_PAGE_BASE_H__

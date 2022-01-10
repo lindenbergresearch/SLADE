@@ -4,31 +4,41 @@
 
 namespace Game { class ThingType; }
 
-class ThingBrowserItem : public BrowserItem
-{
+class ThingBrowserItem : public BrowserItem {
 public:
-	ThingBrowserItem(string name, const Game::ThingType& type, unsigned index) :
-		BrowserItem{ name, index }, type_{ type } {}
-	~ThingBrowserItem() {}
+    ThingBrowserItem(string name, const Game::ThingType &type, unsigned index) :
+        BrowserItem{ name, index }, type_{ type } {}
 
-	bool	loadImage() override;
+
+    ~ThingBrowserItem() {}
+
+
+    bool loadImage() override;
+
 
 private:
-	Game::ThingType const&	type_;
+    Game::ThingType const &type_;
 };
 
-class ThingTypeBrowser : public BrowserWindow
-{
-public:
-	ThingTypeBrowser(wxWindow* parent, int type = -1);
-	~ThingTypeBrowser() {}
 
-	void	setupViewOptions();
-	int		getSelectedType();
+class ThingTypeBrowser : public BrowserWindow {
+public:
+    ThingTypeBrowser(wxWindow *parent, int type = -1);
+
+
+    ~ThingTypeBrowser() {}
+
+
+    void setupViewOptions();
+
+
+    int getSelectedType();
+
 
 private:
-	wxCheckBox*	cb_view_tiles_;
+    wxCheckBox *cb_view_tiles_;
 
-	// Events
-	void	onViewTilesClicked(wxCommandEvent& e);
+
+    // Events
+    void onViewTilesClicked(wxCommandEvent &e);
 };

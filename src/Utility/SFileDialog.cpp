@@ -48,138 +48,129 @@ EXTERN_CVAR(String, dir_last)
  * Shows a dialog to open a single file. Returns true and sets [info]
  * if the user clicked ok, false otherwise
  *******************************************************************/
-bool SFileDialog::openFile(fd_info_t& info, string caption, string extensions, wxWindow* parent, string fn_default, int ext_default)
-{
-	// Create file dialog
-	wxFileDialog fd(parent, caption, dir_last, fn_default, extensions, wxFD_OPEN|wxFD_FILE_MUST_EXIST);
+bool SFileDialog::openFile(fd_info_t &info, string caption, string extensions, wxWindow *parent, string fn_default, int ext_default) {
+    // Create file dialog
+    wxFileDialog fd(parent, caption, dir_last, fn_default, extensions, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
-	// Select default extension
-	fd.SetFilterIndex(ext_default);
+    // Select default extension
+    fd.SetFilterIndex(ext_default);
 
-	// Run the dialog
-	if (fd.ShowModal() == wxID_OK)
-	{
-		// Set file dialog info
-		wxFileName fn(fd.GetPath());
-		info.filenames.Add(fn.GetFullPath());
-		info.extension = fn.GetExt();
-		info.ext_index = fd.GetFilterIndex();
-		info.path = fn.GetPath(true);
+    // Run the dialog
+    if (fd.ShowModal() == wxID_OK) {
+        // Set file dialog info
+        wxFileName fn(fd.GetPath());
+        info.filenames.Add(fn.GetFullPath());
+        info.extension = fn.GetExt();
+        info.ext_index = fd.GetFilterIndex();
+        info.path = fn.GetPath(true);
 
-		// Set last dir
-		dir_last = info.path;
+        // Set last dir
+        dir_last = info.path;
 
-		return true;
-	}
-	else
-		return false;
+        return true;
+    } else
+        return false;
 }
+
 
 /* SFileDialog::openFiles
  * Shows a dialog to open multiple files. Returns true and sets
  * [info] if the user clicked ok, false otherwise
  *******************************************************************/
-bool SFileDialog::openFiles(fd_info_t& info, string caption, string extensions, wxWindow* parent, string fn_default, int ext_default)
-{
-	// Create file dialog
-	wxFileDialog fd(parent, caption, dir_last, fn_default, extensions, wxFD_OPEN|wxFD_FILE_MUST_EXIST|wxFD_MULTIPLE);
+bool SFileDialog::openFiles(fd_info_t &info, string caption, string extensions, wxWindow *parent, string fn_default, int ext_default) {
+    // Create file dialog
+    wxFileDialog fd(parent, caption, dir_last, fn_default, extensions, wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
 
-	// Select default extension
-	fd.SetFilterIndex(ext_default);
+    // Select default extension
+    fd.SetFilterIndex(ext_default);
 
-	// Run the dialog
-	if (fd.ShowModal() == wxID_OK)
-	{
-		// Set file dialog info
-		fd.GetPaths(info.filenames);
-		wxFileName fn(info.filenames[0]);
-		info.extension = fn.GetExt();
-		info.ext_index = fd.GetFilterIndex();
-		info.path = fn.GetPath(true);
+    // Run the dialog
+    if (fd.ShowModal() == wxID_OK) {
+        // Set file dialog info
+        fd.GetPaths(info.filenames);
+        wxFileName fn(info.filenames[0]);
+        info.extension = fn.GetExt();
+        info.ext_index = fd.GetFilterIndex();
+        info.path = fn.GetPath(true);
 
-		// Set last dir
-		dir_last = info.path;
+        // Set last dir
+        dir_last = info.path;
 
-		return true;
-	}
-	else
-		return false;
+        return true;
+    } else
+        return false;
 }
+
 
 /* SFileDialog::saveFile
  * Shows a dialog to save a single file. Returns true and sets [info]
  * if the user clicked ok, false otherwise
  *******************************************************************/
-bool SFileDialog::saveFile(fd_info_t& info, string caption, string extensions, wxWindow* parent, string fn_default, int ext_default)
-{
-	// Create file dialog
-	wxFileDialog fd(parent, caption, dir_last, fn_default, extensions, wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
+bool SFileDialog::saveFile(fd_info_t &info, string caption, string extensions, wxWindow *parent, string fn_default, int ext_default) {
+    // Create file dialog
+    wxFileDialog fd(parent, caption, dir_last, fn_default, extensions, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
-	// Select default extension
-	fd.SetFilterIndex(ext_default);
+    // Select default extension
+    fd.SetFilterIndex(ext_default);
 
-	// Run the dialog
-	if (fd.ShowModal() == wxID_OK)
-	{
-		// Set file dialog info
-		wxFileName fn(fd.GetPath());
-		info.filenames.Add(fn.GetFullPath());
-		info.extension = fn.GetExt();
-		info.ext_index = fd.GetFilterIndex();
-		info.path = fn.GetPath(true);
+    // Run the dialog
+    if (fd.ShowModal() == wxID_OK) {
+        // Set file dialog info
+        wxFileName fn(fd.GetPath());
+        info.filenames.Add(fn.GetFullPath());
+        info.extension = fn.GetExt();
+        info.ext_index = fd.GetFilterIndex();
+        info.path = fn.GetPath(true);
 
-		// Set last dir
-		dir_last = info.path;
+        // Set last dir
+        dir_last = info.path;
 
-		return true;
-	}
-	else
-		return false;
+        return true;
+    } else
+        return false;
 }
+
 
 /* SFileDialog::saveFiles
  * Shows a dialog to save multiple files. Returns true and sets
  * [info] if the user clicked ok, false otherwise. This is used to
  * replace wxDirDialog, which sucks
  *******************************************************************/
-bool SFileDialog::saveFiles(fd_info_t& info, string caption, string extensions, wxWindow* parent, int ext_default)
-{
-	// Create file dialog
-	wxFileDialog fd(parent, caption, dir_last, "ignored", extensions, wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
+bool SFileDialog::saveFiles(fd_info_t &info, string caption, string extensions, wxWindow *parent, int ext_default) {
+    // Create file dialog
+    wxFileDialog fd(parent, caption, dir_last, "ignored", extensions, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
-	// Select default extension
-	fd.SetFilterIndex(ext_default);
+    // Select default extension
+    fd.SetFilterIndex(ext_default);
 
-	// Run the dialog
-	if (fd.ShowModal() == wxID_OK)
-	{
-		// Set file dialog info
-		info.filenames.Clear();
-		info.extension = fd.GetWildcard().AfterLast('.');
-		info.ext_index = fd.GetFilterIndex();
-		info.path = fd.GetDirectory();
+    // Run the dialog
+    if (fd.ShowModal() == wxID_OK) {
+        // Set file dialog info
+        info.filenames.Clear();
+        info.extension = fd.GetWildcard().AfterLast('.');
+        info.ext_index = fd.GetFilterIndex();
+        info.path = fd.GetDirectory();
 
-		// Set last dir
-		dir_last = info.path;
+        // Set last dir
+        dir_last = info.path;
 
-		return true;
-	}
-	else
-		return false;
+        return true;
+    } else
+        return false;
 }
 
-string SFileDialog::executableExtensionString()
-{
-	if (App::platform() == App::Platform::Windows)
-		return "Executable Files (*.exe)|*.exe";
-	else
-		return "Executable Files|*.*";
+
+string SFileDialog::executableExtensionString() {
+    if (App::platform() == App::Platform::Windows)
+        return "Executable Files (*.exe)|*.exe";
+    else
+        return "Executable Files|*.*";
 }
 
-string SFileDialog::executableFileName(const string &exe_name)
-{
-	if (App::platform() == App::Platform::Windows)
-		return exe_name + ".exe";
-	else
-		return exe_name;
+
+string SFileDialog::executableFileName(const string &exe_name) {
+    if (App::platform() == App::Platform::Windows)
+        return exe_name + ".exe";
+    else
+        return exe_name;
 }

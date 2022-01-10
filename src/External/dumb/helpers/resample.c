@@ -67,7 +67,6 @@
 #endif
 
 
-
 /* A global variable for controlling resampling quality wherever a local
  * specification doesn't override it. The following values are valid:
  *
@@ -100,29 +99,29 @@ int dumb_resampling_quality = DUMB_RQ_CUBIC;
 #if 0
 #define LOOP4(iterator, CONTENT) \
 { \
-	if ((iterator) & 2) { \
-		CONTENT; \
-		CONTENT; \
-	} \
-	if ((iterator) & 1) { \
-		CONTENT; \
-	} \
-	(iterator) >>= 2; \
-	while (iterator) { \
-		CONTENT; \
-		CONTENT; \
-		CONTENT; \
-		CONTENT; \
-		(iterator)--; \
-	} \
+    if ((iterator) & 2) { \
+        CONTENT; \
+        CONTENT; \
+    } \
+    if ((iterator) & 1) { \
+        CONTENT; \
+    } \
+    (iterator) >>= 2; \
+    while (iterator) { \
+        CONTENT; \
+        CONTENT; \
+        CONTENT; \
+        CONTENT; \
+        (iterator)--; \
+    } \
 }
 #else
 #define LOOP4(iterator, CONTENT) \
 { \
-	while ( (iterator)-- ) \
-	{ \
-		CONTENT; \
-	} \
+    while ( (iterator)-- ) \
+    { \
+        CONTENT; \
+    } \
 }
 #endif
 
@@ -132,15 +131,13 @@ int dumb_resampling_quality = DUMB_RQ_CUBIC;
 #define X PASTE(x.x, SRCBITS)
 
 
+void _dumb_init_cubic(void) {
+    static int done = 0;
+    if (done) return;
 
-void _dumb_init_cubic(void)
-{
-	static int done = 0;
-	if (done) return;
+    resampler_init();
 
-	resampler_init();
-
-	done = 1;
+    done = 1;
 }
 
 
@@ -159,6 +156,7 @@ void _dumb_init_cubic(void)
 #define SRCTYPE sample_t
 #define SRCBITS 24
 #define FIR(x) (x >> 8)
+
 #include "resample.inc"
 
 /* Undefine the simplified macros. */
@@ -180,6 +178,7 @@ void _dumb_init_cubic(void)
 #define SRCTYPE short
 #define SRCBITS 16
 #define FIR(x) (x)
+
 #include "resample.inc"
 
 /* Create resamplers for 8-bit source samples. */
@@ -187,6 +186,7 @@ void _dumb_init_cubic(void)
 #define SRCTYPE signed char
 #define SRCBITS 8
 #define FIR(x) (x << 8)
+
 #include "resample.inc"
 
 
@@ -198,133 +198,111 @@ void _dumb_init_cubic(void)
 #undef dumb_end_resampler
 
 
-
-void dumb_reset_resampler_n(int n, DUMB_RESAMPLER *resampler, void *src, int src_channels, long pos, long start, long end, int quality)
-{
-	if (n == 8)
-		dumb_reset_resampler_8(resampler, src, src_channels, pos, start, end, quality);
-	else if (n == 16)
-		dumb_reset_resampler_16(resampler, src, src_channels, pos, start, end, quality);
-	else
-		dumb_reset_resampler(resampler, src, src_channels, pos, start, end, quality);
+void dumb_reset_resampler_n(int n, DUMB_RESAMPLER *resampler, void *src, int src_channels, long pos, long start, long end, int quality) {
+    if (n == 8)
+        dumb_reset_resampler_8(resampler, src, src_channels, pos, start, end, quality);
+    else if (n == 16)
+        dumb_reset_resampler_16(resampler, src, src_channels, pos, start, end, quality);
+    else
+        dumb_reset_resampler(resampler, src, src_channels, pos, start, end, quality);
 }
 
 
-
-DUMB_RESAMPLER *dumb_start_resampler_n(int n, void *src, int src_channels, long pos, long start, long end, int quality)
-{
-	if (n == 8)
-		return dumb_start_resampler_8(src, src_channels, pos, start, end, quality);
-	else if (n == 16)
-		return dumb_start_resampler_16(src, src_channels, pos, start, end, quality);
-	else
-		return dumb_start_resampler(src, src_channels, pos, start, end, quality);
+DUMB_RESAMPLER *dumb_start_resampler_n(int n, void *src, int src_channels, long pos, long start, long end, int quality) {
+    if (n == 8)
+        return dumb_start_resampler_8(src, src_channels, pos, start, end, quality);
+    else if (n == 16)
+        return dumb_start_resampler_16(src, src_channels, pos, start, end, quality);
+    else
+        return dumb_start_resampler(src, src_channels, pos, start, end, quality);
 }
 
 
-
-long dumb_resample_n_1_1(int n, DUMB_RESAMPLER *resampler, sample_t *dst, long dst_size, DUMB_VOLUME_RAMP_INFO * volume, float delta)
-{
-	if (n == 8)
-		return dumb_resample_8_1_1(resampler, dst, dst_size, volume, delta);
-	else if (n == 16)
-		return dumb_resample_16_1_1(resampler, dst, dst_size, volume, delta);
-	else
-		return dumb_resample_1_1(resampler, dst, dst_size, volume, delta);
+long dumb_resample_n_1_1(int n, DUMB_RESAMPLER *resampler, sample_t *dst, long dst_size, DUMB_VOLUME_RAMP_INFO *volume, float delta) {
+    if (n == 8)
+        return dumb_resample_8_1_1(resampler, dst, dst_size, volume, delta);
+    else if (n == 16)
+        return dumb_resample_16_1_1(resampler, dst, dst_size, volume, delta);
+    else
+        return dumb_resample_1_1(resampler, dst, dst_size, volume, delta);
 }
 
 
-
-long dumb_resample_n_1_2(int n, DUMB_RESAMPLER *resampler, sample_t *dst, long dst_size, DUMB_VOLUME_RAMP_INFO * volume_left, DUMB_VOLUME_RAMP_INFO * volume_right, float delta)
-{
-	if (n == 8)
-		return dumb_resample_8_1_2(resampler, dst, dst_size, volume_left, volume_right, delta);
-	else if (n == 16)
-		return dumb_resample_16_1_2(resampler, dst, dst_size, volume_left, volume_right, delta);
-	else
-		return dumb_resample_1_2(resampler, dst, dst_size, volume_left, volume_right, delta);
+long dumb_resample_n_1_2(int n, DUMB_RESAMPLER *resampler, sample_t *dst, long dst_size, DUMB_VOLUME_RAMP_INFO *volume_left, DUMB_VOLUME_RAMP_INFO *volume_right, float delta) {
+    if (n == 8)
+        return dumb_resample_8_1_2(resampler, dst, dst_size, volume_left, volume_right, delta);
+    else if (n == 16)
+        return dumb_resample_16_1_2(resampler, dst, dst_size, volume_left, volume_right, delta);
+    else
+        return dumb_resample_1_2(resampler, dst, dst_size, volume_left, volume_right, delta);
 }
 
 
-
-long dumb_resample_n_2_1(int n, DUMB_RESAMPLER *resampler, sample_t *dst, long dst_size, DUMB_VOLUME_RAMP_INFO * volume_left, DUMB_VOLUME_RAMP_INFO * volume_right, float delta)
-{
-	if (n == 8)
-		return dumb_resample_8_2_1(resampler, dst, dst_size, volume_left, volume_right, delta);
-	else if (n == 16)
-		return dumb_resample_16_2_1(resampler, dst, dst_size, volume_left, volume_right, delta);
-	else
-		return dumb_resample_2_1(resampler, dst, dst_size, volume_left, volume_right, delta);
+long dumb_resample_n_2_1(int n, DUMB_RESAMPLER *resampler, sample_t *dst, long dst_size, DUMB_VOLUME_RAMP_INFO *volume_left, DUMB_VOLUME_RAMP_INFO *volume_right, float delta) {
+    if (n == 8)
+        return dumb_resample_8_2_1(resampler, dst, dst_size, volume_left, volume_right, delta);
+    else if (n == 16)
+        return dumb_resample_16_2_1(resampler, dst, dst_size, volume_left, volume_right, delta);
+    else
+        return dumb_resample_2_1(resampler, dst, dst_size, volume_left, volume_right, delta);
 }
 
 
-
-long dumb_resample_n_2_2(int n, DUMB_RESAMPLER *resampler, sample_t *dst, long dst_size, DUMB_VOLUME_RAMP_INFO * volume_left, DUMB_VOLUME_RAMP_INFO * volume_right, float delta)
-{
-	if (n == 8)
-		return dumb_resample_8_2_2(resampler, dst, dst_size, volume_left, volume_right, delta);
-	else if (n == 16)
-		return dumb_resample_16_2_2(resampler, dst, dst_size, volume_left, volume_right, delta);
-	else
-		return dumb_resample_2_2(resampler, dst, dst_size, volume_left, volume_right, delta);
+long dumb_resample_n_2_2(int n, DUMB_RESAMPLER *resampler, sample_t *dst, long dst_size, DUMB_VOLUME_RAMP_INFO *volume_left, DUMB_VOLUME_RAMP_INFO *volume_right, float delta) {
+    if (n == 8)
+        return dumb_resample_8_2_2(resampler, dst, dst_size, volume_left, volume_right, delta);
+    else if (n == 16)
+        return dumb_resample_16_2_2(resampler, dst, dst_size, volume_left, volume_right, delta);
+    else
+        return dumb_resample_2_2(resampler, dst, dst_size, volume_left, volume_right, delta);
 }
 
 
-
-void dumb_resample_get_current_sample_n_1_1(int n, DUMB_RESAMPLER *resampler, DUMB_VOLUME_RAMP_INFO * volume, sample_t *dst)
-{
-	if (n == 8)
-		dumb_resample_get_current_sample_8_1_1(resampler, volume, dst);
-	else if (n == 16)
-		dumb_resample_get_current_sample_16_1_1(resampler, volume, dst);
-	else
-		dumb_resample_get_current_sample_1_1(resampler, volume, dst);
+void dumb_resample_get_current_sample_n_1_1(int n, DUMB_RESAMPLER *resampler, DUMB_VOLUME_RAMP_INFO *volume, sample_t *dst) {
+    if (n == 8)
+        dumb_resample_get_current_sample_8_1_1(resampler, volume, dst);
+    else if (n == 16)
+        dumb_resample_get_current_sample_16_1_1(resampler, volume, dst);
+    else
+        dumb_resample_get_current_sample_1_1(resampler, volume, dst);
 }
 
 
-
-void dumb_resample_get_current_sample_n_1_2(int n, DUMB_RESAMPLER *resampler, DUMB_VOLUME_RAMP_INFO * volume_left, DUMB_VOLUME_RAMP_INFO * volume_right, sample_t *dst)
-{
-	if (n == 8)
-		dumb_resample_get_current_sample_8_1_2(resampler, volume_left, volume_right, dst);
-	else if (n == 16)
-		dumb_resample_get_current_sample_16_1_2(resampler, volume_left, volume_right, dst);
-	else
-		dumb_resample_get_current_sample_1_2(resampler, volume_left, volume_right, dst);
+void dumb_resample_get_current_sample_n_1_2(int n, DUMB_RESAMPLER *resampler, DUMB_VOLUME_RAMP_INFO *volume_left, DUMB_VOLUME_RAMP_INFO *volume_right, sample_t *dst) {
+    if (n == 8)
+        dumb_resample_get_current_sample_8_1_2(resampler, volume_left, volume_right, dst);
+    else if (n == 16)
+        dumb_resample_get_current_sample_16_1_2(resampler, volume_left, volume_right, dst);
+    else
+        dumb_resample_get_current_sample_1_2(resampler, volume_left, volume_right, dst);
 }
 
 
-
-void dumb_resample_get_current_sample_n_2_1(int n, DUMB_RESAMPLER *resampler, DUMB_VOLUME_RAMP_INFO * volume_left, DUMB_VOLUME_RAMP_INFO * volume_right, sample_t *dst)
-{
-	if (n == 8)
-		dumb_resample_get_current_sample_8_2_1(resampler, volume_left, volume_right, dst);
-	else if (n == 16)
-		dumb_resample_get_current_sample_16_2_1(resampler, volume_left, volume_right, dst);
-	else
-		dumb_resample_get_current_sample_2_1(resampler, volume_left, volume_right, dst);
+void dumb_resample_get_current_sample_n_2_1(int n, DUMB_RESAMPLER *resampler, DUMB_VOLUME_RAMP_INFO *volume_left, DUMB_VOLUME_RAMP_INFO *volume_right, sample_t *dst) {
+    if (n == 8)
+        dumb_resample_get_current_sample_8_2_1(resampler, volume_left, volume_right, dst);
+    else if (n == 16)
+        dumb_resample_get_current_sample_16_2_1(resampler, volume_left, volume_right, dst);
+    else
+        dumb_resample_get_current_sample_2_1(resampler, volume_left, volume_right, dst);
 }
 
 
-
-void dumb_resample_get_current_sample_n_2_2(int n, DUMB_RESAMPLER *resampler, DUMB_VOLUME_RAMP_INFO * volume_left, DUMB_VOLUME_RAMP_INFO * volume_right, sample_t *dst)
-{
-	if (n == 8)
-		dumb_resample_get_current_sample_8_2_2(resampler, volume_left, volume_right, dst);
-	else if (n == 16)
-		dumb_resample_get_current_sample_16_2_2(resampler, volume_left, volume_right, dst);
-	else
-		dumb_resample_get_current_sample_2_2(resampler, volume_left, volume_right, dst);
+void dumb_resample_get_current_sample_n_2_2(int n, DUMB_RESAMPLER *resampler, DUMB_VOLUME_RAMP_INFO *volume_left, DUMB_VOLUME_RAMP_INFO *volume_right, sample_t *dst) {
+    if (n == 8)
+        dumb_resample_get_current_sample_8_2_2(resampler, volume_left, volume_right, dst);
+    else if (n == 16)
+        dumb_resample_get_current_sample_16_2_2(resampler, volume_left, volume_right, dst);
+    else
+        dumb_resample_get_current_sample_2_2(resampler, volume_left, volume_right, dst);
 }
 
 
-
-void dumb_end_resampler_n(int n, DUMB_RESAMPLER *resampler)
-{
-	if (n == 8)
-		dumb_end_resampler_8(resampler);
-	else if (n == 16)
-		dumb_end_resampler_16(resampler);
-	else
-		dumb_end_resampler(resampler);
+void dumb_end_resampler_n(int n, DUMB_RESAMPLER *resampler) {
+    if (n == 8)
+        dumb_end_resampler_8(resampler);
+    else if (n == 16)
+        dumb_end_resampler_16(resampler);
+    else
+        dumb_end_resampler(resampler);
 }

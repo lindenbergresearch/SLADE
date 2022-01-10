@@ -46,56 +46,55 @@
 //
 // NodeBuildersWizardPage class constructor
 // ----------------------------------------------------------------------------
-NodeBuildersWizardPage::NodeBuildersWizardPage(wxWindow* parent) : WizardPageBase(parent)
-{
-	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(sizer);
+NodeBuildersWizardPage::NodeBuildersWizardPage(wxWindow *parent) : WizardPageBase(parent) {
+    // Setup sizer
+    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(sizer);
 
-	// Add Base Resource Archive panel
-	panel_nodes = new NodesPrefsPanel(this, false);
-	sizer->Add(panel_nodes, 1, wxEXPAND);
+    // Add Base Resource Archive panel
+    panel_nodes = new NodesPrefsPanel(this, false);
+    sizer->Add(panel_nodes, 1, wxEXPAND);
 }
+
 
 // ----------------------------------------------------------------------------
 // NodeBuildersWizardPage::~NodeBuildersWizardPage
 //
 // NodeBuildersWizardPage class destructor
 // ----------------------------------------------------------------------------
-NodeBuildersWizardPage::~NodeBuildersWizardPage()
-{
+NodeBuildersWizardPage::~NodeBuildersWizardPage() {
 }
+
 
 // ----------------------------------------------------------------------------
 // NodeBuildersWizardPage::canGoNext
 //
 // Returns true if the wizard page is valid
 // ----------------------------------------------------------------------------
-bool NodeBuildersWizardPage::canGoNext()
-{
-	return true;
+bool NodeBuildersWizardPage::canGoNext() {
+    return true;
 }
+
 
 // ----------------------------------------------------------------------------
 // NodeBuildersWizardPage::applyChanges
 //
 // Applies any changes set on the wizard page
 // ----------------------------------------------------------------------------
-void NodeBuildersWizardPage::applyChanges()
-{
+void NodeBuildersWizardPage::applyChanges() {
 
 }
+
 
 // ----------------------------------------------------------------------------
 // NodeBuildersWizardPage::getDescription
 //
 // Returns the description for the wizard page
 // ----------------------------------------------------------------------------
-string NodeBuildersWizardPage::getDescription()
-{
-	return
-		"If you plan to do any map editing, set up the paths to any node builders you have. "
-		"You can also set up the build options for each node builder. "
-		"Note that ZDoom does not require nodes to be built, so if you are creating ZDoom-only maps, you can select "
-		"\"Don't Build Nodes\" and continue.";
+string NodeBuildersWizardPage::getDescription() {
+    return
+        "If you plan to do any map editing, set up the paths to any node builders you have. "
+        "You can also set up the build options for each node builder. "
+        "Note that ZDoom does not require nodes to be built, so if you are creating ZDoom-only maps, you can select "
+        "\"Don't Build Nodes\" and continue.";
 }

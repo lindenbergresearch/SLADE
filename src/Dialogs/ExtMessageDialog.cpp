@@ -41,57 +41,56 @@
 /* ExtMessageDialog::ExtMessageDialog
  * ExtMessageDialog class constructor
  *******************************************************************/
-ExtMessageDialog::ExtMessageDialog(wxWindow* parent, string caption) :
-	wxDialog(parent, -1, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
-{
-	// Create and set sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(sizer);
+ExtMessageDialog::ExtMessageDialog(wxWindow *parent, string caption) :
+    wxDialog(parent, -1, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER) {
+    // Create and set sizer
+    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(sizer);
 
-	// Add message label
-	label_message = new wxStaticText(this, -1, "", wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
-	sizer->Add(label_message, 0, wxEXPAND | wxALL, UI::pad());
+    // Add message label
+    label_message = new wxStaticText(this, -1, "", wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
+    sizer->Add(label_message, 0, wxEXPAND | wxALL, UI::pad());
 
-	// Add extended text box
-	text_ext = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
-	text_ext->SetFont(wxFont(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-	sizer->Add(text_ext, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+    // Add extended text box
+    text_ext = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
+    text_ext->SetFont(wxFont(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+    sizer->Add(text_ext, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
 
-	// Add OK button
-	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
-	hbox->AddStretchSpacer(1);
-	auto btn_ok = new wxButton(this, wxID_OK, "OK");
-	hbox->Add(btn_ok);
+    // Add OK button
+    auto hbox = new wxBoxSizer(wxHORIZONTAL);
+    sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, UI::pad());
+    hbox->AddStretchSpacer(1);
+    auto btn_ok = new wxButton(this, wxID_OK, "OK");
+    hbox->Add(btn_ok);
 
-	int size = UI::scalePx(500);
-	SetInitialSize(wxSize(size, size));
+    int size = UI::scalePx(500);
+    SetInitialSize(wxSize(size, size));
 
-	// Bind events
-	Bind(wxEVT_SIZE, &ExtMessageDialog::onSize, this);
+    // Bind events
+    Bind(wxEVT_SIZE, &ExtMessageDialog::onSize, this);
 }
+
 
 /* ExtMessageDialog::~ExtMessageDialog
  * ExtMessageDialog class destructor
  *******************************************************************/
-ExtMessageDialog::~ExtMessageDialog()
-{
+ExtMessageDialog::~ExtMessageDialog() {
 }
+
 
 /* ExtMessageDialog::setMessage
  * Sets the dialog short message
  *******************************************************************/
-void ExtMessageDialog::setMessage(string message)
-{
-	label_message->SetLabel(message);
+void ExtMessageDialog::setMessage(string message) {
+    label_message->SetLabel(message);
 }
+
 
 /* ExtMessageDialog::setExt
  * Sets the dialog extended text
  *******************************************************************/
-void ExtMessageDialog::setExt(string text)
-{
-	text_ext->SetValue(text);
+void ExtMessageDialog::setExt(string text) {
+    text_ext->SetValue(text);
 }
 
 
@@ -102,9 +101,8 @@ void ExtMessageDialog::setExt(string text)
 /* ExtMessageDialog::onSize
  * Called when the dialog is resized
  *******************************************************************/
-void ExtMessageDialog::onSize(wxSizeEvent& e)
-{
-	Layout();
-	label_message->Wrap(label_message->GetSize().GetWidth());
-	Layout();
+void ExtMessageDialog::onSize(wxSizeEvent &e) {
+    Layout();
+    label_message->Wrap(label_message->GetSize().GetWidth());
+    Layout();
 }

@@ -39,102 +39,96 @@
 /* MobjPropertyList::MobjPropertyList
  * MobjPropertyList class constructor
  *******************************************************************/
-MobjPropertyList::MobjPropertyList()
-{
+MobjPropertyList::MobjPropertyList() {
 }
+
 
 /* MobjPropertyList::~MobjPropertyList
  * MobjPropertyList class destructor
  *******************************************************************/
-MobjPropertyList::~MobjPropertyList()
-{
+MobjPropertyList::~MobjPropertyList() {
 }
+
 
 /* MobjPropertyList::propertyExists
  * Returns true if a property with the given name exists, false
  * otherwise
  *******************************************************************/
-bool MobjPropertyList::propertyExists(const string& key)
-{
-	for (unsigned a = 0; a < properties.size(); ++a)
-	{
-		if (properties[a].name == key)
-			return true;
-	}
+bool MobjPropertyList::propertyExists(const string &key) {
+    for (unsigned a = 0; a < properties.size(); ++a) {
+        if (properties[a].name == key)
+            return true;
+    }
 
-	return false;
+    return false;
 }
+
 
 /* MobjPropertyList::removeProperty
  * Removes a property value, returns true if [key] was removed
  * or false if key didn't exist
  *******************************************************************/
-bool MobjPropertyList::removeProperty(string key)
-{
-	//return properties.erase(key) > 0;
-	for (unsigned a = 0; a < properties.size(); ++a)
-	{
-		if (properties[a].name == key)
-		{
-			properties[a] = properties.back();
-			properties.pop_back();
-			return true;
-		}
-	}
+bool MobjPropertyList::removeProperty(string key) {
+    //return properties.erase(key) > 0;
+    for (unsigned a = 0; a < properties.size(); ++a) {
+        if (properties[a].name == key) {
+            properties[a] = properties.back();
+            properties.pop_back();
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
+
 
 /* MobjPropertyList::copyTo
  * Copies all properties to [list]
  *******************************************************************/
-void MobjPropertyList::copyTo(MobjPropertyList& list)
-{
-	// Clear given list
-	list.clear();
+void MobjPropertyList::copyTo(MobjPropertyList &list) {
+    // Clear given list
+    list.clear();
 
-	for (unsigned a = 0; a < properties.size(); ++a)
-		list.properties.push_back(prop_t(properties[a].name, properties[a].value));
+    for (unsigned a = 0; a < properties.size(); ++a)
+        list.properties.push_back(prop_t(properties[a].name, properties[a].value));
 }
+
 
 /* MobjPropertyList::addFlag
  * Adds a 'flag' property [key]
  *******************************************************************/
-void MobjPropertyList::addFlag(string key)
-{
-	Property flag;
-	properties.push_back(prop_t(key, flag));
+void MobjPropertyList::addFlag(string key) {
+    Property flag;
+    properties.push_back(prop_t(key, flag));
 }
+
 
 /* MobjPropertyList::toString
  * Returns a string representation of the property list
  *******************************************************************/
-string MobjPropertyList::toString(bool condensed)
-{
-	// Init return string
-	string ret = wxEmptyString;
+string MobjPropertyList::toString(bool condensed) {
+    // Init return string
+    string ret = wxEmptyString;
 
-	for (unsigned a = 0; a < properties.size(); ++a)
-	{
-		// Skip if no value
-		if (!properties[a].value.hasValue())
-			continue;
+    for (unsigned a = 0; a < properties.size(); ++a) {
+        // Skip if no value
+        if (!properties[a].value.hasValue())
+            continue;
 
-		// Add "key = value;\n" to the return string
-		string key = properties[a].name;
-		string val = properties[a].value.getStringValue();
+        // Add "key = value;\n" to the return string
+        string key = properties[a].name;
+        string val = properties[a].value.getStringValue();
 
-		if (properties[a].value.getType() == PROP_STRING)
-		{
-			val = StringUtils::escapedString(val);
-			val = "\"" + val + "\"";
-		}
+        if (properties[a].value.getType() == PROP_STRING) {
+            val = StringUtils::escapedString(val);
+            val = "\"" + val + "\"";
+        }
 
-		if (condensed)
-			ret += key + "=" + val + ";\n";
-		else
-			ret += key + " = " + val + ";\n";
-	}
+        if (condensed)
+            ret += key + "=" + val + ";\n";
+        else
+            ret += key + " = " + val + ";\n";
+    }
 
-	return ret;
+    return ret;
 }

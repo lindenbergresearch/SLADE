@@ -43,67 +43,63 @@
 /* FileMonitor::FileMonitor
  * FileMonitor class constructor
  *******************************************************************/
-FileMonitor::FileMonitor(string filename, bool start)
-{
-	// Init variables
-	this->filename = filename;
+FileMonitor::FileMonitor(string filename, bool start) {
+    // Init variables
+    this->filename = filename;
 
-	// Create process
-	process = new wxProcess(this);
+    // Create process
+    process = new wxProcess(this);
 
-	// Start timer (updates every 1 sec)
-	if (start)
-	{
-		file_modified = wxFileModificationTime(filename);
-		Start(1000);
-	}
+    // Start timer (updates every 1 sec)
+    if (start) {
+        file_modified = wxFileModificationTime(filename);
+        Start(1000);
+    }
 
-	// Bind events
-	Bind(wxEVT_END_PROCESS, &FileMonitor::onEndProcess, this);
+    // Bind events
+    Bind(wxEVT_END_PROCESS, &FileMonitor::onEndProcess, this);
 }
+
 
 /* FileMonitor::~FileMonitor
  * FileMonitor class destructor
  *******************************************************************/
-FileMonitor::~FileMonitor()
-{
-	delete process;
+FileMonitor::~FileMonitor() {
+    delete process;
 }
+
 
 /* FileMonitor::Notify
  * Override of wxTimer::Notify, called each time the timer updates
  *******************************************************************/
-void FileMonitor::Notify()
-{
-	// Check if the file has been modified since last update
-	time_t modified = wxFileModificationTime(filename);
-	if (modified > file_modified)
-	{
-		// Modified, update modification time and run any custom code
-		file_modified = modified;
-		fileModified();
-	}
+void FileMonitor::Notify() {
+    // Check if the file has been modified since last update
+    time_t modified = wxFileModificationTime(filename);
+    if (modified > file_modified) {
+        // Modified, update modification time and run any custom code
+        file_modified = modified;
+        fileModified();
+    }
 }
+
 
 /* FileMonitor::onEndProcess
  * Called when the process is terminated
  *******************************************************************/
-void FileMonitor::onEndProcess(wxProcessEvent& e)
-{
-	// Call any custom code for when the external process terminates
-	processTerminated();
+void FileMonitor::onEndProcess(wxProcessEvent &e) {
+    // Call any custom code for when the external process terminates
+    processTerminated();
 
-	// Check if the file has been modified since last update
-	time_t modified = wxFileModificationTime(filename);
-	if (modified > file_modified)
-	{
-		// Modified, update modification time and run any custom code
-		file_modified = modified;
-		fileModified();
-	}
+    // Check if the file has been modified since last update
+    time_t modified = wxFileModificationTime(filename);
+    if (modified > file_modified) {
+        // Modified, update modification time and run any custom code
+        file_modified = modified;
+        fileModified();
+    }
 
-	// Delete this FileMonitor (its job is done)
-	delete this;
+    // Delete this FileMonitor (its job is done)
+    delete this;
 }
 
 
@@ -118,100 +114,91 @@ void FileMonitor::onEndProcess(wxProcessEvent& e)
 /* DB2MapFileMonitor::DB2MapFileMonitor
  * DB2MapFileMonitor class constructor
  *******************************************************************/
-DB2MapFileMonitor::DB2MapFileMonitor(string filename, Archive* archive, string map_name) : FileMonitor(filename)
-{
-	// Init variables
-	this->archive = archive;
-	this->map_name = map_name;
+DB2MapFileMonitor::DB2MapFileMonitor(string filename, Archive *archive, string map_name) : FileMonitor(filename) {
+    // Init variables
+    this->archive = archive;
+    this->map_name = map_name;
 }
+
 
 /* DB2MapFileMonitor::~DB2MapFileMonitor
  * DB2MapFileMonitor class destructor
  *******************************************************************/
-DB2MapFileMonitor::~DB2MapFileMonitor()
-{
+DB2MapFileMonitor::~DB2MapFileMonitor() {
 }
+
 
 /* DB2MapFileMonitor::fileModified
  * Called when the external wad file has been modified
  *******************************************************************/
-void DB2MapFileMonitor::fileModified()
-{
-	// Check stuff
-	if (!archive)
-		return;
+void DB2MapFileMonitor::fileModified() {
+    // Check stuff
+    if (!archive)
+        return;
 
-	// Load file into temp archive
-	Archive* wad = new WadArchive();
-	wad->open(filename);
+    // Load file into temp archive
+    Archive *wad = new WadArchive();
+    wad->open(filename);
 
-	// Get map info for target archive
-	vector<Archive::MapDesc> maps = archive->detectMaps();
-	for (unsigned a = 0; a < maps.size(); a++)
-	{
-		if (S_CMPNOCASE(maps[a].name, map_name))
-		{
-			// Check for simple case (map is in zip archive)
-			if (maps[a].archive)
-			{
-				maps[a].head->unlock();
-				maps[a].head->importFile(filename);
-				maps[a].head->lock();
-				break;
-			}
+    // Get map info for target archive
+    vector<Archive::MapDesc> maps = archive->detectMaps();
+    for (unsigned a = 0; a < maps.size(); a++) {
+        if (S_CMPNOCASE(maps[a].name, map_name)) {
+            // Check for simple case (map is in zip archive)
+            if (maps[a].archive) {
+                maps[a].head->unlock();
+                maps[a].head->importFile(filename);
+                maps[a].head->lock();
+                break;
+            }
 
-			// Delete existing map entries
-			ArchiveEntry* entry = maps[a].head;
-			bool done = false;
-			while (!done)
-			{
-				ArchiveEntry* next = entry->nextEntry();
+            // Delete existing map entries
+            ArchiveEntry *entry = maps[a].head;
+            bool done = false;
+            while (!done) {
+                ArchiveEntry *next = entry->nextEntry();
 
-				if (entry == maps[a].end)
-					done = true;
+                if (entry == maps[a].end)
+                    done = true;
 
-				entry->unlock();
-				archive->removeEntry(entry);
-				entry = next;
-			}
+                entry->unlock();
+                archive->removeEntry(entry);
+                entry = next;
+            }
 
-			// Now re-add map entries from the temp archive
-			unsigned index = archive->entryIndex(entry);
-			for (unsigned b = 0; b < wad->numEntries(); b++)
-			{
-				ArchiveEntry* ne = archive->addEntry(wad->getEntry(b), index, nullptr, true);
-				if (index <= archive->numEntries()) index++;
-				ne->lock();
-			}
-		}
-	}
+            // Now re-add map entries from the temp archive
+            unsigned index = archive->entryIndex(entry);
+            for (unsigned b = 0; b < wad->numEntries(); b++) {
+                ArchiveEntry *ne = archive->addEntry(wad->getEntry(b), index, nullptr, true);
+                if (index <= archive->numEntries()) index++;
+                ne->lock();
+            }
+        }
+    }
 
-	// Clean up
-	delete wad;
+    // Clean up
+    delete wad;
 }
+
 
 /* DB2MapFileMonitor::processTerminated
  * Called when the Doom Builder 2 process is terminated
  *******************************************************************/
-void DB2MapFileMonitor::processTerminated()
-{
-	// Get map info for target archive
-	vector<Archive::MapDesc> maps = archive->detectMaps();
-	for (unsigned a = 0; a < maps.size(); a++)
-	{
-		if (S_CMPNOCASE(maps[a].name, map_name))
-		{
-			// Unlock map entries
-			ArchiveEntry* entry = maps[a].head;
-			while (true)
-			{
-				entry->unlock();
-				if (entry == maps[a].end) break;
-				entry = entry->nextEntry();
-			}
-		}
-	}
+void DB2MapFileMonitor::processTerminated() {
+    // Get map info for target archive
+    vector<Archive::MapDesc> maps = archive->detectMaps();
+    for (unsigned a = 0; a < maps.size(); a++) {
+        if (S_CMPNOCASE(maps[a].name, map_name)) {
+            // Unlock map entries
+            ArchiveEntry *entry = maps[a].head;
+            while (true) {
+                entry->unlock();
+                if (entry == maps[a].end) break;
+                entry = entry->nextEntry();
+            }
+        }
+    }
 
-	// Remove the temp wadfile
-	wxRemoveFile(filename);
+    // Remove the temp wadfile
+    wxRemoveFile(filename);
 }

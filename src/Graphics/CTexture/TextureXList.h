@@ -7,65 +7,94 @@
 #include "PatchTable.h"
 
 // Enum for different texturex formats
-enum TextureXFormat
-{
-	TXF_NORMAL,
-	TXF_STRIFE11,
-	TXF_NAMELESS,
-	TXF_TEXTURES,
-	TXF_JAGUAR,
+enum TextureXFormat {
+    TXF_NORMAL,
+    TXF_STRIFE11,
+    TXF_NAMELESS,
+    TXF_TEXTURES,
+    TXF_JAGUAR,
 };
 
 // Texture flags
-#define TX_WORLDPANNING	0x8000
+#define TX_WORLDPANNING    0x8000
 
 // TEXTUREx texture patch
-struct tx_patch_t
-{
-	int16_t		left;
-	int16_t		top;
-	uint16_t	patch;
+struct tx_patch_t {
+    int16_t left;
+    int16_t top;
+    uint16_t patch;
 };
 
-class TextureXList
-{
+
+class TextureXList {
 private:
-	vector<CTexture*>	textures;
-	uint8_t				txformat;
-	CTexture			tex_invalid;
+    vector<CTexture *> textures;
+    uint8_t txformat;
+    CTexture tex_invalid;
 
 public:
-	TextureXList();
-	~TextureXList();
+    TextureXList();
 
-	uint32_t	nTextures() { return textures.size(); }
 
-	CTexture*	getTexture(size_t index);
-	CTexture*	getTexture(string name);
-	uint8_t		getFormat() { return txformat; }
-	int			textureIndex(string name);
+    ~TextureXList();
 
-	void	setFormat(uint8_t format) { txformat = format; }
 
-	void		addTexture(CTexture* tex, int position = -1);
-	CTexture*	removeTexture(unsigned index, bool delete_texture = true);
-	void		swapTextures(unsigned index1, unsigned index2);
-	CTexture*	replaceTexture(unsigned index, CTexture* replacement);
+    uint32_t nTextures() { return textures.size(); }
 
-	void	clear(bool clear_patches = false);
-	void	removePatch(string patch);
 
-	bool	readTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_table, bool add = false);
-	bool	writeTEXTUREXData(ArchiveEntry* texturex, PatchTable& patch_table);
+    CTexture *getTexture(size_t index);
 
-	bool	readTEXTURESData(ArchiveEntry* textures);
-	bool	writeTEXTURESData(ArchiveEntry* textures);
 
-	bool	convertToTEXTURES();
+    CTexture *getTexture(string name);
 
-	bool	findErrors();
 
-	string	getTextureXFormatString();
+    uint8_t getFormat() { return txformat; }
+
+
+    int textureIndex(string name);
+
+
+    void setFormat(uint8_t format) { txformat = format; }
+
+
+    void addTexture(CTexture *tex, int position = -1);
+
+
+    CTexture *removeTexture(unsigned index, bool delete_texture = true);
+
+
+    void swapTextures(unsigned index1, unsigned index2);
+
+
+    CTexture *replaceTexture(unsigned index, CTexture *replacement);
+
+
+    void clear(bool clear_patches = false);
+
+
+    void removePatch(string patch);
+
+
+    bool readTEXTUREXData(ArchiveEntry *texturex, PatchTable &patch_table, bool add = false);
+
+
+    bool writeTEXTUREXData(ArchiveEntry *texturex, PatchTable &patch_table);
+
+
+    bool readTEXTURESData(ArchiveEntry *textures);
+
+
+    bool writeTEXTURESData(ArchiveEntry *textures);
+
+
+    bool convertToTEXTURES();
+
+
+    bool findErrors();
+
+
+    string getTextureXFormatString();
 };
+
 
 #endif//__TEXTUREXLIST_H__

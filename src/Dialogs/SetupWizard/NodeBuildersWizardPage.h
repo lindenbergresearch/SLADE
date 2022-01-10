@@ -4,20 +4,32 @@
 
 #include "WizardPageBase.h"
 
+
 class NodesPrefsPanel;
-class NodeBuildersWizardPage : public WizardPageBase
-{
+
+
+class NodeBuildersWizardPage : public WizardPageBase {
 private:
-	NodesPrefsPanel*	panel_nodes;
+    NodesPrefsPanel *panel_nodes;
 
 public:
-	NodeBuildersWizardPage(wxWindow* parent);
-	~NodeBuildersWizardPage();
+    NodeBuildersWizardPage(wxWindow *parent);
 
-	bool	canGoNext();
-	void	applyChanges();
-	string	getTitle() { return "Node Builders"; }
-	string	getDescription();
+
+    ~NodeBuildersWizardPage();
+
+
+    bool canGoNext();
+
+
+    void applyChanges();
+
+
+    string getTitle() { return "Node Builders"; }
+
+
+    string getDescription();
 };
+
 
 #endif//__NODE_BUILDERS_WIZARD_PAGE_H__

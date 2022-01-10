@@ -47,381 +47,370 @@
 //
 // GenLineSpecialPanel class constructor
 // ----------------------------------------------------------------------------
-GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
-{
-	// --- Setup layout ---
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(sizer);
+GenLineSpecialPanel::GenLineSpecialPanel(wxWindow *parent) : wxPanel(parent, -1) {
+    // --- Setup layout ---
+    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(sizer);
 
-	// Special Type
-	choice_type_ = new wxChoice(this, -1);
-	choice_type_->Set(WxUtils::arrayString({ "Floor", "Ceiling", "Door", "Locked Door", "Lift", "Stairs", "Crusher" }));
-	choice_type_->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoiceTypeChanged, this);
-	sizer->Add(WxUtils::createLabelHBox(this, "Type:", choice_type_), 0, wxEXPAND | wxBOTTOM, UI::pad());
+    // Special Type
+    choice_type_ = new wxChoice(this, -1);
+    choice_type_->Set(WxUtils::arrayString({ "Floor", "Ceiling", "Door", "Locked Door", "Lift", "Stairs", "Crusher" }));
+    choice_type_->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoiceTypeChanged, this);
+    sizer->Add(WxUtils::createLabelHBox(this, "Type:", choice_type_), 0, wxEXPAND | wxBOTTOM, UI::pad());
 
-	gb_sizer_ = new wxGridBagSizer(UI::pad(), UI::pad());
-	sizer->Add(gb_sizer_, 1, wxEXPAND);
+    gb_sizer_ = new wxGridBagSizer(UI::pad(), UI::pad());
+    sizer->Add(gb_sizer_, 1, wxEXPAND);
 
-	// Trigger
-	label_props_[0] = new wxStaticText(this, -1, "Trigger:", { -1, -1 }, { -1, -1 }, wxALIGN_CENTER_VERTICAL);
-	choice_props_[0] = new wxChoice(this, -1);
-	choice_props_[0]->Set(WxUtils::arrayString({
-		"Cross (Once)",
-		"Cross (Repeatable)",
-		"Switch (Once)",
-		"Switch (Repeatable)",
-		"Shoot (Once)",
-		"Shoot (Repeatable)",
-		"Door (Once)",
-		"Door (Repeatable)"
-	}));
-	choice_props_[0]->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoicePropertyChanged, this);
+    // Trigger
+    label_props_[0] = new wxStaticText(this, -1, "Trigger:", { -1, -1 }, { -1, -1 }, wxALIGN_CENTER_VERTICAL);
+    choice_props_[0] = new wxChoice(this, -1);
+    choice_props_[0]->Set(
+        WxUtils::arrayString(
+            {
+                "Cross (Once)",
+                "Cross (Repeatable)",
+                "Switch (Once)",
+                "Switch (Repeatable)",
+                "Shoot (Once)",
+                "Shoot (Repeatable)",
+                "Door (Once)",
+                "Door (Repeatable)"
+            }
+        ));
+    choice_props_[0]->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoicePropertyChanged, this);
 
-	// Other properties
-	for (unsigned a = 1; a < 7; a++)
-	{
-		label_props_[a] = new wxStaticText(this, -1, "");
-		label_props_[a]->Hide();
-		choice_props_[a] = new wxChoice(this, -1);
-		choice_props_[a]->Hide();
-		choice_props_[a]->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoicePropertyChanged, this);
-	}
+    // Other properties
+    for (unsigned a = 1; a < 7; a++) {
+        label_props_[a] = new wxStaticText(this, -1, "");
+        label_props_[a]->Hide();
+        choice_props_[a] = new wxChoice(this, -1);
+        choice_props_[a]->Hide();
+        choice_props_[a]->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoicePropertyChanged, this);
+    }
 
-	// Default to floor type
-	choice_type_->Select(0);
-	choice_props_[0]->Select(0);
-	setupForType(0);
+    // Default to floor type
+    choice_type_->Select(0);
+    choice_props_[0]->Select(0);
+    setupForType(0);
 }
+
 
 // ----------------------------------------------------------------------------
 // GenLineSpecialPanel::setupForType
 //
 // Sets up generalised properties for special type [type]
 // ----------------------------------------------------------------------------
-void GenLineSpecialPanel::setupForType(int type)
-{
-	// Clear properties
-	gb_sizer_->Clear();
-	for (unsigned a = 1; a < 7; a++)
-	{
-		label_props_[a]->Hide();
-		choice_props_[a]->Hide();
-		choice_props_[a]->Clear();
-	}
+void GenLineSpecialPanel::setupForType(int type) {
+    // Clear properties
+    gb_sizer_->Clear();
+    for (unsigned a = 1; a < 7; a++) {
+        label_props_[a]->Hide();
+        choice_props_[a]->Hide();
+        choice_props_[a]->Clear();
+    }
 
-	// Trigger
-	int n_props = 1;
-	gb_sizer_->Add(label_props_[0], { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	gb_sizer_->Add(choice_props_[0], { 0, 1 }, { 1, 1 }, wxEXPAND);
-	if (!gb_sizer_->IsColGrowable(1))
-		gb_sizer_->AddGrowableCol(1, 1);
+    // Trigger
+    int n_props = 1;
+    gb_sizer_->Add(label_props_[0], { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+    gb_sizer_->Add(choice_props_[0], { 0, 1 }, { 1, 1 }, wxEXPAND);
+    if (!gb_sizer_->IsColGrowable(1))
+        gb_sizer_->AddGrowableCol(1, 1);
 
-	// Floor
-	if (type == BoomGenLineSpecial::GS_FLOOR)
-	{
-		// Speed
-		label_props_[1]->SetLabel("Speed:");
-		choice_props_[1]->AppendString("Slow");
-		choice_props_[1]->AppendString("Normal");
-		choice_props_[1]->AppendString("Fast");
-		choice_props_[1]->AppendString("Turbo");
+    // Floor
+    if (type == BoomGenLineSpecial::GS_FLOOR) {
+        // Speed
+        label_props_[1]->SetLabel("Speed:");
+        choice_props_[1]->AppendString("Slow");
+        choice_props_[1]->AppendString("Normal");
+        choice_props_[1]->AppendString("Fast");
+        choice_props_[1]->AppendString("Turbo");
 
-		// Model/Monsters
-		label_props_[2]->SetLabel("Monsters Activate:");
-		choice_props_[2]->AppendString("No");
-		choice_props_[2]->AppendString("Yes");
+        // Model/Monsters
+        label_props_[2]->SetLabel("Monsters Activate:");
+        choice_props_[2]->AppendString("No");
+        choice_props_[2]->AppendString("Yes");
 
-		// Direction
-		label_props_[3]->SetLabel("Direction:");
-		choice_props_[3]->AppendString("Down");
-		choice_props_[3]->AppendString("Up");
+        // Direction
+        label_props_[3]->SetLabel("Direction:");
+        choice_props_[3]->AppendString("Down");
+        choice_props_[3]->AppendString("Up");
 
-		// Target
-		label_props_[4]->SetLabel("Target:");
-		choice_props_[4]->AppendString("Highest Neighbouring Floor");
-		choice_props_[4]->AppendString("Lowest Neighbouring Floor");
-		choice_props_[4]->AppendString("Next Neighbouring Floor");
-		choice_props_[4]->AppendString("Lowest Neighbouring Ceiling");
-		choice_props_[4]->AppendString("Ceiling");
-		choice_props_[4]->AppendString("Move by Shortest Lower Texture");
-		choice_props_[4]->AppendString("Move 24 Units");
-		choice_props_[4]->AppendString("Move 32 Units");
+        // Target
+        label_props_[4]->SetLabel("Target:");
+        choice_props_[4]->AppendString("Highest Neighbouring Floor");
+        choice_props_[4]->AppendString("Lowest Neighbouring Floor");
+        choice_props_[4]->AppendString("Next Neighbouring Floor");
+        choice_props_[4]->AppendString("Lowest Neighbouring Ceiling");
+        choice_props_[4]->AppendString("Ceiling");
+        choice_props_[4]->AppendString("Move by Shortest Lower Texture");
+        choice_props_[4]->AppendString("Move 24 Units");
+        choice_props_[4]->AppendString("Move 32 Units");
 
-		// Change
-		label_props_[5]->SetLabel("Change:");
-		choice_props_[5]->AppendString("No Change");
-		choice_props_[5]->AppendString("Zero Sector Type, Copy Texture");
-		choice_props_[5]->AppendString("Copy Texture Only");
-		choice_props_[5]->AppendString("Copy Type and Texture");
+        // Change
+        label_props_[5]->SetLabel("Change:");
+        choice_props_[5]->AppendString("No Change");
+        choice_props_[5]->AppendString("Zero Sector Type, Copy Texture");
+        choice_props_[5]->AppendString("Copy Texture Only");
+        choice_props_[5]->AppendString("Copy Type and Texture");
 
-		// Crush
-		label_props_[6]->SetLabel("Crush:");
-		choice_props_[6]->AppendString("No");
-		choice_props_[6]->AppendString("Yes");
+        // Crush
+        label_props_[6]->SetLabel("Crush:");
+        choice_props_[6]->AppendString("No");
+        choice_props_[6]->AppendString("Yes");
 
-		n_props = 7;
-	}
+        n_props = 7;
+    }
 
-	// Ceiling
-	else if (type == BoomGenLineSpecial::GS_CEILING)
-	{
-		// Speed
-		label_props_[1]->SetLabel("Speed:");
-		choice_props_[1]->AppendString("Slow");
-		choice_props_[1]->AppendString("Normal");
-		choice_props_[1]->AppendString("Fast");
-		choice_props_[1]->AppendString("Turbo");
+        // Ceiling
+    else if (type == BoomGenLineSpecial::GS_CEILING) {
+        // Speed
+        label_props_[1]->SetLabel("Speed:");
+        choice_props_[1]->AppendString("Slow");
+        choice_props_[1]->AppendString("Normal");
+        choice_props_[1]->AppendString("Fast");
+        choice_props_[1]->AppendString("Turbo");
 
-		// Model/Monsters
-		label_props_[2]->SetLabel("Monsters Activate:");
-		choice_props_[2]->AppendString("No");
-		choice_props_[2]->AppendString("Yes");
+        // Model/Monsters
+        label_props_[2]->SetLabel("Monsters Activate:");
+        choice_props_[2]->AppendString("No");
+        choice_props_[2]->AppendString("Yes");
 
-		// Direction
-		label_props_[3]->SetLabel("Direction:");
-		choice_props_[3]->AppendString("Down");
-		choice_props_[3]->AppendString("Up");
+        // Direction
+        label_props_[3]->SetLabel("Direction:");
+        choice_props_[3]->AppendString("Down");
+        choice_props_[3]->AppendString("Up");
 
-		// Target
-		label_props_[4]->SetLabel("Target:");
-		choice_props_[4]->AppendString("Highest Neighbouring Ceiling");
-		choice_props_[4]->AppendString("Lowest Neighbouring Ceiling");
-		choice_props_[4]->AppendString("Next Neighbouring Ceiling");
-		choice_props_[4]->AppendString("Highest Neighbouring Floor");
-		choice_props_[4]->AppendString("Floor");
-		choice_props_[4]->AppendString("Move by Shortest Upper Texture");
-		choice_props_[4]->AppendString("Move 24 Units");
-		choice_props_[4]->AppendString("Move 32 Units");
+        // Target
+        label_props_[4]->SetLabel("Target:");
+        choice_props_[4]->AppendString("Highest Neighbouring Ceiling");
+        choice_props_[4]->AppendString("Lowest Neighbouring Ceiling");
+        choice_props_[4]->AppendString("Next Neighbouring Ceiling");
+        choice_props_[4]->AppendString("Highest Neighbouring Floor");
+        choice_props_[4]->AppendString("Floor");
+        choice_props_[4]->AppendString("Move by Shortest Upper Texture");
+        choice_props_[4]->AppendString("Move 24 Units");
+        choice_props_[4]->AppendString("Move 32 Units");
 
-		// Change
-		label_props_[5]->SetLabel("Change:");
-		choice_props_[5]->AppendString("No Change");
-		choice_props_[5]->AppendString("Zero Sector Type, Copy Texture");
-		choice_props_[5]->AppendString("Copy Texture Only");
-		choice_props_[5]->AppendString("Copy Type and Texture");
+        // Change
+        label_props_[5]->SetLabel("Change:");
+        choice_props_[5]->AppendString("No Change");
+        choice_props_[5]->AppendString("Zero Sector Type, Copy Texture");
+        choice_props_[5]->AppendString("Copy Texture Only");
+        choice_props_[5]->AppendString("Copy Type and Texture");
 
-		// Crush
-		label_props_[6]->SetLabel("Crush:");
-		choice_props_[6]->AppendString("No");
-		choice_props_[6]->AppendString("Yes");
+        // Crush
+        label_props_[6]->SetLabel("Crush:");
+        choice_props_[6]->AppendString("No");
+        choice_props_[6]->AppendString("Yes");
 
-		n_props = 7;
-	}
+        n_props = 7;
+    }
 
-	// Door
-	else if (type == BoomGenLineSpecial::GS_DOOR)
-	{
-		// Speed
-		label_props_[1]->SetLabel("Speed:");
-		choice_props_[1]->AppendString("Slow");
-		choice_props_[1]->AppendString("Normal");
-		choice_props_[1]->AppendString("Fast");
-		choice_props_[1]->AppendString("Turbo");
+        // Door
+    else if (type == BoomGenLineSpecial::GS_DOOR) {
+        // Speed
+        label_props_[1]->SetLabel("Speed:");
+        choice_props_[1]->AppendString("Slow");
+        choice_props_[1]->AppendString("Normal");
+        choice_props_[1]->AppendString("Fast");
+        choice_props_[1]->AppendString("Turbo");
 
-		// Kind
-		label_props_[2]->SetLabel("Kind:");
-		choice_props_[2]->AppendString("Open, Wait, Close");
-		choice_props_[2]->AppendString("Open");
-		choice_props_[2]->AppendString("Close, Wait, Open");
-		choice_props_[2]->AppendString("Close");
+        // Kind
+        label_props_[2]->SetLabel("Kind:");
+        choice_props_[2]->AppendString("Open, Wait, Close");
+        choice_props_[2]->AppendString("Open");
+        choice_props_[2]->AppendString("Close, Wait, Open");
+        choice_props_[2]->AppendString("Close");
 
-		// Monsters
-		label_props_[3]->SetLabel("Monsters Activate:");
-		choice_props_[3]->AppendString("No");
-		choice_props_[3]->AppendString("Yes");
+        // Monsters
+        label_props_[3]->SetLabel("Monsters Activate:");
+        choice_props_[3]->AppendString("No");
+        choice_props_[3]->AppendString("Yes");
 
-		// Delay
-		label_props_[4]->SetLabel("Wait Time:");
-		choice_props_[4]->AppendString("1 Second");
-		choice_props_[4]->AppendString("4 Seconds");
-		choice_props_[4]->AppendString("9 Seconds");
-		choice_props_[4]->AppendString("30 Seconds");
+        // Delay
+        label_props_[4]->SetLabel("Wait Time:");
+        choice_props_[4]->AppendString("1 Second");
+        choice_props_[4]->AppendString("4 Seconds");
+        choice_props_[4]->AppendString("9 Seconds");
+        choice_props_[4]->AppendString("30 Seconds");
 
-		n_props = 5;
-	}
+        n_props = 5;
+    }
 
-	// Locked Door
-	else if (type == BoomGenLineSpecial::GS_LOCKED_DOOR)
-	{
-		// Speed
-		label_props_[1]->SetLabel("Speed:");
-		choice_props_[1]->AppendString("Slow");
-		choice_props_[1]->AppendString("Normal");
-		choice_props_[1]->AppendString("Fast");
-		choice_props_[1]->AppendString("Turbo");
+        // Locked Door
+    else if (type == BoomGenLineSpecial::GS_LOCKED_DOOR) {
+        // Speed
+        label_props_[1]->SetLabel("Speed:");
+        choice_props_[1]->AppendString("Slow");
+        choice_props_[1]->AppendString("Normal");
+        choice_props_[1]->AppendString("Fast");
+        choice_props_[1]->AppendString("Turbo");
 
-		// Kind
-		label_props_[2]->SetLabel("Kind:");
-		choice_props_[2]->AppendString("Open, Wait, Close");
-		choice_props_[2]->AppendString("Open");
-		choice_props_[2]->AppendString("Close, Wait, Open");
-		choice_props_[2]->AppendString("Close");
+        // Kind
+        label_props_[2]->SetLabel("Kind:");
+        choice_props_[2]->AppendString("Open, Wait, Close");
+        choice_props_[2]->AppendString("Open");
+        choice_props_[2]->AppendString("Close, Wait, Open");
+        choice_props_[2]->AppendString("Close");
 
-		// Lock
-		label_props_[3]->SetLabel("Lock:");
-		choice_props_[3]->AppendString("Any Key");
-		choice_props_[3]->AppendString("Red Card");
-		choice_props_[3]->AppendString("Blue Card");
-		choice_props_[3]->AppendString("Yellow Card");
-		choice_props_[3]->AppendString("Red Skull");
-		choice_props_[3]->AppendString("Blue Skull");
-		choice_props_[3]->AppendString("Yellow Skull");
-		choice_props_[3]->AppendString("All Keys");
+        // Lock
+        label_props_[3]->SetLabel("Lock:");
+        choice_props_[3]->AppendString("Any Key");
+        choice_props_[3]->AppendString("Red Card");
+        choice_props_[3]->AppendString("Blue Card");
+        choice_props_[3]->AppendString("Yellow Card");
+        choice_props_[3]->AppendString("Red Skull");
+        choice_props_[3]->AppendString("Blue Skull");
+        choice_props_[3]->AppendString("Yellow Skull");
+        choice_props_[3]->AppendString("All Keys");
 
-		// Key Type
-		label_props_[4]->SetLabel("Key Type:");
-		choice_props_[4]->AppendString("Specific (Red Card <> Red Skull)");
-		choice_props_[4]->AppendString("Colour (Red Card = Red Skull)");
+        // Key Type
+        label_props_[4]->SetLabel("Key Type:");
+        choice_props_[4]->AppendString("Specific (Red Card <> Red Skull)");
+        choice_props_[4]->AppendString("Colour (Red Card = Red Skull)");
 
-		n_props = 5;
-	}
+        n_props = 5;
+    }
 
-	// Lift
-	else if (type == BoomGenLineSpecial::GS_LIFT)
-	{
-		// Speed
-		label_props_[1]->SetLabel("Speed:");
-		choice_props_[1]->AppendString("Slow");
-		choice_props_[1]->AppendString("Normal");
-		choice_props_[1]->AppendString("Fast");
-		choice_props_[1]->AppendString("Turbo");
+        // Lift
+    else if (type == BoomGenLineSpecial::GS_LIFT) {
+        // Speed
+        label_props_[1]->SetLabel("Speed:");
+        choice_props_[1]->AppendString("Slow");
+        choice_props_[1]->AppendString("Normal");
+        choice_props_[1]->AppendString("Fast");
+        choice_props_[1]->AppendString("Turbo");
 
-		// Monsters
-		label_props_[2]->SetLabel("Monsters Activate:");
-		choice_props_[2]->AppendString("No");
-		choice_props_[2]->AppendString("Yes");
+        // Monsters
+        label_props_[2]->SetLabel("Monsters Activate:");
+        choice_props_[2]->AppendString("No");
+        choice_props_[2]->AppendString("Yes");
 
-		// Delay
-		label_props_[3]->SetLabel("Wait Time:");
-		choice_props_[3]->AppendString("1 Second");
-		choice_props_[3]->AppendString("3 Seconds");
-		choice_props_[3]->AppendString("5 Seconds");
-		choice_props_[3]->AppendString("10 Seconds");
+        // Delay
+        label_props_[3]->SetLabel("Wait Time:");
+        choice_props_[3]->AppendString("1 Second");
+        choice_props_[3]->AppendString("3 Seconds");
+        choice_props_[3]->AppendString("5 Seconds");
+        choice_props_[3]->AppendString("10 Seconds");
 
-		// Target
-		label_props_[4]->SetLabel("Target:");
-		choice_props_[4]->AppendString("Lowest Neighbouring Floor");
-		choice_props_[4]->AppendString("Next Neighbouring Floor");
-		choice_props_[4]->AppendString("Lowest Neighbouring Ceiling");
-		choice_props_[4]->AppendString("Perpetual");
+        // Target
+        label_props_[4]->SetLabel("Target:");
+        choice_props_[4]->AppendString("Lowest Neighbouring Floor");
+        choice_props_[4]->AppendString("Next Neighbouring Floor");
+        choice_props_[4]->AppendString("Lowest Neighbouring Ceiling");
+        choice_props_[4]->AppendString("Perpetual");
 
-		n_props = 5;
-	}
+        n_props = 5;
+    }
 
-	// Stairs
-	else if (type == BoomGenLineSpecial::GS_STAIRS)
-	{
-		// Speed
-		label_props_[1]->SetLabel("Speed:");
-		choice_props_[1]->AppendString("Slow");
-		choice_props_[1]->AppendString("Normal");
-		choice_props_[1]->AppendString("Fast");
-		choice_props_[1]->AppendString("Turbo");
+        // Stairs
+    else if (type == BoomGenLineSpecial::GS_STAIRS) {
+        // Speed
+        label_props_[1]->SetLabel("Speed:");
+        choice_props_[1]->AppendString("Slow");
+        choice_props_[1]->AppendString("Normal");
+        choice_props_[1]->AppendString("Fast");
+        choice_props_[1]->AppendString("Turbo");
 
-		// Monsters
-		label_props_[2]->SetLabel("Monsters Activate:");
-		choice_props_[2]->AppendString("No");
-		choice_props_[2]->AppendString("Yes");
+        // Monsters
+        label_props_[2]->SetLabel("Monsters Activate:");
+        choice_props_[2]->AppendString("No");
+        choice_props_[2]->AppendString("Yes");
 
-		// Step Height
-		label_props_[3]->SetLabel("Step Height");
-		choice_props_[3]->AppendString("4 Units");
-		choice_props_[3]->AppendString("8 Units");
-		choice_props_[3]->AppendString("16 Units");
-		choice_props_[3]->AppendString("24 Units");
+        // Step Height
+        label_props_[3]->SetLabel("Step Height");
+        choice_props_[3]->AppendString("4 Units");
+        choice_props_[3]->AppendString("8 Units");
+        choice_props_[3]->AppendString("16 Units");
+        choice_props_[3]->AppendString("24 Units");
 
-		// Direction
-		label_props_[4]->SetLabel("Direction:");
-		choice_props_[4]->AppendString("Down");
-		choice_props_[4]->AppendString("Up");
+        // Direction
+        label_props_[4]->SetLabel("Direction:");
+        choice_props_[4]->AppendString("Down");
+        choice_props_[4]->AppendString("Up");
 
-		// Ignore Texture
-		label_props_[5]->SetLabel("Ignore Texture:");
-		choice_props_[5]->AppendString("No: Stop building on diff. texture");
-		choice_props_[5]->AppendString("Yes");
+        // Ignore Texture
+        label_props_[5]->SetLabel("Ignore Texture:");
+        choice_props_[5]->AppendString("No: Stop building on diff. texture");
+        choice_props_[5]->AppendString("Yes");
 
-		n_props = 6;
-	}
+        n_props = 6;
+    }
 
-	// Crusher
-	else if (type == BoomGenLineSpecial::GS_CRUSHER)
-	{
-		// Speed
-		label_props_[1]->SetLabel("Speed:");
-		choice_props_[1]->AppendString("Slow");
-		choice_props_[1]->AppendString("Normal");
-		choice_props_[1]->AppendString("Fast");
-		choice_props_[1]->AppendString("Turbo");
+        // Crusher
+    else if (type == BoomGenLineSpecial::GS_CRUSHER) {
+        // Speed
+        label_props_[1]->SetLabel("Speed:");
+        choice_props_[1]->AppendString("Slow");
+        choice_props_[1]->AppendString("Normal");
+        choice_props_[1]->AppendString("Fast");
+        choice_props_[1]->AppendString("Turbo");
 
-		// Monsters
-		label_props_[2]->SetLabel("Monsters Activate:");
-		choice_props_[2]->AppendString("No");
-		choice_props_[2]->AppendString("Yes");
+        // Monsters
+        label_props_[2]->SetLabel("Monsters Activate:");
+        choice_props_[2]->AppendString("No");
+        choice_props_[2]->AppendString("Yes");
 
-		// Monsters
-		label_props_[3]->SetLabel("Silent:");
-		choice_props_[3]->AppendString("No");
-		choice_props_[3]->AppendString("Yes");
+        // Monsters
+        label_props_[3]->SetLabel("Silent:");
+        choice_props_[3]->AppendString("No");
+        choice_props_[3]->AppendString("Yes");
 
-		n_props = 4;
-	}
+        n_props = 4;
+    }
 
-	// Show properties
-	for (int a = 1; a < n_props; a++)
-	{
-		gb_sizer_->Add(label_props_[a], { a, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-		gb_sizer_->Add(choice_props_[a], { a, 1 }, { 1, 1 }, wxEXPAND);
-		label_props_[a]->Show();
-		choice_props_[a]->Show();
-		choice_props_[a]->Select(0);
-	}
+    // Show properties
+    for (int a = 1; a < n_props; a++) {
+        gb_sizer_->Add(label_props_[a], { a, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+        gb_sizer_->Add(choice_props_[a], { a, 1 }, { 1, 1 }, wxEXPAND);
+        label_props_[a]->Show();
+        choice_props_[a]->Show();
+        choice_props_[a]->Select(0);
+    }
 
-	Layout();
-	Update();
+    Layout();
+    Update();
 }
+
 
 // ----------------------------------------------------------------------------
 // GenLineSpecialPanel::setProp
 //
 // Sets the generalised property at [index] to [value]
 // ----------------------------------------------------------------------------
-void GenLineSpecialPanel::setProp(int prop, int value)
-{
-	if (prop < 0 || prop > 6)
-		return;
+void GenLineSpecialPanel::setProp(int prop, int value) {
+    if (prop < 0 || prop > 6)
+        return;
 
-	choice_props_[prop]->Select(value);
+    choice_props_[prop]->Select(value);
 
-	// Floor
-	if (choice_type_->GetSelection() == BoomGenLineSpecial::GS_FLOOR)
-	{
-		// Change
-		if (prop == 5)
-		{
-			// 0 (No Change), prop 2 is monster
-			if (value == 0)
-			{
-				label_props_[2]->SetLabel("Monsters Activate:");
-				choice_props_[2]->Clear();
-				choice_props_[2]->AppendString("No");
-				choice_props_[2]->AppendString("Yes");
-				choice_props_[2]->Select(0);
-			}
+    // Floor
+    if (choice_type_->GetSelection() == BoomGenLineSpecial::GS_FLOOR) {
+        // Change
+        if (prop == 5) {
+            // 0 (No Change), prop 2 is monster
+            if (value == 0) {
+                label_props_[2]->SetLabel("Monsters Activate:");
+                choice_props_[2]->Clear();
+                choice_props_[2]->AppendString("No");
+                choice_props_[2]->AppendString("Yes");
+                choice_props_[2]->Select(0);
+            }
 
-			// > 0, prop 2 is model
-			else
-			{
-				label_props_[2]->SetLabel("Model Sector:");
-				choice_props_[2]->Clear();
-				choice_props_[2]->AppendString("Trigger: Front Side of Trigger Line");
-				choice_props_[2]->AppendString("Numeric: Sector at Target Height");
-				choice_props_[2]->Select(0);
-			}
+                // > 0, prop 2 is model
+            else {
+                label_props_[2]->SetLabel("Model Sector:");
+                choice_props_[2]->Clear();
+                choice_props_[2]->AppendString("Trigger: Front Side of Trigger Line");
+                choice_props_[2]->AppendString("Numeric: Sector at Target Height");
+                choice_props_[2]->Select(0);
+            }
 
-			Layout();
-		}
-	}
+            Layout();
+        }
+    }
 }
+
 
 // ----------------------------------------------------------------------------
 // GenLineSpecialPanel::loadSpecial
@@ -429,43 +418,40 @@ void GenLineSpecialPanel::setProp(int prop, int value)
 // Opens boom generalised line special [special], setting up controls as
 // necessary
 // ----------------------------------------------------------------------------
-bool GenLineSpecialPanel::loadSpecial(int special)
-{
-	// Get special info
-	int props[7];
-	int type = BoomGenLineSpecial::getLineTypeProperties(special, props);
+bool GenLineSpecialPanel::loadSpecial(int special) {
+    // Get special info
+    int props[7];
+    int type = BoomGenLineSpecial::getLineTypeProperties(special, props);
 
-	if (type >= 0)
-	{
-		// Set special type
-		choice_type_->Select(type);
-		setupForType(type);
+    if (type >= 0) {
+        // Set special type
+        choice_type_->Select(type);
+        setupForType(type);
 
-		// Set selected properties
-		for (unsigned a = 0; a < 7; a++)
-		{
-			if (choice_props_[a]->IsShown())
-				setProp(a, props[a]);
-		}
+        // Set selected properties
+        for (unsigned a = 0; a < 7; a++) {
+            if (choice_props_[a]->IsShown())
+                setProp(a, props[a]);
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	// Not a generalised special
-	return false;
+    // Not a generalised special
+    return false;
 }
+
 
 // ----------------------------------------------------------------------------
 // GenLineSpecialPanel::getSpecial
 //
 // Returns the currently selected special
 // ----------------------------------------------------------------------------
-int GenLineSpecialPanel::getSpecial()
-{
-	int props[7];
-	for (unsigned a = 0; a < 7; a++)
-		props[a] = choice_props_[a]->GetSelection();
-	return BoomGenLineSpecial::generateSpecial(choice_type_->GetSelection(), props);
+int GenLineSpecialPanel::getSpecial() {
+    int props[7];
+    for (unsigned a = 0; a < 7; a++)
+        props[a] = choice_props_[a]->GetSelection();
+    return BoomGenLineSpecial::generateSpecial(choice_type_->GetSelection(), props);
 }
 
 
@@ -481,48 +467,43 @@ int GenLineSpecialPanel::getSpecial()
 //
 // Called when the special type dropdown is changed
 // ----------------------------------------------------------------------------
-void GenLineSpecialPanel::onChoiceTypeChanged(wxCommandEvent& e)
-{
-	setupForType(choice_type_->GetSelection());
+void GenLineSpecialPanel::onChoiceTypeChanged(wxCommandEvent &e) {
+    setupForType(choice_type_->GetSelection());
 }
+
 
 // ----------------------------------------------------------------------------
 // GenLineSpecialPanel::onChoicePropertyChanged
 //
 // Called when a property dropdown is changed
 // ----------------------------------------------------------------------------
-void GenLineSpecialPanel::onChoicePropertyChanged(wxCommandEvent& e)
-{
-	int type = choice_type_->GetSelection();
-	wxChoice* choice_changed = (wxChoice*)e.GetEventObject();
+void GenLineSpecialPanel::onChoicePropertyChanged(wxCommandEvent &e) {
+    int type = choice_type_->GetSelection();
+    wxChoice *choice_changed = (wxChoice *) e.GetEventObject();
 
-	// Floor
-	if (type == BoomGenLineSpecial::GS_FLOOR)
-	{
-		// Change
-		if (choice_changed == choice_props_[5])
-		{
-			// 0 (No Change), prop 2 is monster
-			if (choice_changed->GetSelection() == 0)
-			{
-				label_props_[2]->SetLabel("Monsters Activate:");
-				choice_props_[2]->Clear();
-				choice_props_[2]->AppendString("No");
-				choice_props_[2]->AppendString("Yes");
-				choice_props_[2]->Select(0);
-			}
+    // Floor
+    if (type == BoomGenLineSpecial::GS_FLOOR) {
+        // Change
+        if (choice_changed == choice_props_[5]) {
+            // 0 (No Change), prop 2 is monster
+            if (choice_changed->GetSelection() == 0) {
+                label_props_[2]->SetLabel("Monsters Activate:");
+                choice_props_[2]->Clear();
+                choice_props_[2]->AppendString("No");
+                choice_props_[2]->AppendString("Yes");
+                choice_props_[2]->Select(0);
+            }
 
-			// > 0, prop 2 is model
-			else
-			{
-				label_props_[2]->SetLabel("Model Sector:");
-				choice_props_[2]->Clear();
-				choice_props_[2]->AppendString("Trigger: Front Side of Trigger Line");
-				choice_props_[2]->AppendString("Numeric: Sector at Target Height");
-				choice_props_[2]->Select(0);
-			}
+                // > 0, prop 2 is model
+            else {
+                label_props_[2]->SetLabel("Model Sector:");
+                choice_props_[2]->Clear();
+                choice_props_[2]->AppendString("Trigger: Front Side of Trigger Line");
+                choice_props_[2]->AppendString("Numeric: Sector at Target Height");
+                choice_props_[2]->Select(0);
+            }
 
-			Layout();
-		}
-	}
+            Layout();
+        }
+    }
 }

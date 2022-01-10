@@ -43,126 +43,125 @@
 /* NumberTextCtrl::NumberTextCtrl
  * NumberTextCtrl class constructor
  *******************************************************************/
-NumberTextCtrl::NumberTextCtrl(wxWindow* parent, bool allow_decimal) : wxTextCtrl(parent, -1)
-{
-	last_point = 0;
-	this->allow_decimal = allow_decimal;
+NumberTextCtrl::NumberTextCtrl(wxWindow *parent, bool allow_decimal) : wxTextCtrl(parent, -1) {
+    last_point = 0;
+    this->allow_decimal = allow_decimal;
 
-	SetToolTip("Use ++, --, *, / to make relative changes, e.g., ++16 to increase by 16");
+    SetToolTip("Use ++, --, *, / to make relative changes, e.g., ++16 to increase by 16");
 
-	// Bind events
-	Bind(wxEVT_CHAR, &NumberTextCtrl::onChar, this);
-	Bind(wxEVT_TEXT, &NumberTextCtrl::onChanged, this);
+    // Bind events
+    Bind(wxEVT_CHAR, &NumberTextCtrl::onChar, this);
+    Bind(wxEVT_TEXT, &NumberTextCtrl::onChanged, this);
 }
+
 
 /* NumberTextCtrl::getNumber
  * Returns the number currently entered. If it's an incrememt or
  * decrement, returns [base] incremented/decremented by the number
  *******************************************************************/
-int NumberTextCtrl::getNumber(int base)
-{
-	string val = GetValue();
+int NumberTextCtrl::getNumber(int base) {
+    string val = GetValue();
 
-	// Get integer value
-	long lval;
-	if (val.IsEmpty())
-		return 0;
-	else if (val.StartsWith("--") || val.StartsWith("++") || val.StartsWith("**") || val.StartsWith("//"))
-		val = val.Mid(2);
-	else if (val.StartsWith("+") || val.StartsWith("*") || val.StartsWith("/"))
-		val = val.Mid(1);
-	val.ToLong(&lval);
+    // Get integer value
+    long lval;
+    if (val.IsEmpty())
+        return 0;
+    else if (val.StartsWith("--") || val.StartsWith("++") || val.StartsWith("**") || val.StartsWith("//"))
+        val = val.Mid(2);
+    else if (val.StartsWith("+") || val.StartsWith("*") || val.StartsWith("/"))
+        val = val.Mid(1);
+    val.ToLong(&lval);
 
-	// Return it (incremented/decremented based on [base])
-	if (isIncrement())
-		return base + lval;
-	else if (isDecrement())
-		return base - lval;
-	else if (isFactor())
-		return base * lval;
-	else if (isDivisor())
-		return base / lval;
-	else
-		return lval;
+    // Return it (incremented/decremented based on [base])
+    if (isIncrement())
+        return base + lval;
+    else if (isDecrement())
+        return base - lval;
+    else if (isFactor())
+        return base * lval;
+    else if (isDivisor())
+        return base / lval;
+    else
+        return lval;
 }
+
 
 /* NumberTextCtrl::getDecNumber
  * Returns the number currently entered. If it's an incrememt or
  * decrement, returns [base] incremented/decremented by the number
  *******************************************************************/
-double NumberTextCtrl::getDecNumber(double base)
-{
-	// If decimals aren't allowed just return truncated integral value
-	if (!allow_decimal)
-		return getNumber(base);
+double NumberTextCtrl::getDecNumber(double base) {
+    // If decimals aren't allowed just return truncated integral value
+    if (!allow_decimal)
+        return getNumber(base);
 
-	string val = GetValue();
+    string val = GetValue();
 
-	// Get double value
-	double dval;
-	if (val.IsEmpty())
-		return 0;
-	else if (val.StartsWith("--") || val.StartsWith("++"))
-		val = val.Mid(2);
-	else if (val.StartsWith("+"))
-		val = val.Mid(1);
-	val.ToDouble(&dval);
+    // Get double value
+    double dval;
+    if (val.IsEmpty())
+        return 0;
+    else if (val.StartsWith("--") || val.StartsWith("++"))
+        val = val.Mid(2);
+    else if (val.StartsWith("+"))
+        val = val.Mid(1);
+    val.ToDouble(&dval);
 
-	// Return it (incremented/decremented based on [base])
-	if (isIncrement())
-		return base + dval;
-	else if (isDecrement())
-		return base - dval;
-	else
-		return dval;
+    // Return it (incremented/decremented based on [base])
+    if (isIncrement())
+        return base + dval;
+    else if (isDecrement())
+        return base - dval;
+    else
+        return dval;
 }
+
 
 /* NumberTextCtrl::isIncrement
  * Returns true if the entered value is an increment
  *******************************************************************/
-bool NumberTextCtrl::isIncrement()
-{
-	return GetValue().StartsWith("++");
+bool NumberTextCtrl::isIncrement() {
+    return GetValue().StartsWith("++");
 }
+
 
 /* NumberTextCtrl::isDecrement
  * Returns true if the entered value is a decrement
  *******************************************************************/
-bool NumberTextCtrl::isDecrement()
-{
-	return GetValue().StartsWith("--");
+bool NumberTextCtrl::isDecrement() {
+    return GetValue().StartsWith("--");
 }
+
 
 /* NumberTextCtrl::isFactor
  * Returns true if the entered value is an increment
  *******************************************************************/
-bool NumberTextCtrl::isFactor()
-{
-	return GetValue().StartsWith("*");
+bool NumberTextCtrl::isFactor() {
+    return GetValue().StartsWith("*");
 }
+
 
 /* NumberTextCtrl::isDivisor
  * Returns true if the entered value is a decrement
  *******************************************************************/
-bool NumberTextCtrl::isDivisor()
-{
-	return GetValue().StartsWith("/");
+bool NumberTextCtrl::isDivisor() {
+    return GetValue().StartsWith("/");
 }
+
 
 /* NumberTextCtrl::setNumber
  * Sets the text control value to [num]
  *******************************************************************/
-void NumberTextCtrl::setNumber(int num)
-{
-	ChangeValue(S_FMT("%d", num));
+void NumberTextCtrl::setNumber(int num) {
+    ChangeValue(S_FMT("%d", num));
 }
+
 
 /* NumberTextCtrl::setDecNumber
  * Sets the text control (decimal) value to [num]
  *******************************************************************/
-void NumberTextCtrl::setDecNumber(double num)
-{
-	ChangeValue(S_FMT("%1.3f", num));
+void NumberTextCtrl::setDecNumber(double num) {
+    ChangeValue(S_FMT("%1.3f", num));
 }
 
 
@@ -173,130 +172,108 @@ void NumberTextCtrl::setDecNumber(double num)
 /* NumberTextCtrl::onChar
  * Called when a character is entered into the control
  *******************************************************************/
-void NumberTextCtrl::onChar(wxKeyEvent& e)
-{
-	// Don't try to validate non-printable characters
-	wxChar key = e.GetUnicodeKey();
-	if (key == WXK_NONE || key < 32)
-	{
-		e.Skip();
-		return;
-	}
+void NumberTextCtrl::onChar(wxKeyEvent &e) {
+    // Don't try to validate non-printable characters
+    wxChar key = e.GetUnicodeKey();
+    if (key == WXK_NONE || key < 32) {
+        e.Skip();
+        return;
+    }
 
-	// Check if valid numeric character
-	bool valid = false;
-	if (key >= '0' && key <= '9')
-		valid = true;
-	if (key == '-' || key == '+' || key == '*' || key == '/')
-		valid = true;
-	if (allow_decimal && key == '.')
-		valid = true;
+    // Check if valid numeric character
+    bool valid = false;
+    if (key >= '0' && key <= '9')
+        valid = true;
+    if (key == '-' || key == '+' || key == '*' || key == '/')
+        valid = true;
+    if (allow_decimal && key == '.')
+        valid = true;
 
-	if (valid)
-		wxTextCtrl::OnChar(e);
+    if (valid)
+        wxTextCtrl::OnChar(e);
 }
+
 
 /* NumberTextCtrl::onChanged
  * Called when the value is changed
  *******************************************************************/
-void NumberTextCtrl::onChanged(wxCommandEvent& e)
-{
-	string new_value = GetValue();
+void NumberTextCtrl::onChanged(wxCommandEvent &e) {
+    string new_value = GetValue();
 
-	// Check if valid
-	// Can begin with '+', '++', '-' or '--', rest has to be numeric
-	bool num = false;
-	bool valid = true;
-	int plus = 0;
-	int minus = 0;
-	int splat = 0;
-	int slash = 0;
-	int decimal = 0;
-	for (unsigned a = 0; a < new_value.size(); a++)
-	{
-		// Check for number
-		if (new_value.at(a) >= '0' && new_value.at(a) <= '9')
-		{
-			num = true;
-			continue;
-		}
+    // Check if valid
+    // Can begin with '+', '++', '-' or '--', rest has to be numeric
+    bool num = false;
+    bool valid = true;
+    int plus = 0;
+    int minus = 0;
+    int splat = 0;
+    int slash = 0;
+    int decimal = 0;
+    for (unsigned a = 0; a < new_value.size(); a++) {
+        // Check for number
+        if (new_value.at(a) >= '0' && new_value.at(a) <= '9') {
+            num = true;
+            continue;
+        }
 
-		// Check for +
-		if (new_value.at(a) == '+')
-		{
-			if (num || plus == 2 || minus > 0 || splat > 0 || slash > 0)
-			{
-				// We've had a number, a different operator, or 2 '+' already, invalid
-				valid = false;
-				break;
-			}
-			else
-				plus++;
-		}
+        // Check for +
+        if (new_value.at(a) == '+') {
+            if (num || plus == 2 || minus > 0 || splat > 0 || slash > 0) {
+                // We've had a number, a different operator, or 2 '+' already, invalid
+                valid = false;
+                break;
+            } else
+                plus++;
+        }
 
-		// Check for -
-		else if (new_value.at(a) == '-')
-		{
-			if (num || minus == 2 || plus > 0 || splat > 0 || slash > 0)
-			{
-				// We've had a number, a different operator, or 2 '-' already, invalid
-				valid = false;
-				break;
-			}
-			else
-				minus++;
-		}
+            // Check for -
+        else if (new_value.at(a) == '-') {
+            if (num || minus == 2 || plus > 0 || splat > 0 || slash > 0) {
+                // We've had a number, a different operator, or 2 '-' already, invalid
+                valid = false;
+                break;
+            } else
+                minus++;
+        }
 
-		// Check for *
-		if (new_value.at(a) == '*')
-		{
-			if (num || splat == 2 || plus > 0 || minus > 0 || slash > 0)
-			{
-				// We've had a number, a different operator, or 2 '*' already, invalid
-				valid = false;
-				break;
-			}
-			else
-				splat++;
-		}
+        // Check for *
+        if (new_value.at(a) == '*') {
+            if (num || splat == 2 || plus > 0 || minus > 0 || slash > 0) {
+                // We've had a number, a different operator, or 2 '*' already, invalid
+                valid = false;
+                break;
+            } else
+                splat++;
+        }
 
-		// Check for /
-		if (new_value.at(a) == '/')
-		{
-			if (num || slash == 2 || plus > 0 || minus > 0 || splat > 0)
-			{
-				// We've had a number, a different operator, or 2 '/' already, invalid
-				valid = false;
-				break;
-			}
-			else
-				slash++;
-		}
+        // Check for /
+        if (new_value.at(a) == '/') {
+            if (num || slash == 2 || plus > 0 || minus > 0 || splat > 0) {
+                // We've had a number, a different operator, or 2 '/' already, invalid
+                valid = false;
+                break;
+            } else
+                slash++;
+        }
 
-		// Check for .
-		else if (new_value.at(a) == '.')
-		{
-			if (!num || decimal > 0)
-			{
-				// We've already had a decimal, or no numbers yet, invalid
-				valid = false;
-				break;
-			}
-			else
-				decimal++;
-		}
-	}
+            // Check for .
+        else if (new_value.at(a) == '.') {
+            if (!num || decimal > 0) {
+                // We've already had a decimal, or no numbers yet, invalid
+                valid = false;
+                break;
+            } else
+                decimal++;
+        }
+    }
 
-	// If invalid revert to previous value
-	if (!valid)
-	{
-		ChangeValue(last_value);
-		SetInsertionPoint(last_point);
-	}
-	else
-	{
-		last_value = new_value;
-		last_point = GetInsertionPoint();
-		e.Skip();
-	}
+    // If invalid revert to previous value
+    if (!valid) {
+        ChangeValue(last_value);
+        SetInsertionPoint(last_point);
+    } else {
+        last_value = new_value;
+        last_point = GetInsertionPoint();
+        e.Skip();
+    }
 }

@@ -55,538 +55,490 @@
 /* GZipArchive::GZipArchive
  * GZipArchive class constructor
  *******************************************************************/
-GZipArchive::GZipArchive() : TreelessArchive("gzip")
-{
+GZipArchive::GZipArchive() : TreelessArchive("gzip") {
 }
+
 
 /* GZipArchive::~GZipArchive
  * GZipArchive class destructor
  *******************************************************************/
-GZipArchive::~GZipArchive()
-{
+GZipArchive::~GZipArchive() {
 }
+
 
 /* GZipArchive::open
  * Reads gzip format data from a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool GZipArchive::open(MemChunk& mc)
-{
-	// Minimal metadata size is 18: 10 for header, 8 for footer
-	size_t mds = 18;
-	size_t size = mc.getSize();
-	if (mds > size)
-		return false;
+bool GZipArchive::open(MemChunk &mc) {
+    // Minimal metadata size is 18: 10 for header, 8 for footer
+    size_t mds = 18;
+    size_t size = mc.getSize();
+    if (mds > size)
+        return false;
 
-	// Read header
-	uint8_t header[4];
-	mc.read(header, 4);
+    // Read header
+    uint8_t header[4];
+    mc.read(header, 4);
 
-	// Check for GZip header; we'll only accept deflated gzip files
-	// and reject any field using unknown flags
-	if ((!(header[0] == GZIP_ID1 && header[1] == GZIP_ID2 && header[2] == GZIP_DEFLATE))
-	        || (header[3] & GZIP_FLG_FUNKN))
-		return false;
+    // Check for GZip header; we'll only accept deflated gzip files
+    // and reject any field using unknown flags
+    if ((!(header[0] == GZIP_ID1 && header[1] == GZIP_ID2 && header[2] == GZIP_DEFLATE))
+        || (header[3] & GZIP_FLG_FUNKN))
+        return false;
 
-	bool ftext, fhcrc, fxtra, fname, fcmnt;
-	ftext = (header[3] & GZIP_FLG_FTEXT) ? true : false;
-	fhcrc = (header[3] & GZIP_FLG_FHCRC) ? true : false;
-	fxtra = (header[3] & GZIP_FLG_FXTRA) ? true : false;
-	fname = (header[3] & GZIP_FLG_FNAME) ? true : false;
-	fcmnt = (header[3] & GZIP_FLG_FCMNT) ? true : false;
-	flags_ = header[3];
+    bool ftext, fhcrc, fxtra, fname, fcmnt;
+    ftext = (header[3] & GZIP_FLG_FTEXT) ? true : false;
+    fhcrc = (header[3] & GZIP_FLG_FHCRC) ? true : false;
+    fxtra = (header[3] & GZIP_FLG_FXTRA) ? true : false;
+    fname = (header[3] & GZIP_FLG_FNAME) ? true : false;
+    fcmnt = (header[3] & GZIP_FLG_FCMNT) ? true : false;
+    flags_ = header[3];
 
-	mc.read(&mtime_, 4);
-	mtime_ = wxUINT32_SWAP_ON_BE(mtime_);
+    mc.read(&mtime_, 4);
+    mtime_ = wxUINT32_SWAP_ON_BE(mtime_);
 
-	mc.read(&xfl_, 1);
-	mc.read(&os_, 1);
+    mc.read(&xfl_, 1);
+    mc.read(&os_, 1);
 
-	// Skip extra fields which may be there
-	if (fxtra)
-	{
-		uint16_t xlen;
-		mc.read(&xlen, 2);
-		xlen = wxUINT16_SWAP_ON_BE(xlen);
-		mds += xlen + 2;
-		if (mds > size)
-			return false;
-		mc.exportMemChunk(xtra_, mc.currentPos(), xlen);
-		mc.seek(xlen, SEEK_CUR);
-	}
+    // Skip extra fields which may be there
+    if (fxtra) {
+        uint16_t xlen;
+        mc.read(&xlen, 2);
+        xlen = wxUINT16_SWAP_ON_BE(xlen);
+        mds += xlen + 2;
+        if (mds > size)
+            return false;
+        mc.exportMemChunk(xtra_, mc.currentPos(), xlen);
+        mc.seek(xlen, SEEK_CUR);
+    }
 
-	// Skip past name, if any
-	string name;
-	if (fname)
-	{
-		char c;
-		do
-		{
-			mc.read(&c, 1);
-			if (c) name += c;
-			++mds;
-		}
-		while (c != 0 && size > mds);
-	}
-	else
-	{
-		// Build name from filename
-		name = filename(false);
-		wxFileName fn(name);
-		if (!fn.GetExt().CmpNoCase("tgz"))
-			fn.SetExt("tar");
-		else if (!fn.GetExt().CmpNoCase("gz"))
-			fn.ClearExt();
-		name = fn.GetFullName();
-	}
+    // Skip past name, if any
+    string name;
+    if (fname) {
+        char c;
+        do {
+            mc.read(&c, 1);
+            if (c) name += c;
+            ++mds;
+        } while (c != 0 && size > mds);
+    } else {
+        // Build name from filename
+        name = filename(false);
+        wxFileName fn(name);
+        if (!fn.GetExt().CmpNoCase("tgz"))
+            fn.SetExt("tar");
+        else if (!fn.GetExt().CmpNoCase("gz"))
+            fn.ClearExt();
+        name = fn.GetFullName();
+    }
 
-	// Skip past comment
-	if (fcmnt)
-	{
-		char c;
-		do
-		{
-			mc.read(&c, 1);
-			if (c) comment_ += c;
-			++mds;
-		}
-		while (c != 0 && size > mds);
-		LOG_MESSAGE(1, "Archive %s says:\n %s", filename(true), comment_);
-	}
+    // Skip past comment
+    if (fcmnt) {
+        char c;
+        do {
+            mc.read(&c, 1);
+            if (c) comment_ += c;
+            ++mds;
+        } while (c != 0 && size > mds);
+        LOG_MESSAGE(1, "Archive %s says:\n %s", filename(true), comment_);
+    }
 
-	// Skip past CRC 16 check
-	if (fhcrc)
-	{
-		uint8_t* crcbuffer = new uint8_t[mc.currentPos()];
-		memcpy(crcbuffer, mc.getData(), mc.currentPos());
-		uint32_t fullcrc = Misc::crc(crcbuffer, mc.currentPos());
-		delete[] crcbuffer;
-		uint16_t hcrc;
-		mc.read(&hcrc, 2);
-		hcrc = wxUINT16_SWAP_ON_BE(hcrc);
-		mds += 2;
-		if (hcrc  != (fullcrc & 0x0000FFFF))
-		{
-			LOG_MESSAGE(1, "CRC-16 mismatch for GZip header");
-		}
-	}
+    // Skip past CRC 16 check
+    if (fhcrc) {
+        uint8_t *crcbuffer = new uint8_t[mc.currentPos()];
+        memcpy(crcbuffer, mc.getData(), mc.currentPos());
+        uint32_t fullcrc = Misc::crc(crcbuffer, mc.currentPos());
+        delete[] crcbuffer;
+        uint16_t hcrc;
+        mc.read(&hcrc, 2);
+        hcrc = wxUINT16_SWAP_ON_BE(hcrc);
+        mds += 2;
+        if (hcrc != (fullcrc & 0x0000FFFF)) {
+            LOG_MESSAGE(1, "CRC-16 mismatch for GZip header");
+        }
+    }
 
-	// Header is over
-	if (mds > size || mc.currentPos() + 8 > size)
-		return false;
+    // Header is over
+    if (mds > size || mc.currentPos() + 8 > size)
+        return false;
 
-	// Let's create the entry
-	setMuted(true);
-	ArchiveEntry* entry = new ArchiveEntry(name, size - mds);
-	MemChunk  xdata;
-	if (Compression::GZipInflate(mc, xdata))
-	{
-		entry->importMemChunk(xdata);
-	}
-	else
-	{
-		delete entry;
-		setMuted(false);
-		return false;
-	}
-	rootDir()->addEntry(entry);
-	EntryType::detectEntryType(entry);
-	entry->setState(0);
+    // Let's create the entry
+    setMuted(true);
+    ArchiveEntry *entry = new ArchiveEntry(name, size - mds);
+    MemChunk xdata;
+    if (Compression::GZipInflate(mc, xdata)) {
+        entry->importMemChunk(xdata);
+    } else {
+        delete entry;
+        setMuted(false);
+        return false;
+    }
+    rootDir()->addEntry(entry);
+    EntryType::detectEntryType(entry);
+    entry->setState(0);
 
-	setMuted(false);
-	setModified(false);
-	announce("opened");
+    setMuted(false);
+    setModified(false);
+    announce("opened");
 
-	// Finish
-	return true;
+    // Finish
+    return true;
 }
+
 
 /* GZipArchive::write
  * Writes the gzip archive to a MemChunk
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool GZipArchive::write(MemChunk& mc, bool update)
-{
-	// Clear current data
-	mc.clear();
+bool GZipArchive::write(MemChunk &mc, bool update) {
+    // Clear current data
+    mc.clear();
 
-	if (numEntries() == 1)
-	{
-		MemChunk stream;
-		if (Compression::GZipDeflate(getEntry(0)->getMCData(), stream, 9))
-		{
-			const uint8_t* data = stream.getData();
-			uint32_t working = 0;
-			size_t size = stream.getSize();
-			if (size < 18) return false;
+    if (numEntries() == 1) {
+        MemChunk stream;
+        if (Compression::GZipDeflate(getEntry(0)->getMCData(), stream, 9)) {
+            const uint8_t *data = stream.getData();
+            uint32_t working = 0;
+            size_t size = stream.getSize();
+            if (size < 18) return false;
 
-			// zlib will have given us a minimal header, so we make our own
-			uint8_t header[4];
-			header[0] = GZIP_ID1; header[1] = GZIP_ID2;
-			header[2] = GZIP_DEFLATE; header[3] = flags_;
-			mc.write(header, 4);
+            // zlib will have given us a minimal header, so we make our own
+            uint8_t header[4];
+            header[0] = GZIP_ID1;
+            header[1] = GZIP_ID2;
+            header[2] = GZIP_DEFLATE;
+            header[3] = flags_;
+            mc.write(header, 4);
 
-			// Update mtime if the file was modified
-			if (getEntry(0)->getState())
-			{
-				mtime_ = ::wxGetLocalTime();
-			}
+            // Update mtime if the file was modified
+            if (getEntry(0)->getState()) {
+                mtime_ = ::wxGetLocalTime();
+            }
 
-			// Write mtime
-			working = wxUINT32_SWAP_ON_BE(mtime_);
-			mc.write(&working, 4);
+            // Write mtime
+            working = wxUINT32_SWAP_ON_BE(mtime_);
+            mc.write(&working, 4);
 
-			// Write other stuff
-			mc.write(&xfl_, 1);
-			mc.write(&os_, 1);
+            // Write other stuff
+            mc.write(&xfl_, 1);
+            mc.write(&os_, 1);
 
-			// Any extra content that may have been there
-			if (flags_ & GZIP_FLG_FXTRA)
-			{
-				uint16_t xlen = wxUINT16_SWAP_ON_BE(xtra_.getSize());
-				mc.write(&xlen, 2);
-				mc.write(xtra_.getData(), xtra_.getSize());
-			}
+            // Any extra content that may have been there
+            if (flags_ & GZIP_FLG_FXTRA) {
+                uint16_t xlen = wxUINT16_SWAP_ON_BE(xtra_.getSize());
+                mc.write(&xlen, 2);
+                mc.write(xtra_.getData(), xtra_.getSize());
+            }
 
-			// File name, if not extrapolated from archive name
-			if (flags_ & GZIP_FLG_FNAME)
-			{
-				mc.write(CHR(getEntry(0)->getName()), getEntry(0)->getName().length());
-				uint8_t zero = 0; mc.write(&zero, 1);	// Terminate string
-			}
+            // File name, if not extrapolated from archive name
+            if (flags_ & GZIP_FLG_FNAME) {
+                mc.write(CHR(getEntry(0)->getName()), getEntry(0)->getName().length());
+                uint8_t zero = 0;
+                mc.write(&zero, 1);    // Terminate string
+            }
 
-			// Comment, if there were actually one
-			if (flags_ & GZIP_FLG_FCMNT)
-			{
-				mc.write(CHR(comment_), comment_.length());
-				uint8_t zero = 0; mc.write(&zero, 1);	// Terminate string
-			}
+            // Comment, if there were actually one
+            if (flags_ & GZIP_FLG_FCMNT) {
+                mc.write(CHR(comment_), comment_.length());
+                uint8_t zero = 0;
+                mc.write(&zero, 1);    // Terminate string
+            }
 
-			// And finally, the half CRC, which we recalculate
-			if (flags_ & GZIP_FLG_FHCRC)
-			{
-				uint32_t fullcrc = Misc::crc(mc.getData(), mc.getSize());
-				uint16_t hcrc = (fullcrc & 0x0000FFFF);
-				hcrc = wxUINT16_SWAP_ON_BE(hcrc);
-				mc.write(&hcrc, 2);
-			}
+            // And finally, the half CRC, which we recalculate
+            if (flags_ & GZIP_FLG_FHCRC) {
+                uint32_t fullcrc = Misc::crc(mc.getData(), mc.getSize());
+                uint16_t hcrc = (fullcrc & 0x0000FFFF);
+                hcrc = wxUINT16_SWAP_ON_BE(hcrc);
+                mc.write(&hcrc, 2);
+            }
 
-			// Now that the pleasantries are dispensed with,
-			// let's get with the meat of the matter
-			return mc.write(data + 10, size - 10);
-		}
-	}
-	return false;
+            // Now that the pleasantries are dispensed with,
+            // let's get with the meat of the matter
+            return mc.write(data + 10, size - 10);
+        }
+    }
+    return false;
 }
 
 
 /* GZipArchive::renameEntry
  * Renames the entry and set the fname flag
  *******************************************************************/
-bool GZipArchive::renameEntry(ArchiveEntry* entry, string name)
-{
-	// Check entry
-	if (!checkEntry(entry))
-		return false;
+bool GZipArchive::renameEntry(ArchiveEntry *entry, string name) {
+    // Check entry
+    if (!checkEntry(entry))
+        return false;
 
-	// Do default rename
-	bool ok = Archive::renameEntry(entry, name);
-	if (ok) flags_ |= GZIP_FLG_FNAME;
-	return ok;
+    // Do default rename
+    bool ok = Archive::renameEntry(entry, name);
+    if (ok) flags_ |= GZIP_FLG_FNAME;
+    return ok;
 }
+
 
 /* GZipArchive::loadEntryData
  * Loads an entry's data from the gzip file
  * Returns true if successful, false otherwise
  *******************************************************************/
-bool GZipArchive::loadEntryData(ArchiveEntry* entry)
-{
-	return false;
-	// Check the entry is valid and part of this archive
-	if (!checkEntry(entry))
-		return false;
+bool GZipArchive::loadEntryData(ArchiveEntry *entry) {
+    return false;
+    // Check the entry is valid and part of this archive
+    if (!checkEntry(entry))
+        return false;
 
-	// Do nothing if the lump's size is zero,
-	// or if it has already been loaded
-	if (entry->getSize() == 0 || entry->isLoaded())
-	{
-		entry->setLoaded();
-		return true;
-	}
+    // Do nothing if the lump's size is zero,
+    // or if it has already been loaded
+    if (entry->getSize() == 0 || entry->isLoaded()) {
+        entry->setLoaded();
+        return true;
+    }
 
-	// Open gzip file
-	wxFile file(filename_);
+    // Open gzip file
+    wxFile file(filename_);
 
-	// Check if opening the file failed
-	if (!file.IsOpened())
-	{
-		LOG_MESSAGE(1, "GZipArchive::loadEntryData: Failed to open gzip file %s", filename_);
-		return false;
-	}
+    // Check if opening the file failed
+    if (!file.IsOpened()) {
+        LOG_MESSAGE(1, "GZipArchive::loadEntryData: Failed to open gzip file %s", filename_);
+        return false;
+    }
 
-	// Seek to lump offset in file and read it in
-	entry->importFileStream(file, entry->getSize());
+    // Seek to lump offset in file and read it in
+    entry->importFileStream(file, entry->getSize());
 
-	// Set the lump to loaded
-	entry->setLoaded();
-	entry->setState(0);
+    // Set the lump to loaded
+    entry->setLoaded();
+    entry->setState(0);
 
-	return true;
+    return true;
 }
+
 
 /* GZipArchive::findFirst
  * Returns the entry if it matches the search criteria in [options],
  * or NULL otherwise
  *******************************************************************/
-ArchiveEntry* GZipArchive::findFirst(SearchOptions& options)
-{
-	// Init search variables
-	options.match_name = options.match_name.Lower();
-	ArchiveEntry* entry = getEntry(0);
-	if (entry == nullptr)
-		return entry;
+ArchiveEntry *GZipArchive::findFirst(SearchOptions &options) {
+    // Init search variables
+    options.match_name = options.match_name.Lower();
+    ArchiveEntry *entry = getEntry(0);
+    if (entry == nullptr)
+        return entry;
 
-	// Check type
-	if (options.match_type)
-	{
-		if (entry->getType() == EntryType::unknownType())
-		{
-			if (!options.match_type->isThisType(entry))
-			{
-				return nullptr;
-			}
-		}
-		else if (options.match_type != entry->getType())
-		{
-			return nullptr;
-		}
-	}
+    // Check type
+    if (options.match_type) {
+        if (entry->getType() == EntryType::unknownType()) {
+            if (!options.match_type->isThisType(entry)) {
+                return nullptr;
+            }
+        } else if (options.match_type != entry->getType()) {
+            return nullptr;
+        }
+    }
 
-	// Check name
-	if (!options.match_name.IsEmpty())
-	{
-		if (!options.match_name.Matches(entry->getName().Lower()))
-		{
-			return nullptr;
-		}
-	}
+    // Check name
+    if (!options.match_name.IsEmpty()) {
+        if (!options.match_name.Matches(entry->getName().Lower())) {
+            return nullptr;
+        }
+    }
 
-	// Entry passed all checks so far, so we found a match
-	return entry;
+    // Entry passed all checks so far, so we found a match
+    return entry;
 }
+
 
 /* GZipArchive::findLast
  * Returns the last entry matching the search criteria in [options],
  * or NULL if no matching entry was found
  *******************************************************************/
-ArchiveEntry* GZipArchive::findLast(SearchOptions& options)
-{
-	return findFirst(options);
+ArchiveEntry *GZipArchive::findLast(SearchOptions &options) {
+    return findFirst(options);
 }
+
 
 /* GZipArchive::findAll
  * Returns all entries matching the search criteria in [options]
  *******************************************************************/
-vector<ArchiveEntry*> GZipArchive::findAll(SearchOptions& options)
-{
-	// Init search variables
-	options.match_name = options.match_name.Lower();
-	vector<ArchiveEntry*> ret;
-	if (findFirst(options))
-		ret.push_back(getEntry(0));
-	return ret;
+vector<ArchiveEntry *> GZipArchive::findAll(SearchOptions &options) {
+    // Init search variables
+    options.match_name = options.match_name.Lower();
+    vector<ArchiveEntry *> ret;
+    if (findFirst(options))
+        ret.push_back(getEntry(0));
+    return ret;
 }
-
 
 
 /* GZipArchive::isGZipArchive
  * Checks if the given data is a valid GZip archive
  *******************************************************************/
-bool GZipArchive::isGZipArchive(MemChunk& mc)
-{
-	// Minimal metadata size is 18: 10 for header, 8 for footer
-	size_t mds = 18;
-	size_t size = mc.getSize();
-	if (size < mds)
-		return false;
+bool GZipArchive::isGZipArchive(MemChunk &mc) {
+    // Minimal metadata size is 18: 10 for header, 8 for footer
+    size_t mds = 18;
+    size_t size = mc.getSize();
+    if (size < mds)
+        return false;
 
-	// Read header
-	uint8_t header[4];
-	mc.read(header, 4);
+    // Read header
+    uint8_t header[4];
+    mc.read(header, 4);
 
-	// Check for GZip header; we'll only accept deflated gzip files
-	// and reject any field using unknown flags
-	if (!(header[0] == GZIP_ID1 && header[1] == GZIP_ID2 && header[2] == GZIP_DEFLATE)
-	        || (header[3] & GZIP_FLG_FUNKN))
-		return false;
+    // Check for GZip header; we'll only accept deflated gzip files
+    // and reject any field using unknown flags
+    if (!(header[0] == GZIP_ID1 && header[1] == GZIP_ID2 && header[2] == GZIP_DEFLATE)
+        || (header[3] & GZIP_FLG_FUNKN))
+        return false;
 
-	bool ftext, fhcrc, fxtra, fname, fcmnt;
-	ftext = (header[3] & GZIP_FLG_FTEXT) ? true : false;
-	fhcrc = (header[3] & GZIP_FLG_FHCRC) ? true : false;
-	fxtra = (header[3] & GZIP_FLG_FXTRA) ? true : false;
-	fname = (header[3] & GZIP_FLG_FNAME) ? true : false;
-	fcmnt = (header[3] & GZIP_FLG_FCMNT) ? true : false;
+    bool ftext, fhcrc, fxtra, fname, fcmnt;
+    ftext = (header[3] & GZIP_FLG_FTEXT) ? true : false;
+    fhcrc = (header[3] & GZIP_FLG_FHCRC) ? true : false;
+    fxtra = (header[3] & GZIP_FLG_FXTRA) ? true : false;
+    fname = (header[3] & GZIP_FLG_FNAME) ? true : false;
+    fcmnt = (header[3] & GZIP_FLG_FCMNT) ? true : false;
 
-	uint32_t mtime;
-	mc.read(&mtime, 4);
+    uint32_t mtime;
+    mc.read(&mtime, 4);
 
-	uint8_t xfl;
-	mc.read(&xfl, 1);
-	uint8_t os;
-	mc.read(&os, 1);
+    uint8_t xfl;
+    mc.read(&xfl, 1);
+    uint8_t os;
+    mc.read(&os, 1);
 
-	// Skip extra fields which may be there
-	if (fxtra)
-	{
-		uint16_t xlen;
-		mc.read(&xlen, 2);
-		xlen = wxUINT16_SWAP_ON_BE(xlen);
-		mds += xlen + 2;
-		if (mds > size)
-			return false;
-		mc.seek(xlen, SEEK_CUR);
-	}
+    // Skip extra fields which may be there
+    if (fxtra) {
+        uint16_t xlen;
+        mc.read(&xlen, 2);
+        xlen = wxUINT16_SWAP_ON_BE(xlen);
+        mds += xlen + 2;
+        if (mds > size)
+            return false;
+        mc.seek(xlen, SEEK_CUR);
+    }
 
-	// Skip past name, if any
-	if (fname)
-	{
-		string name;
-		char c;
-		do
-		{
-			mc.read(&c, 1);
-			if (c) name += c;
-			++mds;
-		}
-		while (c != 0 && size > mds);
-	}
+    // Skip past name, if any
+    if (fname) {
+        string name;
+        char c;
+        do {
+            mc.read(&c, 1);
+            if (c) name += c;
+            ++mds;
+        } while (c != 0 && size > mds);
+    }
 
-	// Skip past comment
-	if (fcmnt)
-	{
-		string comment;
-		char c;
-		do
-		{
-			mc.read(&c, 1);
-			if (c) comment += c;
-			++mds;
-		}
-		while (c != 0 && size > mds);
-	}
+    // Skip past comment
+    if (fcmnt) {
+        string comment;
+        char c;
+        do {
+            mc.read(&c, 1);
+            if (c) comment += c;
+            ++mds;
+        } while (c != 0 && size > mds);
+    }
 
-	// Skip past CRC 16 check
-	if (fhcrc)
-	{
-		uint16_t hcrc;
-		mc.read(&hcrc, 2);
-		mds += 2;
-	}
+    // Skip past CRC 16 check
+    if (fhcrc) {
+        uint16_t hcrc;
+        mc.read(&hcrc, 2);
+        mds += 2;
+    }
 
-	// Header is over
-	if (mds > size || mc.currentPos() + 8 > size)
-		return false;
+    // Header is over
+    if (mds > size || mc.currentPos() + 8 > size)
+        return false;
 
-	// If it's passed to here it's probably a gzip file
-	return true;
+    // If it's passed to here it's probably a gzip file
+    return true;
 }
+
 
 /* GZipArchive::isGZipArchive
  * Checks if the file at [filename] is a valid GZip archive
  *******************************************************************/
-bool GZipArchive::isGZipArchive(string filename)
-{
-	// Open file for reading
-	wxFile file(filename);
+bool GZipArchive::isGZipArchive(string filename) {
+    // Open file for reading
+    wxFile file(filename);
 
-	// Minimal metadata size is 18: 10 for header, 8 for footer
-	size_t mds = 18;
+    // Minimal metadata size is 18: 10 for header, 8 for footer
+    size_t mds = 18;
 
-	// Check it opened ok
-	if (!file.IsOpened() || file.Length() < mds)
-	{
-		return false;
-	}
+    // Check it opened ok
+    if (!file.IsOpened() || file.Length() < mds) {
+        return false;
+    }
 
-	size_t size = file.Length();
-	// Read header
-	uint8_t header[4];
-	file.Read(header, 4);
-	bool ftext, fhcrc, fxtra, fname, fcmnt;
-	ftext = (header[3] & GZIP_FLG_FTEXT) ? true : false;
-	fhcrc = (header[3] & GZIP_FLG_FHCRC) ? true : false;
-	fxtra = (header[3] & GZIP_FLG_FXTRA) ? true : false;
-	fname = (header[3] & GZIP_FLG_FNAME) ? true : false;
-	fcmnt = (header[3] & GZIP_FLG_FCMNT) ? true : false;
+    size_t size = file.Length();
+    // Read header
+    uint8_t header[4];
+    file.Read(header, 4);
+    bool ftext, fhcrc, fxtra, fname, fcmnt;
+    ftext = (header[3] & GZIP_FLG_FTEXT) ? true : false;
+    fhcrc = (header[3] & GZIP_FLG_FHCRC) ? true : false;
+    fxtra = (header[3] & GZIP_FLG_FXTRA) ? true : false;
+    fname = (header[3] & GZIP_FLG_FNAME) ? true : false;
+    fcmnt = (header[3] & GZIP_FLG_FCMNT) ? true : false;
 
-	// Check for GZip header; we'll only accept deflated gzip files
-	// and reject any field using unknown flags
-	if ((!(header[0] == GZIP_ID1 && header[1] == GZIP_ID2 && header[2] == GZIP_DEFLATE))
-	        || (header[3] & GZIP_FLG_FUNKN))
-	{
-		return false;
-	}
+    // Check for GZip header; we'll only accept deflated gzip files
+    // and reject any field using unknown flags
+    if ((!(header[0] == GZIP_ID1 && header[1] == GZIP_ID2 && header[2] == GZIP_DEFLATE))
+        || (header[3] & GZIP_FLG_FUNKN)) {
+        return false;
+    }
 
-	uint32_t mtime;
-	file.Read(&mtime, 4);
+    uint32_t mtime;
+    file.Read(&mtime, 4);
 
-	uint8_t xfl;
-	file.Read(&xfl, 1);
-	uint8_t os;
-	file.Read(&os, 1);
+    uint8_t xfl;
+    file.Read(&xfl, 1);
+    uint8_t os;
+    file.Read(&os, 1);
 
-	// Skip extra fields which may be there
-	if (fxtra)
-	{
-		uint16_t xlen;
-		file.Read(&xlen, 2);
-		xlen = wxUINT16_SWAP_ON_BE(xlen);
-		mds += xlen + 2;
-		if (mds > size)
-			return false;
-		file.Seek(xlen, wxFromCurrent);
-	}
+    // Skip extra fields which may be there
+    if (fxtra) {
+        uint16_t xlen;
+        file.Read(&xlen, 2);
+        xlen = wxUINT16_SWAP_ON_BE(xlen);
+        mds += xlen + 2;
+        if (mds > size)
+            return false;
+        file.Seek(xlen, wxFromCurrent);
+    }
 
-	// Skip past name
-	if (fname)
-	{
-		string name;
-		char c;
-		do
-		{
-			file.Read(&c, 1);
-			if (c) name += c;
-			++mds;
-		}
-		while (c != 0 && size > mds);
-	}
+    // Skip past name
+    if (fname) {
+        string name;
+        char c;
+        do {
+            file.Read(&c, 1);
+            if (c) name += c;
+            ++mds;
+        } while (c != 0 && size > mds);
+    }
 
-	// Skip past comment
-	if (fcmnt)
-	{
-		string comment;
-		char c;
-		do
-		{
-			file.Read(&c, 1);
-			if (c) comment += c;
-			++mds;
-		}
-		while (c != 0 && size > mds);
-	}
+    // Skip past comment
+    if (fcmnt) {
+        string comment;
+        char c;
+        do {
+            file.Read(&c, 1);
+            if (c) comment += c;
+            ++mds;
+        } while (c != 0 && size > mds);
+    }
 
-	// Skip past CRC 16 check
-	if (fhcrc)
-	{
-		uint16_t hcrc;
-		file.Read(&hcrc, 2);
-		mds += 2;
-	}
+    // Skip past CRC 16 check
+    if (fhcrc) {
+        uint16_t hcrc;
+        file.Read(&hcrc, 2);
+        mds += 2;
+    }
 
-	// Header is over
-	if (mds > size)
-		return false;
+    // Header is over
+    if (mds > size)
+        return false;
 
-	// If it's passed to here it's probably a gzip file
-	return true;
+    // If it's passed to here it's probably a gzip file
+    return true;
 }

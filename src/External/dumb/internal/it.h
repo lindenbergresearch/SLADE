@@ -61,7 +61,6 @@ sigdata->flags & IT_COMPATIBLE_GXX
 #define VOLUME_OUT_OF_RANGE_SETS_MAXIMUM
 
 
-
 #define SIGTYPE_IT DUMB_ID('I', 'T', ' ', ' ')
 
 #define IT_SIGNATURE            DUMB_ID('I', 'M', 'P', 'M')
@@ -89,7 +88,6 @@ sigdata->flags & IT_COMPATIBLE_GXX
 #define AMIGA_DIVISOR ((float)(16.0 * AMIGA_CLOCK))
 
 
-
 typedef struct IT_MIDI IT_MIDI;
 typedef struct IT_FILTER_STATE IT_FILTER_STATE;
 typedef struct IT_ENVELOPE IT_ENVELOPE;
@@ -104,23 +102,18 @@ typedef struct IT_CHECKPOINT IT_CHECKPOINT;
 typedef struct IT_CALLBACKS IT_CALLBACKS;
 
 
-
-struct IT_MIDI
-{
-	unsigned char SFmacro[16][16]; // read these from 0x120
-	unsigned char SFmacrolen[16];
-	unsigned short SFmacroz[16]; /* Bitfield; bit 0 set = z in first position */
-	unsigned char Zmacro[128][16]; // read these from 0x320
-	unsigned char Zmacrolen[128];
+struct IT_MIDI {
+    unsigned char SFmacro[16][16]; // read these from 0x120
+    unsigned char SFmacrolen[16];
+    unsigned short SFmacroz[16]; /* Bitfield; bit 0 set = z in first position */
+    unsigned char Zmacro[128][16]; // read these from 0x320
+    unsigned char Zmacrolen[128];
 };
 
 
-
-struct IT_FILTER_STATE
-{
-	sample_t currsample, prevsample;
+struct IT_FILTER_STATE {
+    sample_t currsample, prevsample;
 };
-
 
 
 #define IT_ENVELOPE_ON                1
@@ -129,18 +122,16 @@ struct IT_FILTER_STATE
 #define IT_ENVELOPE_CARRY             8
 #define IT_ENVELOPE_PITCH_IS_FILTER 128
 
-struct IT_ENVELOPE
-{
-	unsigned char flags;
-	unsigned char n_nodes;
-	unsigned char loop_start;
-	unsigned char loop_end;
-	unsigned char sus_loop_start;
-	unsigned char sus_loop_end;
-	signed char node_y[25];
-	unsigned short node_t[25];
+struct IT_ENVELOPE {
+    unsigned char flags;
+    unsigned char n_nodes;
+    unsigned char loop_start;
+    unsigned char loop_end;
+    unsigned char sus_loop_start;
+    unsigned char sus_loop_end;
+    signed char node_y[25];
+    unsigned short node_t[25];
 };
-
 
 
 #define NNA_NOTE_CUT      0
@@ -157,36 +148,34 @@ struct IT_ENVELOPE
 #define DCA_NOTE_OFF  1
 #define DCA_NOTE_FADE 2
 
-struct IT_INSTRUMENT
-{
-	unsigned char name[27];
-	unsigned char filename[14];
+struct IT_INSTRUMENT {
+    unsigned char name[27];
+    unsigned char filename[14];
 
-	int fadeout;
+    int fadeout;
 
-	IT_ENVELOPE volume_envelope;
-	IT_ENVELOPE pan_envelope;
-	IT_ENVELOPE pitch_envelope;
+    IT_ENVELOPE volume_envelope;
+    IT_ENVELOPE pan_envelope;
+    IT_ENVELOPE pitch_envelope;
 
-	unsigned char new_note_action;
-	unsigned char dup_check_type;
-	unsigned char dup_check_action;
-	signed char pp_separation;
-	unsigned char pp_centre;
-	unsigned char global_volume;
-	unsigned char default_pan;
-	unsigned char random_volume;
-	unsigned char random_pan;
+    unsigned char new_note_action;
+    unsigned char dup_check_type;
+    unsigned char dup_check_action;
+    signed char pp_separation;
+    unsigned char pp_centre;
+    unsigned char global_volume;
+    unsigned char default_pan;
+    unsigned char random_volume;
+    unsigned char random_pan;
 
-	unsigned char filter_cutoff;
-	unsigned char filter_resonance;
+    unsigned char filter_cutoff;
+    unsigned char filter_resonance;
 
-	unsigned char map_note[120];
-	unsigned short map_sample[120];
+    unsigned char map_note[120];
+    unsigned short map_sample[120];
 
-	//int output;
+    //int output;
 };
-
 
 
 #define IT_SAMPLE_EXISTS              1
@@ -205,39 +194,37 @@ struct IT_INSTRUMENT
 #define IT_VIBRATO_RAMP_DOWN 5
 #define IT_VIBRATO_RAMP_UP   6
 
-struct IT_SAMPLE
-{
-	unsigned char name[35];
-	unsigned char filename[15];
-	unsigned char flags;
-	unsigned char global_volume;
-	unsigned char default_volume;
-	unsigned char default_pan;
-	/* default_pan:
-	 *   0-255 for XM
-	 *   ignored for MOD
-	 *   otherwise, 0-64, and add 128 to enable
-	 */
+struct IT_SAMPLE {
+    unsigned char name[35];
+    unsigned char filename[15];
+    unsigned char flags;
+    unsigned char global_volume;
+    unsigned char default_volume;
+    unsigned char default_pan;
+    /* default_pan:
+     *   0-255 for XM
+     *   ignored for MOD
+     *   otherwise, 0-64, and add 128 to enable
+     */
 
-	long length;
-	long loop_start;
-	long loop_end;
-	long C5_speed;
-	long sus_loop_start;
-	long sus_loop_end;
+    long length;
+    long loop_start;
+    long loop_end;
+    long C5_speed;
+    long sus_loop_start;
+    long sus_loop_end;
 
-	unsigned char vibrato_speed;
-	unsigned char vibrato_depth;
-	unsigned char vibrato_rate;
-	unsigned char vibrato_waveform;
+    unsigned char vibrato_speed;
+    unsigned char vibrato_depth;
+    unsigned char vibrato_rate;
+    unsigned char vibrato_waveform;
 
-	signed short   finetune;
+    signed short finetune;
 
-	void *data;
+    void *data;
 
-	int max_resampling_quality;
+    int max_resampling_quality;
 };
-
 
 
 #define IT_ENTRY_NOTE       1
@@ -369,26 +356,22 @@ SEx Pattern delay for x rows
 SFx Set parameterised MIDI Macro
 */
 
-struct IT_ENTRY
-{
-	unsigned char channel; /* End of row if channel >= DUMB_IT_N_CHANNELS */
-	unsigned char mask;
-	unsigned char note;
-	unsigned char instrument;
-	unsigned char volpan;
-	unsigned char effect;
-	unsigned char effectvalue;
+struct IT_ENTRY {
+    unsigned char channel; /* End of row if channel >= DUMB_IT_N_CHANNELS */
+    unsigned char mask;
+    unsigned char note;
+    unsigned char instrument;
+    unsigned char volpan;
+    unsigned char effect;
+    unsigned char effectvalue;
 };
 
 
-
-struct IT_PATTERN
-{
-	int n_rows;
-	int n_entries;
-	IT_ENTRY *entry;
+struct IT_PATTERN {
+    int n_rows;
+    int n_entries;
+    IT_ENTRY *entry;
 };
-
 
 
 #define IT_STEREO            1
@@ -418,50 +401,46 @@ struct IT_PATTERN
 #define IT_ORDER_END  255
 #define IT_ORDER_SKIP 254
 
-struct DUMB_IT_SIGDATA
-{
-	unsigned char name[65];
+struct DUMB_IT_SIGDATA {
+    unsigned char name[65];
 
-	unsigned char *song_message;
+    unsigned char *song_message;
 
-	int n_orders;
-	int n_instruments;
-	int n_samples;
-	int n_patterns;
-	int n_pchannels;
+    int n_orders;
+    int n_instruments;
+    int n_samples;
+    int n_patterns;
+    int n_pchannels;
 
-	int flags;
+    int flags;
 
-	int global_volume;
-	int mixing_volume;
-	int speed;
-	int tempo;
-	int pan_separation;
+    int global_volume;
+    int mixing_volume;
+    int speed;
+    int tempo;
+    int pan_separation;
 
-	unsigned char channel_pan[DUMB_IT_N_CHANNELS];
-	unsigned char channel_volume[DUMB_IT_N_CHANNELS];
+    unsigned char channel_pan[DUMB_IT_N_CHANNELS];
+    unsigned char channel_volume[DUMB_IT_N_CHANNELS];
 
-	unsigned char *order;
-	unsigned char restart_position; /* for XM compatiblity */
+    unsigned char *order;
+    unsigned char restart_position; /* for XM compatiblity */
 
-	IT_INSTRUMENT *instrument;
-	IT_SAMPLE *sample;
-	IT_PATTERN *pattern;
+    IT_INSTRUMENT *instrument;
+    IT_SAMPLE *sample;
+    IT_PATTERN *pattern;
 
-	IT_MIDI *midi;
+    IT_MIDI *midi;
 
-	IT_CHECKPOINT *checkpoint;
+    IT_CHECKPOINT *checkpoint;
 };
 
 
-
-struct IT_PLAYING_ENVELOPE
-{
-	int next_node;
-	int tick;
-	int value;
+struct IT_PLAYING_ENVELOPE {
+    int next_node;
+    int tick;
+    int value;
 };
-
 
 
 #define IT_PLAYING_BACKGROUND 1
@@ -470,92 +449,90 @@ struct IT_PLAYING_ENVELOPE
 #define IT_PLAYING_DEAD       8
 #define IT_PLAYING_REVERSE    16
 
-struct IT_PLAYING
-{
-	int flags;
+struct IT_PLAYING {
+    int flags;
 
-	int resampling_quality;
+    int resampling_quality;
 
-	IT_CHANNEL *channel;
-	IT_SAMPLE *sample;
-	IT_INSTRUMENT *instrument;
-	IT_INSTRUMENT *env_instrument;
+    IT_CHANNEL *channel;
+    IT_SAMPLE *sample;
+    IT_INSTRUMENT *instrument;
+    IT_INSTRUMENT *env_instrument;
 
-	unsigned short sampnum;
-	unsigned char instnum;
+    unsigned short sampnum;
+    unsigned char instnum;
 
-	unsigned char declick_stage;
+    unsigned char declick_stage;
 
-	float float_volume[2];
-	float ramp_volume[2];
-	float ramp_delta[2];
+    float float_volume[2];
+    float ramp_volume[2];
+    float ramp_delta[2];
 
-	unsigned char channel_volume;
+    unsigned char channel_volume;
 
-	unsigned char volume;
-	unsigned short pan;
+    unsigned char volume;
+    unsigned short pan;
 
-	signed char volume_offset, panning_offset;
+    signed char volume_offset, panning_offset;
 
-	unsigned char note;
+    unsigned char note;
 
-	unsigned char enabled_envelopes;
+    unsigned char enabled_envelopes;
 
-	unsigned char filter_cutoff;
-	unsigned char filter_resonance;
+    unsigned char filter_cutoff;
+    unsigned char filter_resonance;
 
-	unsigned short true_filter_cutoff;   /* These incorporate the filter envelope, and will not */
-	unsigned char true_filter_resonance; /* be changed if they would be set to 127<<8 and 0.    */
+    unsigned short true_filter_cutoff;   /* These incorporate the filter envelope, and will not */
+    unsigned char true_filter_resonance; /* be changed if they would be set to 127<<8 and 0.    */
 
-	unsigned char vibrato_speed;
-	unsigned char vibrato_depth;
-	unsigned char vibrato_n; /* May be specified twice: volpan & effect. */
-	unsigned char vibrato_time;
-	unsigned char vibrato_waveform;
+    unsigned char vibrato_speed;
+    unsigned char vibrato_depth;
+    unsigned char vibrato_n; /* May be specified twice: volpan & effect. */
+    unsigned char vibrato_time;
+    unsigned char vibrato_waveform;
 
-	unsigned char tremolo_speed;
-	unsigned char tremolo_depth;
-	unsigned char tremolo_time;
-	unsigned char tremolo_waveform;
+    unsigned char tremolo_speed;
+    unsigned char tremolo_depth;
+    unsigned char tremolo_time;
+    unsigned char tremolo_waveform;
 
-	unsigned char panbrello_speed;
-	unsigned char panbrello_depth;
-	unsigned char panbrello_time;
-	unsigned char panbrello_waveform;
-	signed char panbrello_random;
+    unsigned char panbrello_speed;
+    unsigned char panbrello_depth;
+    unsigned char panbrello_time;
+    unsigned char panbrello_waveform;
+    signed char panbrello_random;
 
-	unsigned char sample_vibrato_time;
-	unsigned char sample_vibrato_waveform;
-	int sample_vibrato_depth; /* Starts at rate?0:depth, increases by rate */
+    unsigned char sample_vibrato_time;
+    unsigned char sample_vibrato_waveform;
+    int sample_vibrato_depth; /* Starts at rate?0:depth, increases by rate */
 
-	int slide;
-	float delta;
-	int finetune;
+    int slide;
+    float delta;
+    int finetune;
 
-	IT_PLAYING_ENVELOPE volume_envelope;
-	IT_PLAYING_ENVELOPE pan_envelope;
-	IT_PLAYING_ENVELOPE pitch_envelope;
+    IT_PLAYING_ENVELOPE volume_envelope;
+    IT_PLAYING_ENVELOPE pan_envelope;
+    IT_PLAYING_ENVELOPE pitch_envelope;
 
-	int fadeoutcount;
+    int fadeoutcount;
 
-	IT_FILTER_STATE filter_state[2]; /* Left and right */
+    IT_FILTER_STATE filter_state[2]; /* Left and right */
 
-	DUMB_RESAMPLER resampler;
+    DUMB_RESAMPLER resampler;
 
-	/* time_lost is used to emulate Impulse Tracker's sample looping
-	 * characteristics. When time_lost is added to pos, the result represents
-	 * the position in the theoretical version of the sample where all loops
-	 * have been expanded. If this is stored, the resampling helpers will
-	 * safely convert it for use with new loop boundaries. The situation is
-	 * slightly more complicated if dir == -1 when the change takes place; we
-	 * must reflect pos off the loop end point and set dir to 1 before
-	 * proceeding.
-	 */
-	long time_lost;
+    /* time_lost is used to emulate Impulse Tracker's sample looping
+     * characteristics. When time_lost is added to pos, the result represents
+     * the position in the theoretical version of the sample where all loops
+     * have been expanded. If this is stored, the resampling helpers will
+     * safely convert it for use with new loop boundaries. The situation is
+     * slightly more complicated if dir == -1 when the change takes place; we
+     * must reflect pos off the loop end point and set dir to 1 before
+     * proceeding.
+     */
+    long time_lost;
 
-	//int output;
+    //int output;
 };
-
 
 
 #define IT_CHANNEL_MUTED 1
@@ -564,235 +541,243 @@ struct IT_PLAYING
 #define IT_ENV_PANNING 2
 #define IT_ENV_PITCH   4
 
-struct IT_CHANNEL
-{
-	int flags;
+struct IT_CHANNEL {
+    int flags;
 
-	unsigned char volume;
-	signed char volslide;
-	signed char xm_volslide;
-	signed char panslide;
+    unsigned char volume;
+    signed char volslide;
+    signed char xm_volslide;
+    signed char panslide;
 
-	/* xm_volslide is used for volume slides done in the volume column in an
-	 * XM file, since it seems the volume column slide is applied first,
-	 * followed by clamping, followed by the effects column slide. IT does
-	 * not exhibit this behaviour, so xm_volslide is maintained at zero.
-	 */
+    /* xm_volslide is used for volume slides done in the volume column in an
+     * XM file, since it seems the volume column slide is applied first,
+     * followed by clamping, followed by the effects column slide. IT does
+     * not exhibit this behaviour, so xm_volslide is maintained at zero.
+     */
 
-	unsigned char pan;
-	unsigned short truepan;
+    unsigned char pan;
+    unsigned short truepan;
 
-	unsigned char channelvolume;
-	signed char channelvolslide;
+    unsigned char channelvolume;
+    signed char channelvolslide;
 
-	unsigned char instrument;
-	unsigned char note;
+    unsigned char instrument;
+    unsigned char note;
 
-	unsigned char SFmacro;
+    unsigned char SFmacro;
 
-	unsigned char filter_cutoff;
-	unsigned char filter_resonance;
+    unsigned char filter_cutoff;
+    unsigned char filter_resonance;
 
-	unsigned char key_off_count;
-	unsigned char note_cut_count;
-	unsigned char note_delay_count;
-	IT_ENTRY *note_delay_entry;
+    unsigned char key_off_count;
+    unsigned char note_cut_count;
+    unsigned char note_delay_count;
+    IT_ENTRY *note_delay_entry;
 
-	unsigned char new_note_action;
+    unsigned char new_note_action;
 
-	unsigned char const* arpeggio_table;
-	signed char arpeggio_offsets[3];
+    unsigned char const *arpeggio_table;
+    signed char arpeggio_offsets[3];
 
-	int arpeggio_shift;
-	unsigned char retrig;
-	unsigned char xm_retrig;
-	int retrig_tick;
+    int arpeggio_shift;
+    unsigned char retrig;
+    unsigned char xm_retrig;
+    int retrig_tick;
 
-	unsigned char tremor;
-	unsigned char tremor_time; /* Bit 6 set if note on; bit 7 set if tremor active. */
+    unsigned char tremor;
+    unsigned char tremor_time; /* Bit 6 set if note on; bit 7 set if tremor active. */
 
-	unsigned char vibrato_waveform;
-	unsigned char tremolo_waveform;
-	unsigned char panbrello_waveform;
+    unsigned char vibrato_waveform;
+    unsigned char tremolo_waveform;
+    unsigned char panbrello_waveform;
 
-	int portamento;
-	int toneporta;
-	int toneslide;
-	unsigned char toneslide_tick, last_toneslide_tick, ptm_toneslide, ptm_last_toneslide, okt_toneslide;
-	unsigned char destnote;
-	unsigned char toneslide_retrig;
+    int portamento;
+    int toneporta;
+    int toneslide;
+    unsigned char toneslide_tick, last_toneslide_tick, ptm_toneslide, ptm_last_toneslide, okt_toneslide;
+    unsigned char destnote;
+    unsigned char toneslide_retrig;
 
-	unsigned char glissando;
+    unsigned char glissando;
 
-	/** WARNING - for neatness, should one or both of these be in the IT_PLAYING struct? */
-	unsigned short sample;
-	unsigned char truenote;
+    /** WARNING - for neatness, should one or both of these be in the IT_PLAYING struct? */
+    unsigned short sample;
+    unsigned char truenote;
 
-	unsigned char midi_state;
+    unsigned char midi_state;
 
-	signed char lastvolslide;
-	unsigned char lastDKL;
-	unsigned char lastEF; /* Doubles as last portamento up for XM files */
-	unsigned char lastG;
-	unsigned char lastHspeed;
-	unsigned char lastHdepth;
-	unsigned char lastRspeed;
-	unsigned char lastRdepth;
-	unsigned char lastYspeed;
-	unsigned char lastYdepth;
-	unsigned char lastI;
-	unsigned char lastJ; /* Doubles as last portamento down for XM files */
-	unsigned char lastN;
-	unsigned char lastO;
-	unsigned char high_offset;
-	unsigned char lastP;
-	unsigned char lastQ;
-	unsigned char lastS;
-	unsigned char pat_loop_row;
-	unsigned char pat_loop_count;
-	unsigned char pat_loop_end_row; /* Used to catch infinite pattern loops */
-	unsigned char lastW;
+    signed char lastvolslide;
+    unsigned char lastDKL;
+    unsigned char lastEF; /* Doubles as last portamento up for XM files */
+    unsigned char lastG;
+    unsigned char lastHspeed;
+    unsigned char lastHdepth;
+    unsigned char lastRspeed;
+    unsigned char lastRdepth;
+    unsigned char lastYspeed;
+    unsigned char lastYdepth;
+    unsigned char lastI;
+    unsigned char lastJ; /* Doubles as last portamento down for XM files */
+    unsigned char lastN;
+    unsigned char lastO;
+    unsigned char high_offset;
+    unsigned char lastP;
+    unsigned char lastQ;
+    unsigned char lastS;
+    unsigned char pat_loop_row;
+    unsigned char pat_loop_count;
+    unsigned char pat_loop_end_row; /* Used to catch infinite pattern loops */
+    unsigned char lastW;
 
-	unsigned char xm_lastE1;
-	unsigned char xm_lastE2;
-	unsigned char xm_lastEA;
-	unsigned char xm_lastEB;
-	unsigned char xm_lastX1;
-	unsigned char xm_lastX2;
+    unsigned char xm_lastE1;
+    unsigned char xm_lastE2;
+    unsigned char xm_lastEA;
+    unsigned char xm_lastEB;
+    unsigned char xm_lastX1;
+    unsigned char xm_lastX2;
 
-	unsigned char inv_loop_delay;
-	unsigned char inv_loop_speed;
-	int inv_loop_offset;
+    unsigned char inv_loop_delay;
+    unsigned char inv_loop_speed;
+    int inv_loop_offset;
 
-	IT_PLAYING *playing;
+    IT_PLAYING *playing;
 
 #ifdef BIT_ARRAY_BULLSHIT
-	void * played_patjump;
-	int played_patjump_order;
+    void *played_patjump;
+    int played_patjump_order;
 #endif
 
-	//int output;
+    //int output;
 };
 
 
+struct DUMB_IT_SIGRENDERER {
+    DUMB_IT_SIGDATA *sigdata;
 
-struct DUMB_IT_SIGRENDERER
-{
-	DUMB_IT_SIGDATA *sigdata;
+    int n_channels;
 
-	int n_channels;
+    int resampling_quality;
 
-	int resampling_quality;
+    unsigned char globalvolume;
+    signed char globalvolslide;
 
-	unsigned char globalvolume;
-	signed char globalvolslide;
+    int tempo;
+    signed char temposlide;
 
-	int tempo;
-	signed char temposlide;
+    IT_CHANNEL channel[DUMB_IT_N_CHANNELS];
 
-	IT_CHANNEL channel[DUMB_IT_N_CHANNELS];
+    IT_PLAYING *playing[DUMB_IT_N_NNA_CHANNELS];
 
-	IT_PLAYING *playing[DUMB_IT_N_NNA_CHANNELS];
+    int tick;
+    int speed;
+    int rowcount;
 
-	int tick;
-	int speed;
-	int rowcount;
+    int order; /* Set to -1 if the song is terminated by a callback. */
+    int row;
+    int processorder;
+    int processrow;
+    int breakrow;
 
-	int order; /* Set to -1 if the song is terminated by a callback. */
-	int row;
-	int processorder;
-	int processrow;
-	int breakrow;
+    int restart_position;
 
-	int restart_position;
+    int n_rows;
 
-	int n_rows;
+    IT_ENTRY *entry_start;
+    IT_ENTRY *entry;
+    IT_ENTRY *entry_end;
 
-	IT_ENTRY *entry_start;
-	IT_ENTRY *entry;
-	IT_ENTRY *entry_end;
+    long time_left; /* Time before the next tick is processed */
+    int sub_time_left;
 
-	long time_left; /* Time before the next tick is processed */
-	int sub_time_left;
+    DUMB_CLICK_REMOVER **click_remover;
 
-	DUMB_CLICK_REMOVER **click_remover;
-
-	IT_CALLBACKS *callbacks;
+    IT_CALLBACKS *callbacks;
 
 #ifdef BIT_ARRAY_BULLSHIT
-	/* bit array, which rows are played, only checked by pattern break or loop commands */
-	void * played;
+    /* bit array, which rows are played, only checked by pattern break or loop commands */
+    void *played;
 
-	/*
-	   Loop indicator for internal processes, may also be useful for external processes 
-	   0 - Not looped
-	   1 - Looped
-	  -1 - Continued past loop
-	 */
-	int looped;
+    /*
+       Loop indicator for internal processes, may also be useful for external processes
+       0 - Not looped
+       1 - Looped
+      -1 - Continued past loop
+     */
+    int looped;
 
-	/*
-	   Kept until looped
-	*/
-	LONG_LONG time_played;
+    /*
+       Kept until looped
+    */
+    LONG_LONG time_played;
 
-	void * row_timekeeper;
+    void *row_timekeeper;
 #endif
 
-	long gvz_time;
-	int gvz_sub_time;
+    long gvz_time;
+    int gvz_sub_time;
 
     int ramp_style;
-    
-	//int max_output;
+
+    //int max_output;
 };
 
 
-
-struct IT_CHECKPOINT
-{
-	IT_CHECKPOINT *next;
-	long time;
-	DUMB_IT_SIGRENDERER *sigrenderer;
+struct IT_CHECKPOINT {
+    IT_CHECKPOINT *next;
+    long time;
+    DUMB_IT_SIGRENDERER *sigrenderer;
 };
 
 
+struct IT_CALLBACKS {
+    int (*loop)(void *data);
 
-struct IT_CALLBACKS
-{
-	int (*loop)(void *data);
-	void *loop_data;
-	/* Return 1 to prevent looping; the music will terminate abruptly. If you
-	 * want to make the music stop but allow samples to fade (beware, as they
-	 * might not fade at all!), use dumb_it_sr_set_speed() and set the speed
-	 * to 0. Note that xm_speed_zero() will not be called if you set the
-	 * speed manually, and also that this will work for IT and S3M files even
-	 * though the music can't stop in this way by itself.
-	 */
 
-	int (*xm_speed_zero)(void *data);
-	void *xm_speed_zero_data;
-	/* Return 1 to terminate the mod, without letting samples fade. */
+    void *loop_data;
 
-	int (*midi)(void *data, int channel, unsigned char byte);
-	void *midi_data;
-	/* Return 1 to prevent DUMB from subsequently interpreting the MIDI bytes
-	 * itself. In other words, return 1 if the Zxx macros in an IT file are
-	 * controlling filters and shouldn't be.
-	 */
 
-	int (*global_volume_zero)(void *data);
-	void *global_volume_zero_data;
-	/* Return 1 to terminate the module when global volume is set to zero. */
+    /* Return 1 to prevent looping; the music will terminate abruptly. If you
+     * want to make the music stop but allow samples to fade (beware, as they
+     * might not fade at all!), use dumb_it_sr_set_speed() and set the speed
+     * to 0. Note that xm_speed_zero() will not be called if you set the
+     * speed manually, and also that this will work for IT and S3M files even
+     * though the music can't stop in this way by itself.
+     */
+
+    int (*xm_speed_zero)(void *data);
+
+
+    void *xm_speed_zero_data;
+
+
+    /* Return 1 to terminate the mod, without letting samples fade. */
+
+    int (*midi)(void *data, int channel, unsigned char byte);
+
+
+    void *midi_data;
+
+
+    /* Return 1 to prevent DUMB from subsequently interpreting the MIDI bytes
+     * itself. In other words, return 1 if the Zxx macros in an IT file are
+     * controlling filters and shouldn't be.
+     */
+
+    int (*global_volume_zero)(void *data);
+
+
+    void *global_volume_zero_data;
+    /* Return 1 to terminate the module when global volume is set to zero. */
 };
-
 
 
 void _dumb_it_end_sigrenderer(sigrenderer_t *sigrenderer);
+
+
 void _dumb_it_unload_sigdata(sigdata_t *vsigdata);
 
-extern DUH_SIGTYPE_DESC _dumb_sigtype_it;
 
+extern DUH_SIGTYPE_DESC _dumb_sigtype_it;
 
 
 #define XM_APPREGIO                0
@@ -857,13 +842,15 @@ extern DUH_SIGTYPE_DESC _dumb_sigtype_it;
 #define BCD_TO_NORMAL(v)   (HIGH(v)*10+LOW(v))
 
 
-
 #if 0
 unsigned char **_dumb_malloc2(int w, int h);
 void _dumb_free2(unsigned char **line);
 #endif
 
+
 void _dumb_it_xm_convert_effect(int effect, int value, IT_ENTRY *entry, int mod);
+
+
 int _dumb_it_fix_invalid_orders(DUMB_IT_SIGDATA *sigdata);
 
 
@@ -911,16 +898,26 @@ int _dumb_it_fix_invalid_orders(DUMB_IT_SIGDATA *sigdata);
  */
 #define PTM_EBASE              (PTM_N_EFFECTS)
 
+
 void _dumb_it_ptm_convert_effect(int effect, int value, IT_ENTRY *entry);
+
 
 long _dumb_it_read_sample_data_adpcm4(IT_SAMPLE *sample, DUMBFILE *f);
 
+
 void _dumb_it_interleave_stereo_sample(IT_SAMPLE *sample);
+
 
 /* Calling either of these is optional */
 void _dumb_init_cubic();
+
+
 #ifdef _USE_SSE
+
+
 void _dumb_init_sse();
+
+
 #endif
 
 #endif /* INTERNAL_IT_H */

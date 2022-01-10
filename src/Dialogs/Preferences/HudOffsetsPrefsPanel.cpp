@@ -58,55 +58,54 @@ EXTERN_CVAR(Bool, hud_wide)
 //
 // HudOffsetsPrefsPanel class constructor
 // ----------------------------------------------------------------------------
- HudOffsetsPrefsPanel::HudOffsetsPrefsPanel(wxWindow* parent) : PrefsPanelBase(parent)
-{
-	// Create sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(sizer);
+HudOffsetsPrefsPanel::HudOffsetsPrefsPanel(wxWindow *parent) : PrefsPanelBase(parent) {
+    // Create sizer
+    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(sizer);
 
-	WxUtils::layoutVertically(
-		sizer,
-		{
-			cb_hud_bob_ = new wxCheckBox(this, -1, "Show weapon bob outline"),
-			cb_hud_center_ = new wxCheckBox(this, -1, "Show center line"),
-			cb_hud_statusbar_ = new wxCheckBox(this, -1, "Show status bar lines"),
-			cb_hud_wide_ = new wxCheckBox(this, -1, "Show widescreen borders")
-		},
-		wxSizerFlags(0).Expand()
-	);
+    WxUtils::layoutVertically(
+        sizer,
+        {
+            cb_hud_bob_ = new wxCheckBox(this, -1, "Show weapon bob outline"),
+            cb_hud_center_ = new wxCheckBox(this, -1, "Show center line"),
+            cb_hud_statusbar_ = new wxCheckBox(this, -1, "Show status bar lines"),
+            cb_hud_wide_ = new wxCheckBox(this, -1, "Show widescreen borders")
+        },
+        wxSizerFlags(0).Expand()
+    );
 }
+
 
 // ----------------------------------------------------------------------------
 // HudOffsetsPrefsPanel::~HudOffsetsPrefsPanel
 //
 // HudOffsetsPrefsPanel class destructor
 // ----------------------------------------------------------------------------
-HudOffsetsPrefsPanel::~HudOffsetsPrefsPanel()
-{
+HudOffsetsPrefsPanel::~HudOffsetsPrefsPanel() {
 }
+
 
 // ----------------------------------------------------------------------------
 // HudOffsetsPrefsPanel::init
 //
 // Initialises panel controls
 // ----------------------------------------------------------------------------
-void HudOffsetsPrefsPanel::init()
-{
-	cb_hud_bob_->SetValue(hud_bob);
-	cb_hud_center_->SetValue(hud_center);
-	cb_hud_statusbar_->SetValue(hud_statusbar);
-	cb_hud_wide_->SetValue(hud_wide);
+void HudOffsetsPrefsPanel::init() {
+    cb_hud_bob_->SetValue(hud_bob);
+    cb_hud_center_->SetValue(hud_center);
+    cb_hud_statusbar_->SetValue(hud_statusbar);
+    cb_hud_wide_->SetValue(hud_wide);
 }
+
 
 // ----------------------------------------------------------------------------
 // HudOffsetsPrefsPanel::applyPreferences
 //
 // Applies preference values from the controls to CVARs
 // ----------------------------------------------------------------------------
-void HudOffsetsPrefsPanel::applyPreferences()
-{
-	hud_bob = cb_hud_bob_->GetValue();
-	hud_center = cb_hud_center_->GetValue();
-	hud_statusbar = cb_hud_statusbar_->GetValue();
-	hud_wide = cb_hud_wide_->GetValue();
+void HudOffsetsPrefsPanel::applyPreferences() {
+    hud_bob = cb_hud_bob_->GetValue();
+    hud_center = cb_hud_center_->GetValue();
+    hud_statusbar = cb_hud_statusbar_->GetValue();
+    hud_wide = cb_hud_wide_->GetValue();
 }

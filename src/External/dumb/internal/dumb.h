@@ -27,31 +27,28 @@
 #define INTERNAL_DUMB_H
 
 
-typedef struct DUH_SIGTYPE_DESC_LINK
-{
-	struct DUH_SIGTYPE_DESC_LINK *next;
-	DUH_SIGTYPE_DESC *desc;
+typedef struct DUH_SIGTYPE_DESC_LINK {
+    struct DUH_SIGTYPE_DESC_LINK *next;
+    DUH_SIGTYPE_DESC *desc;
 }
-DUH_SIGTYPE_DESC_LINK;
+    DUH_SIGTYPE_DESC_LINK;
 
 
-typedef struct DUH_SIGNAL
-{
-	sigdata_t *sigdata;
-	DUH_SIGTYPE_DESC *desc;
+typedef struct DUH_SIGNAL {
+    sigdata_t *sigdata;
+    DUH_SIGTYPE_DESC *desc;
 }
-DUH_SIGNAL;
+    DUH_SIGNAL;
 
 
-struct DUH
-{
-	long length;
+struct DUH {
+    long length;
 
-	int n_tags;
-	char *(*tag)[2];
+    int n_tags;
+    char *(*tag)[2];
 
-	int n_signals;
-	DUH_SIGNAL **signal;
+    int n_signals;
+    DUH_SIGNAL **signal;
 };
 
 

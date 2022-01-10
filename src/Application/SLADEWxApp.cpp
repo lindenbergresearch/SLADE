@@ -57,29 +57,28 @@
 // Variables
 //
 // ----------------------------------------------------------------------------
-namespace Global
-{
-	string error = "";
+namespace Global {
+string error = "";
 
 #ifdef GIT_DESCRIPTION
-	string sc_rev = GIT_DESCRIPTION;
+string sc_rev = GIT_DESCRIPTION;
 #else
-	string sc_rev = "";
+string sc_rev = "";
 #endif
 
 #ifdef DEBUG
-	bool debug = true;
+bool debug = true;
 #else
-	bool debug = false;
+bool debug = false;
 #endif
 
-	int win_version_major = 0;
-	int win_version_minor = 0;
+int win_version_major = 0;
+int win_version_minor = 0;
 }
 
 
-string	current_action = "";
-bool	update_check_message_box = false;
+string current_action = "";
+bool update_check_message_box = false;
 CVAR(String, dir_last, "", CVAR_SAVE)
 CVAR(Bool, update_check, true, CVAR_SAVE)
 CVAR(Bool, update_check_beta, false, CVAR_SAVE)
@@ -97,26 +96,29 @@ CVAR(Float, ui_scale_factor, 1.0, CVAR_SAVE)
 // Extension of the wxLog class to send all wxWidgets log messages
 // to the SLADE log implementation
 // ----------------------------------------------------------------------------
-class SLADELog : public wxLog
-{
+class SLADELog : public wxLog {
 protected:
-	// wx2.9.x is no longer supported.
+    // wx2.9.x is no longer supported.
 #if (wxMAJOR_VERSION < 3)
 #error This will not compile with wxWidgets older than 3.0.0 !
 #endif
-	void DoLogText(const wxString& msg) override
-	{
-		if (msg.Lower().Contains("error"))
-			Log::error(msg.Right(msg.size() - 10));
-		else if (msg.Lower().Contains("warning"))
-			Log::warning(msg.Right(msg.size() - 10));
-		else
-			Log::info(msg.Right(msg.size() - 10));
-	}
+
+
+    void DoLogText(const wxString &msg) override {
+        if (msg.Lower().Contains("error"))
+            Log::error(msg.Right(msg.size() - 10));
+        else if (msg.Lower().Contains("warning"))
+            Log::warning(msg.Right(msg.size() - 10));
+        else
+            Log::info(msg.Right(msg.size() - 10));
+    }
+
 
 public:
-	SLADELog() {}
-	~SLADELog() {}
+    SLADELog() {}
+
+
+    ~SLADELog() {}
 };
 
 
@@ -129,47 +131,49 @@ public:
 // platforms, so unfortunately it has to be disabled there
 // ----------------------------------------------------------------------------
 #if wxUSE_STACKWALKER
-class SLADEStackTrace : public wxStackWalker
-{
+
+
+class SLADEStackTrace : public wxStackWalker {
 public:
-	SLADEStackTrace()
-	{
-		stack_trace = "Stack Trace:\n";
-	}
+    SLADEStackTrace() {
+        stack_trace = "Stack Trace:\n";
+    }
 
-	~SLADEStackTrace() {}
 
-	string getTraceString() const
-	{
-		return stack_trace;
-	}
+    ~SLADEStackTrace() {}
 
-	string getTopLevel() const
-	{
-		return top_level;
-	}
 
-	void OnStackFrame(const wxStackFrame& frame) override
-	{
-		string location = "[unknown location] ";
-		if (frame.HasSourceLocation())
-			location = S_FMT("(%s:%d) ", frame.GetFileName(), frame.GetLine());
+    string getTraceString() const {
+        return stack_trace;
+    }
 
-		wxUIntPtr address = wxPtrToUInt(frame.GetAddress());
-		string func_name = frame.GetName();
-		if (func_name.IsEmpty())
-			func_name = S_FMT("[unknown:%d]", address);
 
-		string line = S_FMT("%s%s", location, func_name);
-		stack_trace.Append(S_FMT("%d: %s\n", frame.GetLevel(), line));
+    string getTopLevel() const {
+        return top_level;
+    }
 
-		if (frame.GetLevel() == 0)
-			top_level = line;
-	}
+
+    void OnStackFrame(const wxStackFrame &frame) override {
+        string location = "[unknown location] ";
+        if (frame.HasSourceLocation())
+            location = S_FMT("(%s:%d) ", frame.GetFileName(), frame.GetLine());
+
+        wxUIntPtr address = wxPtrToUInt(frame.GetAddress());
+        string func_name = frame.GetName();
+        if (func_name.IsEmpty())
+            func_name = S_FMT("[unknown:%d]", address);
+
+        string line = S_FMT("%s%s", location, func_name);
+        stack_trace.Append(S_FMT("%d: %s\n", frame.GetLevel(), line));
+
+        if (frame.GetLevel() == 0)
+            top_level = line;
+    }
+
 
 private:
-	string	stack_trace;
-	string	top_level;
+    string stack_trace;
+    string top_level;
 };
 
 
@@ -179,237 +183,234 @@ private:
 // A simple dialog that displays a crash message and a scrollable,
 // multi-line textbox with a stack trace
 // ----------------------------------------------------------------------------
-class SLADECrashDialog : public wxDialog, public wxThreadHelper
-{
+class SLADECrashDialog : public wxDialog, public wxThreadHelper {
 public:
-	SLADECrashDialog(SLADEStackTrace& st) : wxDialog(wxTheApp->GetTopWindow(), -1, "SLADE Application Crash")
-	{
-		top_level = st.getTopLevel();
+    SLADECrashDialog(SLADEStackTrace &st) : wxDialog(wxTheApp->GetTopWindow(), -1, "SLADE Application Crash") {
+        top_level = st.getTopLevel();
 
-		// Setup sizer
-		wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-		SetSizer(sizer);
+        // Setup sizer
+        wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+        SetSizer(sizer);
 
-		wxBoxSizer* hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND);
+        wxBoxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
+        sizer->Add(hbox, 0, wxEXPAND);
 
-		// Add dead doomguy picture
-		App::archiveManager().programResourceArchive()
-			->entryAtPath("images/STFDEAD0.png")
-			->exportFile(App::path("STFDEAD0.png", App::Dir::Temp));
-		wxImage img;
-		img.LoadFile(App::path("STFDEAD0.png", App::Dir::Temp));
-		img.Rescale(img.GetWidth(), img.GetHeight(), wxIMAGE_QUALITY_NEAREST);
-		wxStaticBitmap* picture = new wxStaticBitmap(this, -1, wxBitmap(img));
-		hbox->Add(picture, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxTOP|wxBOTTOM, 10);
+        // Add dead doomguy picture
+        App::archiveManager().programResourceArchive()
+            ->entryAtPath("images/STFDEAD0.png")
+            ->exportFile(App::path("STFDEAD0.png", App::Dir::Temp));
+        wxImage img;
+        img.LoadFile(App::path("STFDEAD0.png", App::Dir::Temp));
+        img.Rescale(img.GetWidth(), img.GetHeight(), wxIMAGE_QUALITY_NEAREST);
+        wxStaticBitmap *picture = new wxStaticBitmap(this, -1, wxBitmap(img));
+        hbox->Add(picture, 0, wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxTOP | wxBOTTOM, 10);
 
-		// Add general crash message
+        // Add general crash message
 #ifndef NOCURL
-		string message = "SLADE has crashed unexpectedly. To help fix the problem that caused this crash, "
-			"please (optionally) enter a short description of what you were doing at the time "
-			"of the crash, and click the 'Send Crash Report' button.";
+        string message = "SLADE has crashed unexpectedly. To help fix the problem that caused this crash, "
+                         "please (optionally) enter a short description of what you were doing at the time "
+                         "of the crash, and click the 'Send Crash Report' button.";
 #else
-		string message = "SLADE has crashed unexpectedly. To help fix the problem that caused this crash, "
-			"please email a copy of the stack trace below to sirjuddington@gmail.com, along with a "
-			"description of what you were doing at the time of the crash.";
+        string message = "SLADE has crashed unexpectedly. To help fix the problem that caused this crash, "
+            "please email a copy of the stack trace below to sirjuddington@gmail.com, along with a "
+            "description of what you were doing at the time of the crash.";
 #endif
-		wxStaticText* label = new wxStaticText(this, -1, message);
-		hbox->Add(label, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 10);
-		label->Wrap(480 - 20 - picture->GetSize().x);
+        wxStaticText *label = new wxStaticText(this, -1, message);
+        hbox->Add(label, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 10);
+        label->Wrap(480 - 20 - picture->GetSize().x);
 
 #ifndef NOCURL
-		// Add description text area
-		text_description = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(-1, 100), wxTE_MULTILINE);
-		sizer->Add(new wxStaticText(this, -1, "Description:"), 0, wxLEFT|wxRIGHT, 10);
-		sizer->AddSpacer(2);
-		sizer->Add(text_description, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+        // Add description text area
+        text_description = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxSize(-1, 100), wxTE_MULTILINE);
+        sizer->Add(new wxStaticText(this, -1, "Description:"), 0, wxLEFT | wxRIGHT, 10);
+        sizer->AddSpacer(2);
+        sizer->Add(text_description, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 #endif
 
-		// SLADE info
-		if (Global::sc_rev.empty())
-			trace = S_FMT("Version: %s", App::version().toString());
-		else
-			trace = S_FMT("Version: %s (%s)", App::version().toString(), Global::sc_rev);
-		if (App::platform() == App::Platform::Windows)
-			trace += S_FMT(" (%s)\n", App::isWin64Build() ? "x64" : "x86");
-		else
-			trace += "\n";
-		if (current_action.IsEmpty())
-			trace += "No current action\n";
-		else
-			trace += S_FMT("Current action: %s", current_action);
-		trace += "\n";
+        // SLADE info
+        if (Global::sc_rev.empty())
+            trace = S_FMT("Version: %s", App::version().toString());
+        else
+            trace = S_FMT("Version: %s (%s)", App::version().toString(), Global::sc_rev);
+        if (App::platform() == App::Platform::Windows)
+            trace += S_FMT(" (%s)\n", App::isWin64Build() ? "x64" : "x86");
+        else
+            trace += "\n";
+        if (current_action.IsEmpty())
+            trace += "No current action\n";
+        else
+            trace += S_FMT("Current action: %s", current_action);
+        trace += "\n";
 
-		// System info
-		OpenGL::gl_info_t gl_info = OpenGL::getInfo();
-		trace += "Operating System: " + wxGetOsDescription() + "\n";
-		trace += "Graphics Vendor: " + gl_info.vendor + "\n";
-		trace += "Graphics Hardware: " + gl_info.renderer + "\n";
-		trace += "OpenGL Version: " + gl_info.version + "\n";
+        // System info
+        OpenGL::gl_info_t gl_info = OpenGL::getInfo();
+        trace += "Operating System: " + wxGetOsDescription() + "\n";
+        trace += "Graphics Vendor: " + gl_info.vendor + "\n";
+        trace += "Graphics Hardware: " + gl_info.renderer + "\n";
+        trace += "OpenGL Version: " + gl_info.version + "\n";
 
-		// Stack trace
-		trace += "\n";
-		trace += st.getTraceString();
+        // Stack trace
+        trace += "\n";
+        trace += st.getTraceString();
 
-		// Last 10 log lines
-		trace += "\nLast Log Messages:\n";
-		auto& log = Log::history();
-		for (auto a = log.size() - 10; a < log.size(); a++)
-			trace += log[a].message + "\n";
+        // Last 10 log lines
+        trace += "\nLast Log Messages:\n";
+        auto &log = Log::history();
+        for (auto a = log.size() - 10; a < log.size(); a++)
+            trace += log[a].message + "\n";
 
-		// Add stack trace text area
-		text_stack = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY|wxHSCROLL);
-		text_stack->SetValue(trace);
-		text_stack->SetFont(wxFont(8, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-		sizer->Add(new wxStaticText(this, -1, "Crash Information:"), 0, wxLEFT|wxRIGHT, 10);
-		sizer->AddSpacer(2);
-		sizer->Add(text_stack, 1, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+        // Add stack trace text area
+        text_stack = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxHSCROLL);
+        text_stack->SetValue(trace);
+        text_stack->SetFont(wxFont(8, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+        sizer->Add(new wxStaticText(this, -1, "Crash Information:"), 0, wxLEFT | wxRIGHT, 10);
+        sizer->AddSpacer(2);
+        sizer->Add(text_stack, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
-		// Dump stack trace to a file (just in case)
-		wxFile file(App::path("slade3_crash.log", App::Dir::User), wxFile::write);
-		file.Write(trace);
-		file.Close();
+        // Dump stack trace to a file (just in case)
+        wxFile file(App::path("slade3_crash.log", App::Dir::User), wxFile::write);
+        file.Write(trace);
+        file.Close();
 
-		// Also dump stack trace to console
-		std::cerr << trace;
+        // Also dump stack trace to console
+        std::cerr << trace;
 
 #ifndef NOCURL
-		// Add small privacy disclaimer
-		string privacy = "Sending a crash report will only send the information displayed above, "
-						"along with a copy of the logs for this session.";
-		label = new wxStaticText(this, -1, privacy);
-		label->Wrap(480);
-		sizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL|wxLEFT|wxRIGHT|wxBOTTOM, 10);
+        // Add small privacy disclaimer
+        string privacy = "Sending a crash report will only send the information displayed above, "
+                         "along with a copy of the logs for this session.";
+        label = new wxStaticText(this, -1, privacy);
+        label->Wrap(480);
+        sizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 #endif
 
-		// Add 'Copy Stack Trace' button
-		hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 6);
-		btn_copy_trace = new wxButton(this, -1, "Copy Stack Trace");
-		hbox->AddStretchSpacer();
-		hbox->Add(btn_copy_trace, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
-		btn_copy_trace->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnCopyTrace, this);
+        // Add 'Copy Stack Trace' button
+        hbox = new wxBoxSizer(wxHORIZONTAL);
+        sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 6);
+        btn_copy_trace = new wxButton(this, -1, "Copy Stack Trace");
+        hbox->AddStretchSpacer();
+        hbox->Add(btn_copy_trace, 0, wxLEFT | wxRIGHT | wxBOTTOM, 4);
+        btn_copy_trace->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnCopyTrace, this);
 
-		// Add 'Exit SLADE' button
-		btn_exit = new wxButton(this, -1, "Exit SLADE");
-		hbox->Add(btn_exit, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
-		btn_exit->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnExit, this);
+        // Add 'Exit SLADE' button
+        btn_exit = new wxButton(this, -1, "Exit SLADE");
+        hbox->Add(btn_exit, 0, wxLEFT | wxRIGHT | wxBOTTOM, 4);
+        btn_exit->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnExit, this);
 
 #ifndef NOCURL
-		// Add 'Send Crash Report' button
-		btn_send = new wxButton(this, -1, "Send Crash Report");
-		hbox->Add(btn_send, 0, wxLEFT|wxRIGHT|wxBOTTOM, 4);
-		btn_send->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnSend, this);
+        // Add 'Send Crash Report' button
+        btn_send = new wxButton(this, -1, "Send Crash Report");
+        hbox->Add(btn_send, 0, wxLEFT | wxRIGHT | wxBOTTOM, 4);
+        btn_send->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &SLADECrashDialog::onBtnSend, this);
 #endif
 
-		Bind(wxEVT_THREAD, &SLADECrashDialog::onThreadUpdate, this);
-		Bind(wxEVT_CLOSE_WINDOW, &SLADECrashDialog::onClose, this);
+        Bind(wxEVT_THREAD, &SLADECrashDialog::onThreadUpdate, this);
+        Bind(wxEVT_CLOSE_WINDOW, &SLADECrashDialog::onClose, this);
 
-		// Setup layout
-		Layout();
-		SetInitialSize(wxSize(500, 600));
-		CenterOnParent();
-	}
+        // Setup layout
+        Layout();
+        SetInitialSize(wxSize(500, 600));
+        CenterOnParent();
+    }
 
-	~SLADECrashDialog() {}
 
-	wxThread::ExitCode Entry()
-	{
-		wxMailer mailer("slade.crashes@gmail.com", "qakljwqpasnmprhl", "smtp://smtp.gmail.com:587");
+    ~SLADECrashDialog() {}
 
-		// Create message
-		wxEmailMessage msg;
-		msg.SetFrom("SLADE");
-		msg.SetTo("slade.crashes@gmail.com");
-		msg.SetSubject("[" + App::version().toString() + "] @ " + top_level);
-		msg.SetMessage(S_FMT("Description:\n%s\n\n%s", text_description->GetValue(), trace));
-		msg.AddAttachment(App::path("slade3.log", App::Dir::User));
-		msg.Finalize();
 
-		// Send email
-		bool sent = mailer.Send(msg);
+    wxThread::ExitCode Entry() {
+        wxMailer mailer("slade.crashes@gmail.com", "qakljwqpasnmprhl", "smtp://smtp.gmail.com:587");
 
-		// Send event
-		wxThreadEvent* evt = new wxThreadEvent();
-		evt->SetInt(sent ? 1 : 0);
-		wxQueueEvent(GetEventHandler(), evt);
+        // Create message
+        wxEmailMessage msg;
+        msg.SetFrom("SLADE");
+        msg.SetTo("slade.crashes@gmail.com");
+        msg.SetSubject("[" + App::version().toString() + "] @ " + top_level);
+        msg.SetMessage(S_FMT("Description:\n%s\n\n%s", text_description->GetValue(), trace));
+        msg.AddAttachment(App::path("slade3.log", App::Dir::User));
+        msg.Finalize();
 
-		return (wxThread::ExitCode)nullptr;
-	}
+        // Send email
+        bool sent = mailer.Send(msg);
 
-	void onBtnCopyTrace(wxCommandEvent& e)
-	{
-		if (wxTheClipboard->Open())
-		{
-			wxTheClipboard->SetData(new wxTextDataObject(trace));
-			wxTheClipboard->Flush();
-			wxTheClipboard->Close();
-			wxMessageBox("Stack trace successfully copied to clipboard");
-		}
-		else
-			wxMessageBox("Unable to access the system clipboard, please select+copy the text above manually", wxMessageBoxCaptionStr, wxICON_EXCLAMATION);
-	}
+        // Send event
+        wxThreadEvent *evt = new wxThreadEvent();
+        evt->SetInt(sent ? 1 : 0);
+        wxQueueEvent(GetEventHandler(), evt);
 
-	void onBtnSend(wxCommandEvent& e)
-	{
-		btn_send->SetLabel("Sending...");
-		btn_send->Enable(false);
-		btn_exit->Enable(false);
+        return (wxThread::ExitCode) nullptr;
+    }
 
-		if (CreateThread(wxTHREAD_JOINABLE) != wxTHREAD_NO_ERROR)
-			EndModal(wxID_OK);
 
-		if (GetThread()->Run() != wxTHREAD_NO_ERROR)
-			EndModal(wxID_OK);
-	}
+    void onBtnCopyTrace(wxCommandEvent &e) {
+        if (wxTheClipboard->Open()) {
+            wxTheClipboard->SetData(new wxTextDataObject(trace));
+            wxTheClipboard->Flush();
+            wxTheClipboard->Close();
+            wxMessageBox("Stack trace successfully copied to clipboard");
+        } else
+            wxMessageBox("Unable to access the system clipboard, please select+copy the text above manually", wxMessageBoxCaptionStr, wxICON_EXCLAMATION);
+    }
 
-	void onBtnExit(wxCommandEvent& e)
-	{
-		EndModal(wxID_OK);
-	}
 
-	void onThreadUpdate(wxThreadEvent& e)
-	{
-		if (e.GetInt() == 1)
-		{
-			// Report sent successfully, exit
-			wxMessageBox(
-				"The crash report was sent successfully, and SLADE will now close.",
-				"Crash Report Sent"
-			);
-			EndModal(wxID_OK);
-		}
-		else
-		{
-			// Sending failed
-			btn_send->SetLabel("Send Crash Report");
-			btn_send->Enable();
-			btn_exit->Enable();
-			wxMessageBox(
-				"The crash report failed to send. Please either try again or click 'Exit SLADE' "
-				"to exit without sending.",
-				"Failed to Send"
-			);
-		}
-	}
+    void onBtnSend(wxCommandEvent &e) {
+        btn_send->SetLabel("Sending...");
+        btn_send->Enable(false);
+        btn_exit->Enable(false);
 
-	void onClose(wxCloseEvent& e)
-	{
-		if (GetThread() && GetThread()->IsRunning())
-			GetThread()->Wait();
+        if (CreateThread(wxTHREAD_JOINABLE) != wxTHREAD_NO_ERROR)
+            EndModal(wxID_OK);
 
-		Destroy();
-	}
+        if (GetThread()->Run() != wxTHREAD_NO_ERROR)
+            EndModal(wxID_OK);
+    }
+
+
+    void onBtnExit(wxCommandEvent &e) {
+        EndModal(wxID_OK);
+    }
+
+
+    void onThreadUpdate(wxThreadEvent &e) {
+        if (e.GetInt() == 1) {
+            // Report sent successfully, exit
+            wxMessageBox(
+                "The crash report was sent successfully, and SLADE will now close.",
+                "Crash Report Sent"
+            );
+            EndModal(wxID_OK);
+        } else {
+            // Sending failed
+            btn_send->SetLabel("Send Crash Report");
+            btn_send->Enable();
+            btn_exit->Enable();
+            wxMessageBox(
+                "The crash report failed to send. Please either try again or click 'Exit SLADE' "
+                "to exit without sending.",
+                "Failed to Send"
+            );
+        }
+    }
+
+
+    void onClose(wxCloseEvent &e) {
+        if (GetThread() && GetThread()->IsRunning())
+            GetThread()->Wait();
+
+        Destroy();
+    }
+
 
 private:
-	wxTextCtrl*	text_stack;
-	wxTextCtrl*	text_description;
-	wxButton*	btn_copy_trace;
-	wxButton*	btn_exit;
-	wxButton*	btn_send;
-	string		trace;
-	string		top_level;
+    wxTextCtrl *text_stack;
+    wxTextCtrl *text_description;
+    wxButton *btn_copy_trace;
+    wxButton *btn_exit;
+    wxButton *btn_send;
+    string trace;
+    string top_level;
 };
+
+
 #endif//wxUSE_STACKWALKER
 
 
@@ -420,56 +421,63 @@ private:
 // from one SLADE instance to another in the case where a second
 // instance is opened
 // ----------------------------------------------------------------------------
-class MainAppFLConnection : public wxConnection
-{
+class MainAppFLConnection : public wxConnection {
 public:
-	MainAppFLConnection() {}
-	~MainAppFLConnection() {}
+    MainAppFLConnection() {}
 
-	bool OnAdvise(
-		const wxString& topic,
-		const wxString& item,
-		const void* data,
-		size_t size,
-		wxIPCFormat format) override
-	{
-		return true;
-	}
 
-	bool OnPoke(
-		const wxString& topic,
-		const wxString& item,
-		const void *data,
-		size_t size,
-		wxIPCFormat format) override
-	{
-		App::archiveManager().openArchive(item);
-		return true;
-	}
+    ~MainAppFLConnection() {}
+
+
+    bool OnAdvise(
+        const wxString &topic,
+        const wxString &item,
+        const void *data,
+        size_t size,
+        wxIPCFormat format
+    ) override {
+        return true;
+    }
+
+
+    bool OnPoke(
+        const wxString &topic,
+        const wxString &item,
+        const void *data,
+        size_t size,
+        wxIPCFormat format
+    ) override {
+        App::archiveManager().openArchive(item);
+        return true;
+    }
 };
 
-class MainAppFileListener : public wxServer
-{
-public:
-	MainAppFileListener() {}
-	~MainAppFileListener() {}
 
-	wxConnectionBase* OnAcceptConnection(const wxString& topic) override
-	{
-		return new MainAppFLConnection();
-	}
+class MainAppFileListener : public wxServer {
+public:
+    MainAppFileListener() {}
+
+
+    ~MainAppFileListener() {}
+
+
+    wxConnectionBase *OnAcceptConnection(const wxString &topic) override {
+        return new MainAppFLConnection();
+    }
 };
 
-class MainAppFLClient : public wxClient
-{
-public:
-	MainAppFLClient() {}
-	~MainAppFLClient() {}
 
-	wxConnectionBase* OnMakeConnection() override
-	{
-		return new MainAppFLConnection();
-	}
+class MainAppFLClient : public wxClient {
+public:
+    MainAppFLClient() {}
+
+
+    ~MainAppFLClient() {}
+
+
+    wxConnectionBase *OnMakeConnection() override {
+        return new MainAppFLConnection();
+    }
 };
 
 
@@ -480,25 +488,26 @@ public:
 // ----------------------------------------------------------------------------
 IMPLEMENT_APP(SLADEWxApp)
 
+
 // ----------------------------------------------------------------------------
 // SLADEWxApp::SLADEWxApp
 //
 // SLADEWxApp class constructor
 // ----------------------------------------------------------------------------
 SLADEWxApp::SLADEWxApp() :
-	single_instance_checker{ nullptr },
-	file_listener{ nullptr }
-{
+    single_instance_checker{ nullptr },
+    file_listener{ nullptr } {
 }
+
 
 // ----------------------------------------------------------------------------
 // SLADEWxApp::~SLADEWxApp
 //
 // SLADEWxApp class destructor
 // ----------------------------------------------------------------------------
-SLADEWxApp::~SLADEWxApp()
-{
+SLADEWxApp::~SLADEWxApp() {
 }
+
 
 // ----------------------------------------------------------------------------
 // SLADEWxApp::singleInstanceCheck
@@ -508,135 +517,132 @@ SLADEWxApp::~SLADEWxApp()
 // process. Returns false if another instance was found and the new
 // SLADE was started with arguments
 // ----------------------------------------------------------------------------
-bool SLADEWxApp::singleInstanceCheck()
-{
-	single_instance_checker = new wxSingleInstanceChecker;
+bool SLADEWxApp::singleInstanceCheck() {
+    single_instance_checker = new wxSingleInstanceChecker;
 
-	if (argc == 1)
-		return true;
+    if (argc == 1)
+        return true;
 
-	if (single_instance_checker->IsAnotherRunning())
-	{
-		delete single_instance_checker;
+    if (single_instance_checker->IsAnotherRunning()) {
+        delete single_instance_checker;
 
-		// Connect to the file listener of the existing SLADE process
-		auto client = std::make_unique<MainAppFLClient>();
-		auto connection = client->MakeConnection(wxGetHostName(), "SLADE_MAFL", "files");
+        // Connect to the file listener of the existing SLADE process
+        auto client = std::make_unique<MainAppFLClient>();
+        auto connection = client->MakeConnection(wxGetHostName(), "SLADE_MAFL", "files");
 
-		if (connection)
-		{
-			// Send args as archives to open
-			for (int a = 1; a < argc; a++)
-				connection->Poke(argv[a], argv[a]);
+        if (connection) {
+            // Send args as archives to open
+            for (int a = 1; a < argc; a++)
+                connection->Poke(argv[a], argv[a]);
 
-			connection->Disconnect();
-		}
+            connection->Disconnect();
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	return true;
+    return true;
 }
+
 
 // ----------------------------------------------------------------------------
 // SLADEWxApp::OnInit
 //
 // Application initialization, run when program is started
 // ----------------------------------------------------------------------------
-bool SLADEWxApp::OnInit()
-{
-	// Check if an instance of SLADE is already running
-	if (!singleInstanceCheck())
-	{
-		printf("Found active instance. Quitting.\n");
-		return false;
-	}
+bool SLADEWxApp::OnInit() {
+    // Check if an instance of SLADE is already running
+    if (!singleInstanceCheck()) {
+        printf("Found active instance. Quitting.\n");
+        return false;
+    }
 
-	// Init global variables
-	Global::error = "";
+    // Init global variables
+    Global::error = "";
 
-	// Init wxSocket stuff (for WebGet)
-	wxSocketBase::Initialize();
+    // Init wxSocket stuff (for WebGet)
+    wxSocketBase::Initialize();
 
-	// Start up file listener
-	file_listener = new MainAppFileListener();
-	file_listener->Create("SLADE_MAFL");
+    // Start up file listener
+    file_listener = new MainAppFileListener();
+    file_listener->Create("SLADE_MAFL");
 
-	// Setup system options
-	wxSystemOptions::SetOption("mac.listctrl.always_use_generic", 1);
+    // Setup system options
+    wxSystemOptions::SetOption("mac.listctrl.always_use_generic", 1);
 
-	// Set application name (for wx directory stuff)
+    // Set application name (for wx directory stuff)
 #ifdef __WINDOWS__
-	wxApp::SetAppName("SLADE3");
+    wxApp::SetAppName("SLADE3");
 #else
-	wxApp::SetAppName("slade3");
+    wxApp::SetAppName("slade3");
 #endif
 
-	// Handle exceptions using wxDebug stuff, but only in release mode
+    // Handle exceptions using wxDebug stuff, but only in release mode
 #ifdef NDEBUG
-	wxHandleFatalExceptions(true);
+    wxHandleFatalExceptions(true);
 #endif
 
-	// Load image handlers
-	wxInitAllImageHandlers();
+    // Load image handlers
+    wxInitAllImageHandlers();
 
 #ifdef __APPLE__
-	// Should be constant, wxWidgets Cocoa backend scales everything under the hood
-	const double ui_scale = ui_scale_factor;
+    // Should be constant, wxWidgets Cocoa backend scales everything under the hood
+    const double ui_scale = ui_scale_factor;
 #else // !__APPLE__
-	// Calculate scaling factor (from system ppi)
-	wxMemoryDC dc;
-	double ui_scale = (double)(dc.GetPPI().x) / 96.0;
-	if (ui_scale < 1.)
-		ui_scale = 1.;
+    // Calculate scaling factor (from system ppi)
+    wxMemoryDC dc;
+    double ui_scale = (double)(dc.GetPPI().x) / 96.0;
+    if (ui_scale < 1.)
+        ui_scale = 1.;
 #endif // __APPLE__
 
-	// Get Windows version
+    // Get Windows version
 #ifdef __WXMSW__
-	wxGetOsVersion(&Global::win_version_major, &Global::win_version_minor);
-	LOG_MESSAGE(1, "Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor);
+    wxGetOsVersion(&Global::win_version_major, &Global::win_version_minor);
+    LOG_MESSAGE(1, "Windows Version: %d.%d", Global::win_version_major, Global::win_version_minor);
 #endif
 
-	// Reroute wx log messages
-	wxLog::SetActiveTarget(new SLADELog());
+    // Reroute wx log messages
+    wxLog::SetActiveTarget(new SLADELog());
 
-	// Get command line arguments
-	vector<string> args;
-	for (int a = 1; a < argc; a++)
-		args.push_back(argv[a]);
+    // Get command line arguments
+    vector<string> args;
+    for (int a = 1; a < argc; a++)
+        args.push_back(argv[a]);
 
-	// Init application
-	if (!App::init(args, ui_scale))
-		return false;
+    // Init application
+    if (!App::init(args, ui_scale))
+        return false;
 
-	// Check for updates
+    // Check for updates
 #ifdef __WXMSW__
-	wxHTTP::Initialize();
-	if (update_check)
-		checkForUpdates(false);
+    wxHTTP::Initialize();
+    if (update_check)
+        checkForUpdates(false);
 #endif
 
-	// Bind events
-	Bind(wxEVT_MENU, &SLADEWxApp::onMenu, this);
-	Bind(wxEVT_THREAD_WEBGET_COMPLETED, &SLADEWxApp::onVersionCheckCompleted, this);
-	Bind(wxEVT_ACTIVATE_APP, &SLADEWxApp::onActivate, this);
+    // Bind events
+    Bind(wxEVT_MENU, &SLADEWxApp::onMenu, this);
+    Bind(wxEVT_THREAD_WEBGET_COMPLETED, &SLADEWxApp::onVersionCheckCompleted, this);
+    Bind(wxEVT_ACTIVATE_APP, &SLADEWxApp::onActivate, this);
 
-	return true;
+    return true;
 }
+
 
 // ----------------------------------------------------------------------------
 // SLADEWxApp::OnExit
 //
 // Application shutdown, run when program is closed
 // ----------------------------------------------------------------------------
-int SLADEWxApp::OnExit()
-{
-	wxSocketBase::Shutdown();
-	delete single_instance_checker;
-	delete file_listener;
+int SLADEWxApp::OnExit() {
+    wxSocketBase::Shutdown();
+    delete single_instance_checker;
+    delete file_listener;
 
-	return 0;
+    return 0;
 }
+
 
 // ----------------------------------------------------------------------------
 // SLADEWxApp::OnFatalException
@@ -644,24 +650,28 @@ int SLADEWxApp::OnExit()
 // Handler for when a fatal exception occurs - show the stack trace/crash
 // dialog if it's configured to be used
 // ----------------------------------------------------------------------------
-void SLADEWxApp::OnFatalException()
-{
+void SLADEWxApp::OnFatalException() {
 #if wxUSE_STACKWALKER
 #ifndef _DEBUG
-	SLADEStackTrace st;
-	st.WalkFromException();
-	SLADECrashDialog sd(st);
-	sd.ShowModal();
+    SLADEStackTrace st;
+    st.WalkFromException();
+    SLADECrashDialog sd(st);
+    sd.ShowModal();
 #endif//_DEBUG
 #endif//wxUSE_STACKWALKER
 }
 
+
 #ifdef __APPLE__
-void SLADEWxApp::MacOpenFile(const wxString &fileName)
-{
-	theMainWindow->getArchiveManagerPanel()->openFile(fileName);
+
+
+void SLADEWxApp::MacOpenFile(const wxString &fileName) {
+    theMainWindow->getArchiveManagerPanel()->openFile(fileName);
 }
+
+
 #endif // __APPLE__
+
 
 // ----------------------------------------------------------------------------
 // SLADEWxApp::checkForUpdates
@@ -669,12 +679,11 @@ void SLADEWxApp::MacOpenFile(const wxString &fileName)
 // Runs the version checker, if [message_box] is true, a message box
 // will be shown if already up-to-date
 // ----------------------------------------------------------------------------
-void SLADEWxApp::checkForUpdates(bool message_box)
-{
+void SLADEWxApp::checkForUpdates(bool message_box) {
 #ifdef __WXMSW__
-	update_check_message_box = message_box;
-	Log::info(1, "Checking for updates...");
-	Web::getHttpAsync("slade.mancubus.net", "/version_win.txt", this);
+    update_check_message_box = message_box;
+    Log::info(1, "Checking for updates...");
+    Web::getHttpAsync("slade.mancubus.net", "/version_win.txt", this);
 #endif
 }
 
@@ -691,198 +700,178 @@ void SLADEWxApp::checkForUpdates(bool message_box)
 //
 // Called when a menu item is selected in the application
 // ----------------------------------------------------------------------------
-void SLADEWxApp::onMenu(wxCommandEvent& e)
-{
-	bool handled = false;
+void SLADEWxApp::onMenu(wxCommandEvent &e) {
+    bool handled = false;
 
-	// Find applicable action
-	auto s_action = SAction::fromWxId(e.GetId());
-	auto action = s_action->getId();
+    // Find applicable action
+    auto s_action = SAction::fromWxId(e.GetId());
+    auto action = s_action->getId();
 
-	// Handle action if valid
-	if (action != "invalid")
-	{
-		current_action = action;
-		SActionHandler::setWxIdOffset(e.GetId() - s_action->getWxId());
-		handled = SActionHandler::doAction(action);
+    // Handle action if valid
+    if (action != "invalid") {
+        current_action = action;
+        SActionHandler::setWxIdOffset(e.GetId() - s_action->getWxId());
+        handled = SActionHandler::doAction(action);
 
-		// Check if triggering object is a menu item
-		if (s_action && s_action->getType() == SAction::Type::Check)
-		{
-			if (e.GetEventObject() && e.GetEventObject()->IsKindOf(wxCLASSINFO(wxMenuItem)))
-			{
-				auto item = (wxMenuItem*)e.GetEventObject();
-				item->Check(s_action->isChecked());
-			}
-		}
+        // Check if triggering object is a menu item
+        if (s_action && s_action->getType() == SAction::Type::Check) {
+            if (e.GetEventObject() && e.GetEventObject()->IsKindOf(wxCLASSINFO(wxMenuItem))) {
+                auto item = (wxMenuItem *) e.GetEventObject();
+                item->Check(s_action->isChecked());
+            }
+        }
 
-		current_action = "";
-	}
+        current_action = "";
+    }
 
-	// If not handled, let something else handle it
-	if (!handled)
-		e.Skip();
+    // If not handled, let something else handle it
+    if (!handled)
+        e.Skip();
 }
+
 
 // ----------------------------------------------------------------------------
 // SLADEWxApp::onVersionCheckCompleted
 //
 // Called when the version check thread completes
 // ----------------------------------------------------------------------------
-void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent& e)
-{
-	// Check failed
-	if (e.GetString() == "connect_failed")
-	{
-		LOG_MESSAGE(1, "Version check failed, unable to connect");
-		if (update_check_message_box)
-			wxMessageBox(
-				"Update check failed: unable to connect to internet. "
-				"Check your connection and try again.",
-				"Check for Updates"
-			);
+void SLADEWxApp::onVersionCheckCompleted(wxThreadEvent &e) {
+    // Check failed
+    if (e.GetString() == "connect_failed") {
+        LOG_MESSAGE(1, "Version check failed, unable to connect");
+        if (update_check_message_box)
+            wxMessageBox(
+                "Update check failed: unable to connect to internet. "
+                "Check your connection and try again.",
+                "Check for Updates"
+            );
 
-		return;
-	}
+        return;
+    }
 
-	// Parse version info
-	App::Version stable, beta;
-	string       bin_stable, installer_stable, bin_beta; // Currently unused but may be useful in the future
-	Parser       parser;
-	if (parser.parseText(e.GetString()))
-	{
-		// Stable
-		auto node_stable = parser.parseTreeRoot()->getChildPTN("stable");
-		if (node_stable)
-		{
-			// Version
-			auto node_version = node_stable->getChildPTN("version");
-			if (node_version)
-			{
-				stable.major = node_version->intValue(0);
-				stable.minor = node_version->intValue(1);
-				stable.revision = node_version->intValue(2);
-			}
+    // Parse version info
+    App::Version stable, beta;
+    string bin_stable, installer_stable, bin_beta; // Currently unused but may be useful in the future
+    Parser parser;
+    if (parser.parseText(e.GetString())) {
+        // Stable
+        auto node_stable = parser.parseTreeRoot()->getChildPTN("stable");
+        if (node_stable) {
+            // Version
+            auto node_version = node_stable->getChildPTN("version");
+            if (node_version) {
+                stable.major = node_version->intValue(0);
+                stable.minor = node_version->intValue(1);
+                stable.revision = node_version->intValue(2);
+            }
 
-			// Binaries link
-			auto node_bin = node_stable->getChildPTN("bin");
-			if (node_bin)
-				bin_stable = node_bin->stringValue();
+            // Binaries link
+            auto node_bin = node_stable->getChildPTN("bin");
+            if (node_bin)
+                bin_stable = node_bin->stringValue();
 
-			// Installer link
-			auto node_install = node_stable->getChildPTN("install");
-			if (node_install)
-				installer_stable = node_install->stringValue();
-		}
+            // Installer link
+            auto node_install = node_stable->getChildPTN("install");
+            if (node_install)
+                installer_stable = node_install->stringValue();
+        }
 
-		// Beta
-		auto node_beta = parser.parseTreeRoot()->getChildPTN("beta");
-		if (node_beta)
-		{
-			// Version
-			auto node_version = node_beta->getChildPTN("version");
-			if (node_version)
-			{
-				beta.major    = node_version->intValue(0);
-				beta.minor    = node_version->intValue(1);
-				beta.revision = node_version->intValue(2);
-			}
+        // Beta
+        auto node_beta = parser.parseTreeRoot()->getChildPTN("beta");
+        if (node_beta) {
+            // Version
+            auto node_version = node_beta->getChildPTN("version");
+            if (node_version) {
+                beta.major = node_version->intValue(0);
+                beta.minor = node_version->intValue(1);
+                beta.revision = node_version->intValue(2);
+            }
 
-			// Beta number
-			auto node_beta_num = node_beta->getChildPTN("beta");
-			if (node_beta_num)
-				beta.beta = node_beta_num->intValue();
+            // Beta number
+            auto node_beta_num = node_beta->getChildPTN("beta");
+            if (node_beta_num)
+                beta.beta = node_beta_num->intValue();
 
-			// Binaries link
-			auto node_bin = node_beta->getChildPTN("bin");
-			if (node_bin)
-				bin_beta = node_bin->stringValue();
-		}
-	}
+            // Binaries link
+            auto node_bin = node_beta->getChildPTN("bin");
+            if (node_bin)
+                bin_beta = node_bin->stringValue();
+        }
+    }
 
-	// Check for correct info
-	if (stable.major == 0 || beta.major == 0)
-	{
-		Log::warning("Version check failed, received invalid version info");
-		Log::debug(S_FMT("Received version text:\n\n%s", e.GetString()));
-		if (update_check_message_box)
-			wxMessageBox("Update check failed: received invalid version info.", "Check for Updates");
-		return;
-	}
+    // Check for correct info
+    if (stable.major == 0 || beta.major == 0) {
+        Log::warning("Version check failed, received invalid version info");
+        Log::debug(S_FMT("Received version text:\n\n%s", e.GetString()));
+        if (update_check_message_box)
+            wxMessageBox("Update check failed: received invalid version info.", "Check for Updates");
+        return;
+    }
 
-	Log::info(1, S_FMT("Latest stable release: v%s",stable.toString()));
-	Log::info(1, S_FMT("Latest beta release: v%s", beta.toString()));
+    Log::info(1, S_FMT("Latest stable release: v%s", stable.toString()));
+    Log::info(1, S_FMT("Latest beta release: v%s", beta.toString()));
 
-	// Check if new stable version
-	bool new_stable = App::version().cmp(stable) < 0;
-	bool new_beta = App::version().cmp(beta) < 0;
+    // Check if new stable version
+    bool new_stable = App::version().cmp(stable) < 0;
+    bool new_beta = App::version().cmp(beta) < 0;
 
-	// Set up for new beta/stable version prompt (if any)
-	string message, caption, version;
-	if (update_check_beta && new_beta)
-	{
-		// New Beta
-		caption = "New Beta Version Available";
-		version = beta.toString();
-		message = S_FMT(
-			"A new beta version of SLADE is available (%s), click OK to visit the SLADE homepage "
-			"and download the update.",
-			CHR(version));
-	}
-	else if (new_stable)
-	{
-		// New Stable
-		caption = "New Version Available";
-		version = stable.toString();
-		message = S_FMT(
-			"A new version of SLADE is available (%s), click OK to visit the SLADE homepage and "
-			"download the update.",
-			CHR(version));
-	}
-	else
-	{
-		// No update
-		Log::info(1, "Already up-to-date");
-		if (update_check_message_box)
-			wxMessageBox("SLADE is already up to date", "Check for Updates");
+    // Set up for new beta/stable version prompt (if any)
+    string message, caption, version;
+    if (update_check_beta && new_beta) {
+        // New Beta
+        caption = "New Beta Version Available";
+        version = beta.toString();
+        message = S_FMT(
+            "A new beta version of SLADE is available (%s), click OK to visit the SLADE homepage "
+            "and download the update.",
+            CHR(version));
+    } else if (new_stable) {
+        // New Stable
+        caption = "New Version Available";
+        version = stable.toString();
+        message = S_FMT(
+            "A new version of SLADE is available (%s), click OK to visit the SLADE homepage and "
+            "download the update.",
+            CHR(version));
+    } else {
+        // No update
+        Log::info(1, "Already up-to-date");
+        if (update_check_message_box)
+            wxMessageBox("SLADE is already up to date", "Check for Updates");
 
-		return;
-	}
+        return;
+    }
 
-	// Prompt to update
-	auto main_window = MainEditor::window();
-	if (main_window->startPageTabOpen() && App::useWebView())
-	{
-		// Start Page (webview version) is open, show it there
-		main_window->openStartPageTab();
-		main_window->startPage()->updateAvailable(version);
-	}
-	else
-	{
-		// No start page, show a message box
-		if (wxMessageBox(message, caption, wxOK | wxCANCEL) == wxOK)
-			wxLaunchDefaultBrowser("http://slade.mancubus.net/index.php?page=downloads");
-	}
+    // Prompt to update
+    auto main_window = MainEditor::window();
+    if (main_window->startPageTabOpen() && App::useWebView()) {
+        // Start Page (webview version) is open, show it there
+        main_window->openStartPageTab();
+        main_window->startPage()->updateAvailable(version);
+    } else {
+        // No start page, show a message box
+        if (wxMessageBox(message, caption, wxOK | wxCANCEL) == wxOK)
+            wxLaunchDefaultBrowser("http://slade.mancubus.net/index.php?page=downloads");
+    }
 }
+
 
 // ----------------------------------------------------------------------------
 // SLADEWxApp::onActivate
 //
 // Called when the app gains focus
 // ----------------------------------------------------------------------------
-void SLADEWxApp::onActivate(wxActivateEvent& e)
-{
-	if (!e.GetActive() || App::isExiting())
-	{
-		e.Skip();
-		return;
-	}
+void SLADEWxApp::onActivate(wxActivateEvent &e) {
+    if (!e.GetActive() || App::isExiting()) {
+        e.Skip();
+        return;
+    }
 
-	// Check open directory archives for changes on the file system
-	if (theMainWindow && theMainWindow->getArchiveManagerPanel())
-		theMainWindow->getArchiveManagerPanel()->checkDirArchives();
+    // Check open directory archives for changes on the file system
+    if (theMainWindow && theMainWindow->getArchiveManagerPanel())
+        theMainWindow->getArchiveManagerPanel()->checkDirArchives();
 
-	e.Skip();
+    e.Skip();
 }
 
 
@@ -892,26 +881,24 @@ void SLADEWxApp::onActivate(wxActivateEvent& e)
 //
 // ----------------------------------------------------------------------------
 
-CONSOLE_COMMAND (crash, 0, false)
-{
-	if (wxMessageBox(
-		"Yes, this command does actually exist and *will* crash the program. Do you really want it to crash?",
-		"...Really?",
-		wxYES_NO|wxCENTRE) == wxYES)
-	{
-		uint8_t* test = nullptr;
-		test[123] = 5;
-	}
+CONSOLE_COMMAND (crash, 0, false) {
+    if (wxMessageBox(
+        "Yes, this command does actually exist and *will* crash the program. Do you really want it to crash?",
+        "...Really?",
+        wxYES_NO | wxCENTRE
+    ) == wxYES) {
+        uint8_t *test = nullptr;
+        test[123] = 5;
+    }
 }
 
-CONSOLE_COMMAND(quit, 0, true)
-{
-	bool save_config = true;
-	for (unsigned a = 0; a < args.size(); a++)
-	{
-		if (args[a].Lower() == "nosave")
-			save_config = false;
-	}
 
-	App::exit(save_config);
+CONSOLE_COMMAND(quit, 0, true) {
+    bool save_config = true;
+    for (unsigned a = 0; a < args.size(); a++) {
+        if (args[a].Lower() == "nosave")
+            save_config = false;
+    }
+
+    App::exit(save_config);
 }

@@ -4,69 +4,114 @@
 
 #include "common.h"
 
+
 // Forward declarations
 class MapLine;
+
+
 class MapVertex;
+
+
 class MapSector;
+
+
 class MapSide;
+
+
 class SLADEMap;
+
 
 WX_DECLARE_HASH_MAP(MapLine*, int, wxPointerHash, wxPointerEqual, MapLineSet);
 
-class SectorBuilder
-{
+
+class SectorBuilder {
 private:
-	struct edge_t
-	{
-		MapLine*	line;
-		bool		front;
-		bool		side_created;
+    struct edge_t {
+        MapLine *line;
+        bool front;
+        bool side_created;
 
-		edge_t(MapLine* line = nullptr, bool front = true)
-		{
-			this->line = line;
-			this->front = front;
-			side_created = false;
-		}
-	};
 
-	vector<bool>	vertex_valid;
-	SLADEMap*		map;
-	vector<edge_t>	sector_edges;
-	string			error;
+        edge_t(MapLine *line = nullptr, bool front = true) {
+            this->line = line;
+            this->front = front;
+            side_created = false;
+        }
+    };
 
-	// Current outline
-	vector<edge_t>	o_edges;
-	bool			o_clockwise;
-	bbox_t			o_bbox;
-	MapVertex*		vertex_right;
+
+    vector<bool> vertex_valid;
+    SLADEMap *map;
+    vector<edge_t> sector_edges;
+    string error;
+
+    // Current outline
+    vector<edge_t> o_edges;
+    bool o_clockwise;
+    bbox_t o_bbox;
+    MapVertex *vertex_right;
 
 public:
-	SectorBuilder();
-	~SectorBuilder();
+    SectorBuilder();
 
-	string		getError() { return error; }
-	unsigned	nEdges() { return sector_edges.size(); }
-	MapLine*	getEdgeLine(unsigned index);
-	bool		edgeIsFront(unsigned index);
-	bool		edgeSideCreated(unsigned index);
 
-	edge_t		nextEdge(edge_t edge, MapLineSet& visited_lines);
-	bool		traceOutline(MapLine* line, bool front = true);
-	int			nearestEdge(double x, double y);
-	bool		pointWithinOutline(double x, double y);
-	void		discardOutsideVertices();
-	edge_t		findOuterEdge();
-	edge_t		findInnerEdge();
-	MapSector*	findCopySector();
-	MapSector*	findExistingSector(vector<MapSide*>& sides_ignore);
-	bool		isValidSector();
+    ~SectorBuilder();
 
-	bool	traceSector(SLADEMap* map, MapLine* line, bool front = true);
-	void	createSector(MapSector* sector = nullptr, MapSector* sector_copy = nullptr);
 
-	// Testing
-	void	drawResult();
+    string getError() { return error; }
+
+
+    unsigned nEdges() { return sector_edges.size(); }
+
+
+    MapLine *getEdgeLine(unsigned index);
+
+
+    bool edgeIsFront(unsigned index);
+
+
+    bool edgeSideCreated(unsigned index);
+
+
+    edge_t nextEdge(edge_t edge, MapLineSet &visited_lines);
+
+
+    bool traceOutline(MapLine *line, bool front = true);
+
+
+    int nearestEdge(double x, double y);
+
+
+    bool pointWithinOutline(double x, double y);
+
+
+    void discardOutsideVertices();
+
+
+    edge_t findOuterEdge();
+
+
+    edge_t findInnerEdge();
+
+
+    MapSector *findCopySector();
+
+
+    MapSector *findExistingSector(vector<MapSide *> &sides_ignore);
+
+
+    bool isValidSector();
+
+
+    bool traceSector(SLADEMap *map, MapLine *line, bool front = true);
+
+
+    void createSector(MapSector *sector = nullptr, MapSector *sector_copy = nullptr);
+
+
+    // Testing
+    void drawResult();
 };
+
 
 #endif//__SECTOR_BUILDER_H__

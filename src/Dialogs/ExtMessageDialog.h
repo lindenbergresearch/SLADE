@@ -5,21 +5,28 @@
 #include "common.h"
 #include "UI/WxBasicControls.h"
 
-class ExtMessageDialog : public wxDialog
-{
+
+class ExtMessageDialog : public wxDialog {
 private:
-	wxStaticText*	label_message;
-	wxTextCtrl*		text_ext;
+    wxStaticText *label_message;
+    wxTextCtrl *text_ext;
 
 public:
-	ExtMessageDialog(wxWindow* parent, string caption);
-	~ExtMessageDialog();
+    ExtMessageDialog(wxWindow *parent, string caption);
 
-	void	setMessage(string message);
-	void	setExt(string text);
 
-	// Events
-	void	onSize(wxSizeEvent& e);
+    ~ExtMessageDialog();
+
+
+    void setMessage(string message);
+
+
+    void setExt(string text);
+
+
+    // Events
+    void onSize(wxSizeEvent &e);
 };
+
 
 #endif//__EXT_MESSAGE_DIALOG_H__

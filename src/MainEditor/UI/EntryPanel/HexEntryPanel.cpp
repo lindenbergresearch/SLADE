@@ -47,39 +47,38 @@
 //
 // HexEntryPanel class constructor
 // ----------------------------------------------------------------------------
-HexEntryPanel::HexEntryPanel(wxWindow* parent) : EntryPanel(parent, "hex")
-{
-	// Create hex editor
-	hex_editor_ = new HexEditorPanel(this);
-	sizer_main_->Add(hex_editor_, 1, wxEXPAND);
+HexEntryPanel::HexEntryPanel(wxWindow *parent) : EntryPanel(parent, "hex") {
+    // Create hex editor
+    hex_editor_ = new HexEditorPanel(this);
+    sizer_main_->Add(hex_editor_, 1, wxEXPAND);
 
-	// Hide toolbar
-	toolbar_->Show(false);
+    // Hide toolbar
+    toolbar_->Show(false);
 
-	Layout();
+    Layout();
 }
+
 
 // ----------------------------------------------------------------------------
 // HexEntryPanel::loadEntry
 //
 // Loads an entry to the panel
 // ----------------------------------------------------------------------------
-bool HexEntryPanel::loadEntry(ArchiveEntry* entry)
-{
-	// Check entry exists
-	if (!entry)
-		return false;
+bool HexEntryPanel::loadEntry(ArchiveEntry *entry) {
+    // Check entry exists
+    if (!entry)
+        return false;
 
-	// Load entry data to hex editor
-	return hex_editor_->loadData(entry->getMCData());
+    // Load entry data to hex editor
+    return hex_editor_->loadData(entry->getMCData());
 }
+
 
 // ----------------------------------------------------------------------------
 // HexEntryPanel::saveEntry
 //
 // Saves changes to the entry
 // ----------------------------------------------------------------------------
-bool HexEntryPanel::saveEntry()
-{
-	return true;
+bool HexEntryPanel::saveEntry() {
+    return true;
 }

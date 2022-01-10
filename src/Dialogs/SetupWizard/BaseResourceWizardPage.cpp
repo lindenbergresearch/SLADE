@@ -46,58 +46,57 @@
 //
 // BaseResourceWizardPage class constructor
 // ----------------------------------------------------------------------------
-BaseResourceWizardPage::BaseResourceWizardPage(wxWindow* parent) : WizardPageBase(parent)
-{
-	// Setup sizer
-	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(sizer);
+BaseResourceWizardPage::BaseResourceWizardPage(wxWindow *parent) : WizardPageBase(parent) {
+    // Setup sizer
+    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    SetSizer(sizer);
 
-	// Add Base Resource Archive panel
-	bra_panel = new BaseResourceArchivesPanel(this);
-	bra_panel->init();
-	bra_panel->autodetect();
-	sizer->Add(bra_panel, 1, wxEXPAND);
+    // Add Base Resource Archive panel
+    bra_panel = new BaseResourceArchivesPanel(this);
+    bra_panel->init();
+    bra_panel->autodetect();
+    sizer->Add(bra_panel, 1, wxEXPAND);
 }
+
 
 // ----------------------------------------------------------------------------
 // BaseResourceWizardPage::~BaseResourceWizardPage
 //
 // BaseResourceWizardPage class destructor
 // ----------------------------------------------------------------------------
-BaseResourceWizardPage::~BaseResourceWizardPage()
-{
+BaseResourceWizardPage::~BaseResourceWizardPage() {
 }
+
 
 // ----------------------------------------------------------------------------
 // BaseResourceWizardPage::canGoNext
 //
 // Returns true if the wizard page is valid
 // ----------------------------------------------------------------------------
-bool BaseResourceWizardPage::canGoNext()
-{
-	return true;
+bool BaseResourceWizardPage::canGoNext() {
+    return true;
 }
+
 
 // ----------------------------------------------------------------------------
 // BaseResourceWizardPage::applyChanges
 //
 // Applies any changes set on the wizard page
 // ----------------------------------------------------------------------------
-void BaseResourceWizardPage::applyChanges()
-{
-	bra_panel->applyPreferences();
+void BaseResourceWizardPage::applyChanges() {
+    bra_panel->applyPreferences();
 }
+
 
 // ----------------------------------------------------------------------------
 // BaseResourceWizardPage::getDescription
 //
 // Returns the description for the wizard page
 // ----------------------------------------------------------------------------
-string BaseResourceWizardPage::getDescription()
-{
-	return
-		"Add 'Base Resource' archives to the list. "
-		"These can be selected from the dropdown in the toolbar, and will be used as a base (eg. IWAD) for editing. "
-		"Usually these will be game IWADs: doom2.wad, heretic.wad, etc. "
-		"If no base resource archive is selected, certain features will not work correctly.";
+string BaseResourceWizardPage::getDescription() {
+    return
+        "Add 'Base Resource' archives to the list. "
+        "These can be selected from the dropdown in the toolbar, and will be used as a base (eg. IWAD) for editing. "
+        "Usually these will be game IWADs: doom2.wad, heretic.wad, etc. "
+        "If no base resource archive is selected, certain features will not work correctly.";
 }

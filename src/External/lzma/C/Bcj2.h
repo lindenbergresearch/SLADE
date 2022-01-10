@@ -29,7 +29,8 @@ int Bcj2_Decode(
     const Byte *buf1, SizeT size1,
     const Byte *buf2, SizeT size2,
     const Byte *buf3, SizeT size3,
-    Byte *outBuf, SizeT outSize);
+    Byte *outBuf, SizeT outSize
+);
 
 #ifdef __cplusplus
 }

@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "UI/WxUtils.h"
 #include "AdvancedPrefsPanel.h"
+
 CVAR(Int, font_size_prefs, 12, CVAR_SAVE)
 
 

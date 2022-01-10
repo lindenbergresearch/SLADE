@@ -47,10 +47,18 @@
 void *M_Malloc_Dbg (size_t size, const char *file, int lineno);
 void *M_Realloc_Dbg (void *memblock, size_t size, const char *file, int lineno);
 #else
-void *M_Malloc (size_t size);
-void *M_Realloc (void *memblock, size_t size);
+
+
+void *M_Malloc(size_t size);
+
+
+void *M_Realloc(void *memblock, size_t size);
+
+
 #endif
 
-void M_Free (void *memblock);
+
+void M_Free(void *memblock);
+
 
 #endif //__M_ALLOC_H__

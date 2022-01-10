@@ -25,15 +25,23 @@
 #define resampler_remove_sample EVALUATE(RESAMPLER_DECORATE,_resampler_remove_sample)
 #endif
 
+
 void resampler_init(void);
 
-void * resampler_create(void);
+
+void *resampler_create(void);
+
+
 void resampler_delete(void *);
-void * resampler_dup(const void *);
+
+
+void *resampler_dup(const void *);
+
+
 void resampler_dup_inplace(void *, const void *);
 
-enum
-{
+
+enum {
     RESAMPLER_QUALITY_MIN = 0,
     RESAMPLER_QUALITY_ZOH = 0,
     RESAMPLER_QUALITY_BLEP = 1,
@@ -44,17 +52,38 @@ enum
     RESAMPLER_QUALITY_MAX = 5
 };
 
+
 void resampler_set_quality(void *, int quality);
 
+
 int resampler_get_free_count(void *);
+
+
 void resampler_write_sample(void *, short sample);
+
+
 void resampler_write_sample_fixed(void *, int sample, unsigned char depth);
-void resampler_set_rate( void *, double new_factor );
+
+
+void resampler_set_rate(void *, double new_factor);
+
+
 int resampler_ready(void *);
+
+
 void resampler_clear(void *);
+
+
 int resampler_get_sample_count(void *);
+
+
 int resampler_get_sample(void *);
+
+
 float resampler_get_sample_float(void *);
+
+
 void resampler_remove_sample(void *, int decay);
+
 
 #endif

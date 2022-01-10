@@ -34,6 +34,8 @@
 #ifndef __I_MUSIC_H__
 #define __I_MUSIC_H__
 
-bool zmus2mid(MemChunk& musinput, MemChunk& midioutput, int subsong = 0, int * num_tracks = NULL);
+
+bool zmus2mid(MemChunk &musinput, MemChunk &midioutput, int subsong = 0, int *num_tracks = NULL);
+
 
 #endif //__I_MUSIC_H__

@@ -57,27 +57,28 @@ EXTERN_CVAR(Int, base_resource)
 //
 // BaseResourceChooser class constructor
 // ----------------------------------------------------------------------------
-BaseResourceChooser::BaseResourceChooser(wxWindow* parent, bool load_change) :
-	wxChoice{ parent, -1 },
-	load_change_{ load_change }
-{
-	// Populate
-	populateChoices();
+BaseResourceChooser::BaseResourceChooser(wxWindow *parent, bool load_change) :
+    wxChoice{ parent, -1 },
+    load_change_{ load_change } {
+    // Populate
+    populateChoices();
 
-	// Listen to the archive manager
-	listenTo(&App::archiveManager());
+    // Listen to the archive manager
+    listenTo(&App::archiveManager());
 
-	// Bind events
-	Bind(wxEVT_CHOICE, [&](wxCommandEvent&)
-	{
-		// Open the selected base resource
-		if (load_change_)
-			App::archiveManager().openBaseResource(GetSelection() - 1);
-	});
+    // Bind events
+    Bind(
+        wxEVT_CHOICE, [&](wxCommandEvent &) {
+            // Open the selected base resource
+            if (load_change_)
+                App::archiveManager().openBaseResource(GetSelection() - 1);
+        }
+    );
 
-	if (App::platform() != App::Platform::Linux)
-		SetMinSize(WxUtils::scaledSize(128, -1));
+    if (App::platform() != App::Platform::Linux)
+        SetMinSize(WxUtils::scaledSize(128, -1));
 }
+
 
 // ----------------------------------------------------------------------------
 // BaseResourceChooser::populateChoices
@@ -85,41 +86,39 @@ BaseResourceChooser::BaseResourceChooser(wxWindow* parent, bool load_change) :
 // Clears and repopulates the choice list with base resource paths from the
 // ArchiveManager
 // ----------------------------------------------------------------------------
-void BaseResourceChooser::populateChoices()
-{
-	// Clear current items
-	Clear();
+void BaseResourceChooser::populateChoices() {
+    // Clear current items
+    Clear();
 
-	// Add <none> option
-	AppendString("<none>");
+    // Add <none> option
+    AppendString("<none>");
 
-	// Populate with base resource paths
-	for (unsigned a = 0; a < App::archiveManager().numBaseResourcePaths(); a++)
-	{
-		wxFileName fn(App::archiveManager().getBaseResourcePath(a));
-		AppendString(fn.GetFullName());
-	}
+    // Populate with base resource paths
+    for (unsigned a = 0; a < App::archiveManager().numBaseResourcePaths(); a++) {
+        wxFileName fn(App::archiveManager().getBaseResourcePath(a));
+        AppendString(fn.GetFullName());
+    }
 
-	// Select current base resource
-	SetSelection(base_resource + 1);
+    // Select current base resource
+    SetSelection(base_resource + 1);
 }
+
 
 // ----------------------------------------------------------------------------
 // BaseResourceChooser::onAnnouncement
 //
 // Called when an announcement is received from the ArchiveManager
 // ----------------------------------------------------------------------------
-void BaseResourceChooser::onAnnouncement(Announcer* announcer, string event_name, MemChunk& event_data)
-{
-	// Check the announcer
-	if (announcer != &App::archiveManager())
-		return;
+void BaseResourceChooser::onAnnouncement(Announcer *announcer, string event_name, MemChunk &event_data) {
+    // Check the announcer
+    if (announcer != &App::archiveManager())
+        return;
 
-	// Base resource archive changed
-	if (event_name == "base_resource_changed")
-		SetSelection(base_resource + 1);
+    // Base resource archive changed
+    if (event_name == "base_resource_changed")
+        SetSelection(base_resource + 1);
 
-	// Base resource path list changed
-	if (event_name == "base_resource_path_added" || event_name == "base_resource_path_removed")
-		populateChoices();
+    // Base resource path list changed
+    if (event_name == "base_resource_path_added" || event_name == "base_resource_path_removed")
+        populateChoices();
 }
