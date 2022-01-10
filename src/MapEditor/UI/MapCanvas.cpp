@@ -418,6 +418,7 @@ void MapCanvas::onMouseMotion(wxMouseEvent &e) {
  * Called when the mouse wheel is moved
  *******************************************************************/
 void MapCanvas::onMouseWheel(wxMouseEvent &e) {
+    using namespace MapEditor;
 #ifdef __WXOSX__
     double mwheel_rotation = (double) e.GetWheelRotation() / (double) e.GetWheelDelta();
     if (mwheel_rotation < 0)
@@ -429,7 +430,23 @@ void MapCanvas::onMouseWheel(wxMouseEvent &e) {
     if (mwheel_rotation < 0.001)
         return;
 
-    context_->input().mouseWheel(e.GetWheelRotation() > 0, mwheel_rotation);
+    /** determine direction */
+
+    Input::WheelDirection direction;
+
+    if (e.GetWheelAxis() == wxMOUSE_WHEEL_HORIZONTAL && mwheel_rotation > 0)
+        direction = MapEditor::Input::East;
+
+    if (e.GetWheelAxis() == wxMOUSE_WHEEL_HORIZONTAL && mwheel_rotation < 0)
+        direction = MapEditor::Input::West;
+
+    if (e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL && mwheel_rotation > 0)
+        direction = MapEditor::Input::North;
+
+    if (e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL && mwheel_rotation < 0)
+        direction = MapEditor::Input::South;
+
+    context_->input().mouseWheel(direction, mwheel_rotation);
 }
 
 

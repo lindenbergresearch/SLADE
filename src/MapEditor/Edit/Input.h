@@ -32,6 +32,13 @@ public:
         Move
     };
 
+    enum WheelDirection {
+        North,
+        East,
+        South,
+        West
+    };
+
     enum MouseButton {
         Left = 0,
         Middle,
@@ -84,7 +91,7 @@ public:
     bool mouseUp(MouseButton button);
 
 
-    void mouseWheel(bool up, double amount);
+    void mouseWheel(WheelDirection direction, double amount);
 
 
     void mouseLeave();

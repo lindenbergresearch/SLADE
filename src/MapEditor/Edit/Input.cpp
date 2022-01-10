@@ -396,10 +396,10 @@ bool Input::mouseUp(MouseButton button) {
 /* Input::mouseWheel
  * Handles mouse wheel movement depending on [up]
  *******************************************************************/
-void Input::mouseWheel(bool up, double amount) {
+void Input::mouseWheel(WheelDirection direction, double amount) {
     mouse_wheel_speed_ = amount;
 
-    if (up) {
+    if (direction == North) {
         KeyBind::keyPressed(keypress_t("mwheelup", alt_down_, ctrl_down_, shift_down_));
 
         // Send to overlay if active
