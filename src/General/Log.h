@@ -17,7 +17,7 @@ namespace Log
 	{
 		string		message;
 		MessageType	type;
-		time_t		timestamp;
+		wxDateTime  timestamp;
 
 		string	formattedMessageLine() const;
 	};

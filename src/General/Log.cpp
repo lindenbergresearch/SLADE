@@ -112,7 +112,8 @@ void Log::init()
 		info(S_FMT("Git Revision %s", Global::sc_rev));
 	if (App::platform() == App::Platform::Windows)
 		info(S_FMT("%s Windows Build", App::isWin64Build() ? "64bit" : "32bit"));
-	info(S_FMT("Written by Simon Judd, 2008-%s", year));
+    info(S_FMT("Written by Simon Judd, 2008-%s", year));
+    info(S_FMT("Apple M1 Version by Patrick Lindenberg, 2021-%s", year));
 #ifdef SFML_VERSION_MAJOR
 	info(S_FMT(
 		"Compiled with wxWidgets %i.%i.%i and SFML %i.%i.%i",
@@ -176,7 +177,7 @@ void Log::setVerbosity(int verbosity)
 void Log::message(MessageType type, const char* text)
 {
 	// Add log message
-	log.push_back({ text, type, wxDateTime::Now().GetTicks() });
+	log.push_back({ text, type, wxDateTime::UNow() });
 
 	// Write to log file
 	if (log_file.is_open() && type != MessageType::Console)
@@ -246,7 +247,7 @@ void Log::message(MessageType type, int level, const char* text)
 		return;
 
 	// Add log message
-	log.push_back({ text, type, wxDateTime::Now().GetTicks() });
+	log.push_back({ text, type, wxDateTime::UNow() });
 
 	// Write to log file
 	if (log_file.is_open() && type != MessageType::Console)
