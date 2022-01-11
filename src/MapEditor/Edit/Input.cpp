@@ -46,6 +46,7 @@ using namespace MapEditor;
  *******************************************************************/
 CVAR(Bool, property_edit_dclick, true, CVAR_SAVE)
 CVAR(Bool, selection_clear_click, false, CVAR_SAVE)
+CVAR(Float, mouse_sensibility, 1.0, CVAR_SAVE);
 
 
 /*******************************************************************
@@ -393,28 +394,37 @@ bool Input::mouseUp(MouseButton button) {
 }
 
 
+void Input::sendKeyPress(string key) {
+    KeyBind::keyPressed(keypress_t(key, alt_down_, ctrl_down_, shift_down_));
+
+    // Send to overlay if active
+    if (context_.overlayActive())
+        context_.currentOverlay()->keyDown(key);
+
+    KeyBind::keyReleased(key);
+}
+
+
 /* Input::mouseWheel
  * Handles mouse wheel movement depending on [up]
  *******************************************************************/
 void Input::mouseWheel(WheelDirection direction, double amount) {
     mouse_wheel_speed_ = amount;
+    mouse_wheel_direction_ = direction;
 
-    if (direction == North) {
-        KeyBind::keyPressed(keypress_t("mwheelup", alt_down_, ctrl_down_, shift_down_));
-
-        // Send to overlay if active
-        if (context_.overlayActive())
-            context_.currentOverlay()->keyDown("mwheelup");
-
-        KeyBind::keyReleased("mwheelup");
-    } else {
-        KeyBind::keyPressed(keypress_t("mwheeldown", alt_down_, ctrl_down_, shift_down_));
-
-        // Send to overlay if active
-        if (context_.overlayActive())
-            context_.currentOverlay()->keyDown("mwheeldown");
-
-        KeyBind::keyReleased("mwheeldown");
+    switch (direction) {
+        case North:
+            sendKeyPress("mwheelup");
+            break;
+        case South:
+            sendKeyPress("mwheeldown");
+            break;
+        case West:
+            sendKeyPress("mwheelleft");
+            break;
+        case East:
+            sendKeyPress("mwheelright");
+            break;
     }
 }
 
@@ -536,21 +546,27 @@ void Input::onKeyBindRelease(string name) {
  * matter the current editor state)
  *******************************************************************/
 void Input::handleKeyBind2dView(const string &name) {
+
+    double acc_factor =
+        mouse_wheel_speed_ < 0.000001 ?
+        1 :
+        mouse_wheel_speed_ * mouse_sensibility;
+
     // Pan left
     if (name == "me2d_left")
-        context_.renderer().pan(-128, 0, true);
+        context_.renderer().pan(-acc_factor * 100, 0, true);
 
         // Pan right
     else if (name == "me2d_right")
-        context_.renderer().pan(128, 0, true);
+        context_.renderer().pan(acc_factor * 100, 0, true);
 
         // Pan up
     else if (name == "me2d_up")
-        context_.renderer().pan(0, 128, true);
+        context_.renderer().pan(0, acc_factor * 100, true);
 
         // Pan down
     else if (name == "me2d_down")
-        context_.renderer().pan(0, -128, true);
+        context_.renderer().pan(0, -acc_factor * 100, true);
 
         // Zoom out
     else if (name == "me2d_zoom_out")

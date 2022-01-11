@@ -137,6 +137,8 @@ public:
 
 
 private:
+    void sendKeyPress(string key);
+
     MapEditContext &context_;
 
     // Mouse
@@ -148,6 +150,7 @@ private:
     fpoint2_t mouse_down_pos_map_ = { -1, -1 };
     DragType mouse_drag_ = DragType::None;
     double mouse_wheel_speed_ = 0;
+    WheelDirection mouse_wheel_direction_;
     bool panning_ = false;
 
     // Keyboard
