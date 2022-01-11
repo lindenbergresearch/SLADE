@@ -43,7 +43,9 @@ namespace Log {
 vector<Message> log;
 std::ofstream log_file;
 }
-CVAR(Int, log_verbosity, 1, CVAR_SAVE)
+
+CVAR(Int, log_verbosity, 1, CVAR_SAVE)      // log-level
+CVAR(Bool, log_console, false, CVAR_SAVE);   // print to console
 
 
 // ----------------------------------------------------------------------------
@@ -179,6 +181,7 @@ void Log::message(MessageType type, const char *text) {
     // Write to log file
     if (log_file.is_open() && type != MessageType::Console)
         sf::err() << log.back().formattedMessageLine() << "\n";
+
 }
 
 
@@ -249,6 +252,11 @@ void Log::message(MessageType type, int level, const char *text) {
     // Write to log file
     if (log_file.is_open() && type != MessageType::Console)
         sf::err() << log.back().formattedMessageLine() << "\n";
+
+    if (log_console) {
+        std::cout << log.back().formattedMessageLine() << "\n";
+    }
+
 }
 
 
