@@ -111,19 +111,28 @@ void InputKeyCtrl::onMouseDown(wxMouseEvent &e) {
     if (e.GetEventType() == wxEVT_MIDDLE_DOWN)
         key_.key = "mouse3";
 
-        // Button 4
+    // Button 4
     else if (e.GetEventType() == wxEVT_AUX1_DOWN)
         key_.key = "mouse4";
 
-        // Button 5
+    // Button 5
     else if (e.GetEventType() == wxEVT_AUX2_DOWN)
         key_.key = "mouse5";
 
-        // Mouse wheel
+    // Mouse wheel
     else if (e.GetEventType() == wxEVT_MOUSEWHEEL) {
-        if (e.GetWheelRotation() > 0)
+        double mwheel_rotation = (double) e.GetWheelRotation() / (double) e.GetWheelDelta();
+
+        if (e.GetWheelAxis() == wxMOUSE_WHEEL_HORIZONTAL && mwheel_rotation > 0)
+            key_.key = "mwheelright";
+
+        if (e.GetWheelAxis() == wxMOUSE_WHEEL_HORIZONTAL && mwheel_rotation < 0)
+            key_.key = "mwheelleft";
+
+        if (e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL && mwheel_rotation > 0)
             key_.key = "mwheelup";
-        else if (e.GetWheelRotation() < 0)
+
+        if (e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL && mwheel_rotation < 0)
             key_.key = "mwheeldown";
     }
 
