@@ -82,7 +82,7 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
 // HH:MM:SS: <message>
 // ----------------------------------------------------------------------------
 string Log::Message::formattedMessageLine() const {
-    return S_FMT("%s: %s", wxDateTime(timestamp).FormatISOTime(), CHR(message));
+    return S_FMT("%s %s", wxDateTime(timestamp).Format("[%H:%M:%S:%l]"), CHR(message));
 }
 
 
@@ -262,4 +262,16 @@ void Log::message(MessageType type, int level, const char *text) {
 
 void Log::message(MessageType type, int level, const wxString &text) {
     message(type, level, CHR(text));
+}
+
+
+void Log::message(MessageType type, const char *filename, int line, const char *func, const wxString &text) {
+//   auto mesg =  wxString(format, args);
+//   auto _info = wxString("%s::%s:%d", filename, func, line);
+
+    auto _filename = wxString(filename).AfterLast('/');
+
+    auto _info = wxString::Format("%s::%s:%d %s", _filename, func, line, text);
+
+    message(type, 0, _info);
 }
