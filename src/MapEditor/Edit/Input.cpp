@@ -548,7 +548,7 @@ void Input::onKeyBindRelease(string name) {
 void Input::handleKeyBind2dView(const string &name) {
 
     double acc_factor =
-        mouse_wheel_speed_ < 0.000001 ?
+        mouse_wheel_speed_ < 10e-8 ?
         1 :
         mouse_wheel_speed_ * mouse_sensibility;
 
@@ -570,19 +570,19 @@ void Input::handleKeyBind2dView(const string &name) {
 
         // Zoom out
     else if (name == "me2d_zoom_out")
-        context_.renderer().zoom(0.8);
+        context_.renderer().zoom(1.0 - (0.5 * acc_factor));
 
         // Zoom in
     else if (name == "me2d_zoom_in")
-        context_.renderer().zoom(1.25);
+        context_.renderer().zoom(1.0 + (0.5 * acc_factor));
 
     // Zoom out (follow mouse)
     if (name == "me2d_zoom_out_m")
-        context_.renderer().zoom(1.0 - (0.2 * mouse_wheel_speed_), true);
+        context_.renderer().zoom(1.0 - (0.5 * acc_factor), true);
 
         // Zoom in (follow mouse)
     else if (name == "me2d_zoom_in_m")
-        context_.renderer().zoom(1.0 + (0.25 * mouse_wheel_speed_), true);
+        context_.renderer().zoom(1.0 + (0.5 * acc_factor), true);
 
         // Zoom in (show object)
     else if (name == "me2d_show_object")
