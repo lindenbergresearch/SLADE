@@ -623,18 +623,26 @@ void KeyBind::initBinds() {
     addBind("me2d_pan_view", keypress_t("mouse3"), "Pan view", group);
     addBind("me2d_pan_view", keypress_t("space", KPM_CTRL));
     addBind("me2d_move", keypress_t("Z"), "Toggle item move mode", group);
-    addBind("me2d_zoom_in_m", keypress_t("mwheelup"), "Zoom in (towards mouse)", group);
-    addBind("me2d_zoom_out_m", keypress_t("mwheeldown"), "Zoom out (towards mouse)", group);
+
+    addBind("me2d_zoom_in_m", keypress_t("mwheelup", KPM_CTRL), "Zoom in (towards mouse)", group);
+    addBind("me2d_zoom_out_m", keypress_t("mwheeldown", KPM_CTRL), "Zoom out (towards mouse)", group);
     addBind("me2d_zoom_in", keypress_t("="), "Zoom in (towards screen center)", group);
     addBind("me2d_zoom_out", keypress_t("-"), "Zoom out (towards screen center)", group);
     addBind("me2d_show_object", keypress_t("=", KPM_SHIFT), "Zoom in, show current object", group);
-    addBind("me2d_show_object", keypress_t("mwheelup", KPM_SHIFT));
+    addBind("me2d_show_object", keypress_t("-", KPM_SHIFT));
+
     addBind("me2d_show_all", keypress_t("-", KPM_SHIFT), "Zoom out, show full map", group);
     addBind("me2d_show_all", keypress_t("mwheeldown", KPM_SHIFT));
+
     addBind("me2d_left", keypress_t("left"), "Scroll left", group);
+    addBind("me2d_left", keypress_t("mwheelleft"), "Scroll left", group);
     addBind("me2d_right", keypress_t("right"), "Scroll right", group);
+    addBind("me2d_right", keypress_t("mwheelright"), "Scroll right", group);
     addBind("me2d_up", keypress_t("up"), "Scroll up", group);
+    addBind("me2d_up", keypress_t("mwheelup"), "Scroll up", group);
     addBind("me2d_down", keypress_t("down"), "Scroll down", group);
+    addBind("me2d_down", keypress_t("mwheeldown"), "Scroll down", group);
+
     addBind("me2d_grid_inc", keypress_t("["), "Increment grid level", group);
     addBind("me2d_grid_dec", keypress_t("]"), "Decrement grid level", group);
     addBind("me2d_grid_toggle_snap", keypress_t("G", KPM_SHIFT), "Toggle Grid Snap", group);
@@ -709,10 +717,16 @@ void KeyBind::initBinds() {
     addBind("me3d_paste_tex_adj", keypress_t("mouse3", KPM_SHIFT), "Flood-fill texture", group);
     addBind("me3d_toggle_info", keypress_t("I"), "Toggle information overlay", group);
     addBind("me3d_quick_texture", keypress_t("T", KPM_CTRL), "Quick Texture", group);
-    addBind("me3d_generic_up8", keypress_t("mwheelup", KPM_CTRL), "Raise target 8", group);
-    addBind("me3d_generic_up", keypress_t("mwheelup", KPM_CTRL | KPM_SHIFT), "Raise target 1", group);
-    addBind("me3d_generic_down8", keypress_t("mwheeldown", KPM_CTRL), "Lower target 8", group);
-    addBind("me3d_generic_down", keypress_t("mwheeldown", KPM_CTRL | KPM_SHIFT), "Lower target 1", group);
+
+//    addBind("me3d_generic_up8", keypress_t("mwheelup", KPM_CTRL), "Raise target 8", group);
+//    addBind("me3d_generic_up", keypress_t("mwheelup", KPM_CTRL | KPM_SHIFT), "Raise target 1", group);
+//    addBind("me3d_generic_down8", keypress_t("mwheeldown", KPM_CTRL), "Lower target 8", group);
+//    addBind("me3d_generic_down", keypress_t("mwheeldown", KPM_CTRL | KPM_SHIFT), "Lower target 1", group);
+
+    addBind("me3d_generic_up8", keypress_t("+"), "Raise target 8", group);
+    addBind("me3d_generic_up", keypress_t("+", KPM_CTRL), "Raise target 1", group);
+    addBind("me3d_generic_down8", keypress_t("-"), "Lower target 8", group);
+    addBind("me3d_generic_down", keypress_t("-", KPM_CTRL), "Lower target 1", group);
 
     // Map Editor 3D Camera (me3d_camera*)
     group = "Map Editor 3D Mode Camera";
