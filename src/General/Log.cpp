@@ -263,15 +263,3 @@ void Log::message(MessageType type, int level, const char *text) {
 void Log::message(MessageType type, int level, const wxString &text) {
     message(type, level, CHR(text));
 }
-
-
-void Log::message(MessageType type, const char *filename, int line, const char *func, const wxString &text) {
-//   auto mesg =  wxString(format, args);
-//   auto _info = wxString("%s::%s:%d", filename, func, line);
-
-    auto _filename = wxString(filename).AfterLast('/');
-
-    auto _info = wxString::Format("%s::%s:%d %s", _filename, func, line, text);
-
-    message(type, 0, _info);
-}
