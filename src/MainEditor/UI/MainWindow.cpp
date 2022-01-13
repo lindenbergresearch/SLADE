@@ -418,7 +418,7 @@ void MainWindow::setupLayout() {
     CreateStatusBar(3);
 
     auto font_normal = new wxFont(WxUtils::getListFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
-    font_normal->SetPointSize(font_size);
+    font_normal->SetPointSize(font_size - 1);
     GetStatusBar()->SetFont(*font_normal);
 
     // Load previously saved perspective string
