@@ -80,6 +80,7 @@ CVAR(Bool, save_archive_with_map, true, CVAR_SAVE);
 //
 // ----------------------------------------------------------------------------
 EXTERN_CVAR(Int, flat_drawtype);
+EXTERN_CVAR(Int, font_size);
 
 
 // ----------------------------------------------------------------------------
@@ -358,8 +359,12 @@ void MapEditorWindow::setupLayout() {
 
     // Status bar
     CreateStatusBar(4);
-    int status_widths[4] = { -1, UI::scalePx(240), UI::scalePx(240), UI::scalePx(240) };
+    int status_widths[4] = { -1, UI::scalePx(200), UI::scalePx(200), UI::scalePx(200) };
     SetStatusWidths(4, status_widths);
+
+    auto font_normal = new wxFont(WxUtils::getListFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
+    font_normal->SetPointSize(font_size-1);
+    GetStatusBar()->SetFont(*font_normal);
 
     // -- Console Panel --
     ConsolePanel *panel_console = new ConsolePanel(this, -1);
