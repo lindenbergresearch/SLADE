@@ -6,8 +6,21 @@
 #include <SFML/Graphics.hpp>
 #endif
 
-#include "common.h"
+#define FTFONT(VAR, PATH)                                                                       \
+   {                                                                                            \
+        auto *entry = App::archiveManager().programResourceArchive()->entryAtPath(PATH);        \
+        if (entry) {                                                                            \
+            VAR = new FTTextureFont(entry->getData(), entry->getSize());                        \
+            VAR->FaceSize(UI::scalePx(gl_font_size));                                           \
+            if (VAR->Error()) {                                                                 \
+                delete VAR;                                                                     \
+                VAR = NULL;                                                                     \
+        } else ++ret;                                                                           \
+        }                                                                                       \
+    }                                                                                           \
 
+
+#include "common.h"
 #include "Utility/Structs.h"
 
 

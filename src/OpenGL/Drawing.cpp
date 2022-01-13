@@ -238,83 +238,12 @@ int FontManager::initFonts() {
         font_small = NULL;
     }
 
-    // Normal
-    ArchiveEntry *entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-    if (entry) {
-        font_normal = new FTTextureFont(entry->getData(), entry->getSize());
-        font_normal->FaceSize(UI::scalePx(gl_font_size));
-
-        // Check it loaded ok
-        if (font_normal->Error()) {
-            delete font_normal;
-            font_normal = NULL;
-        } else ++ret;
-    }
-
-    // Condensed
-    entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_c.ttf");
-    if (entry) {
-        font_condensed = new FTTextureFont(entry->getData(), entry->getSize());
-        font_condensed->FaceSize(UI::scalePx(gl_font_size));
-
-        // Check it loaded ok
-        if (font_condensed->Error()) {
-            delete font_condensed;
-            font_condensed = NULL;
-        } else ++ret;
-    }
-
-    // Bold
-    entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_b.ttf");
-    if (entry) {
-        font_bold = new FTTextureFont(entry->getData(), entry->getSize());
-        font_bold->FaceSize(UI::scalePx(gl_font_size));
-
-        // Check it loaded ok
-        if (font_bold->Error()) {
-            delete font_bold;
-            font_bold = NULL;
-        } else ++ret;
-    }
-
-    // Condensed bold
-    entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans_cb.ttf");
-    if (entry) {
-        font_boldcondensed = new FTTextureFont(entry->getData(), entry->getSize());
-        font_boldcondensed->FaceSize(UI::scalePx(gl_font_size));
-
-        // Check it loaded ok
-        if (font_boldcondensed->Error()) {
-            delete font_boldcondensed;
-            font_boldcondensed = NULL;
-        } else ++ret;
-    }
-
-    // Monospace
-    entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_mono.ttf");
-    if (entry) {
-        font_mono = new FTTextureFont(entry->getData(), entry->getSize());
-        font_mono->FaceSize(UI::scalePx(gl_font_size));
-
-        // Check it loaded ok
-        if (font_mono->Error()) {
-            delete font_mono;
-            font_mono = NULL;
-        } else ++ret;
-    }
-
-    // Small
-    entry = App::archiveManager().programResourceArchive()->entryAtPath("fonts/dejavu_sans.ttf");
-    if (entry) {
-        font_small = new FTTextureFont(entry->getData(), entry->getSize());
-        font_small->FaceSize((UI::scalePx(gl_font_size) * 0.6) + 1);
-
-        // Check it loaded ok
-        if (font_small->Error()) {
-            delete font_small;
-            font_small = NULL;
-        } else ++ret;
-    }
+    FTFONT(font_normal, "fonts/dejavu_sans.ttf")
+    FTFONT(font_condensed, "fonts/dejavu_sans_c.ttf")
+    FTFONT(font_bold, "fonts/dejavu_sans_b.ttf")
+    FTFONT(font_boldcondensed, "fonts/dejavu_sans_cb.ttf")
+    FTFONT(font_mono, "fonts/dejavu_mono.ttf")
+    FTFONT(font_small, "fonts/dejavu_sans.ttf")
 
     return ret;
 }
