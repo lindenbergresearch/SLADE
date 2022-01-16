@@ -388,12 +388,14 @@ void MapEditorWindow::setupLayout() {
 
     // Setup panel info & add panel
     p_inf.Right();
-    p_inf.BestSize(WxUtils::scaledSize(256, 256));
+    p_inf.BestSize(WxUtils::scaledSize(356, -1));
     p_inf.FloatingSize(WxUtils::scaledSize(400, 600));
     p_inf.FloatingPosition(120, 120);
-    p_inf.MinSize(WxUtils::scaledSize(256, 256));
+    p_inf.MinSize(WxUtils::scaledSize(356, -1));
     p_inf.Show(true);
-    p_inf.Caption("Item Properties");
+    p_inf.CaptionVisible(true);
+
+    p_inf.Caption("The Item Properties");
     p_inf.Name("item_props");
     m_mgr->AddPane(panel_obj_props_, p_inf);
 
