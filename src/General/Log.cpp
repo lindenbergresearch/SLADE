@@ -79,12 +79,27 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
 // Log::Message::formattedMessageLine
 //
 // Returns the log entry as a formatted string:
-// HH:MM:SS: <message>
+// [HH:MM:SS:mmm] <message>
 // ----------------------------------------------------------------------------
 string Log::Message::formattedMessageLine() const {
-    return S_FMT("%s %s", wxDateTime(timestamp).Format("[%H:%M:%S:%l]"), CHR(message));
+    return S_FMT("%s%s%s", wxDateTime(timestamp).Format("[%H:%M:%S:%l] "), getDebugInfo(), CHR(message));
 }
 
+
+// ----------------------------------------------------------------------------
+// Log::Message::getDebugInfo
+//
+// Returns the log entry as a formatted string:
+
+// ----------------------------------------------------------------------------
+string Log::Message::getDebugInfo() const {
+    auto fname = wxString(file).AfterLast('/');
+    auto fmt = wxString::Format("<%s->%s(%d)> ", fname, func, line);
+
+    if (fname.size() <= 1) return "";
+
+    return fmt;
+}
 
 // ----------------------------------------------------------------------------
 //
@@ -174,19 +189,21 @@ void Log::setVerbosity(int verbosity) {
 //
 // Logs a message [text] of [type]
 // ----------------------------------------------------------------------------
-void Log::message(MessageType type, const char *text) {
+void Log::message(MessageType type, const char *text, const char *_file, const char *_func, int _line) {
     // Add log message
-    log.push_back({ text, type, wxDateTime::UNow() });
+    log.push_back({ text, type, wxDateTime::UNow(), _file, _func, _line });
 
     // Write to log file
     if (log_file.is_open() && type != MessageType::Console)
         sf::err() << log.back().formattedMessageLine() << "\n";
 
+    if (log_console)
+        std::cout << log.back().formattedMessageLine() << "\n";
 }
 
 
-void Log::message(MessageType type, const wxString &text) {
-    message(type, CHR(text));
+void Log::message(MessageType type, const wxString &text, const char *_file, const char *_func, int _line) {
+    message(type, CHR(text), _file, _func, _line);
 }
 
 
@@ -242,12 +259,12 @@ void Log::debug(const wxString &text) {
 //
 // Logs a message [text] of [type] at verbosity [level]
 // ----------------------------------------------------------------------------
-void Log::message(MessageType type, int level, const char *text) {
+void Log::message(MessageType type, int level, const char *text, const char *_file, const char *_func, int _line) {
     if (level > log_verbosity)
         return;
 
     // Add log message
-    log.push_back({ text, type, wxDateTime::UNow() });
+    log.push_back({ text, type, wxDateTime::UNow(), _file, _func, _line });
 
     // Write to log file
     if (log_file.is_open() && type != MessageType::Console)
@@ -260,6 +277,6 @@ void Log::message(MessageType type, int level, const char *text) {
 }
 
 
-void Log::message(MessageType type, int level, const wxString &text) {
-    message(type, level, CHR(text));
+void Log::message(MessageType type, int level, const wxString &text, const char *_file, const char *_func, int _line) {
+    message(type, level, CHR(text), _file, _func, _line);
 }

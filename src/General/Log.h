@@ -17,8 +17,13 @@ struct Message {
     MessageType type;
     wxDateTime timestamp;
 
+    /* add additional debug info */
+    string file;
+    string func;
+    int line;
 
     string formattedMessageLine() const;
+    string getDebugInfo() const;
 };
 
 
@@ -34,16 +39,16 @@ void setVerbosity(int verbosity);
 void init();
 
 
-void message(MessageType type, int level, const char *text);
+void message(MessageType type, int level, const char *text, const char *_file = "", const char *_func = "", int _line = 0);
 
 
-void message(MessageType type, int level, const wxString &text);
+void message(MessageType type, int level, const wxString &text, const char *_file = "", const char *_func = "", int _line = 0);
 
 
-void message(MessageType type, const char *text);
+void message(MessageType type, const char *text, const char *_file = "", const char *_func = "", int _line = 0);
 
 
-void message(MessageType type, const wxString &text);
+void message(MessageType type, const wxString &text, const char *_file = "", const char *_func = "", int _line = 0);
 
 
 vector<Message *> since(time_t time, MessageType type = MessageType::Any);
@@ -104,7 +109,7 @@ inline void console(const wxString &text) { message(MessageType::Console, text);
 }
 
 // Try to avoid using these and use Log::message/error/warning with S_FMT instead
-#define LOG_MESSAGE(level, ...) Log::message(Log::MessageType::Info, level, wxString::Format(__VA_ARGS__))
-#define LOG_WARNING(level, ...) Log::message(Log::MessageType::Warning, level, wxString::Format(__VA_ARGS__))
-#define LOG_ERROR(level, ...) Log::message(Log::MessageType::Error, level, wxString::Format(__VA_ARGS__))
+#define LOG_MESSAGE(level, ...) Log::message(Log::MessageType::Info, level, wxString::Format(__VA_ARGS__), __FILE__, __FUNCTION__, __LINE__)
+#define LOG_WARNING(level, ...) Log::message(Log::MessageType::Warning, level, wxString::Format(__VA_ARGS__), __FILE__, __FUNCTION__, __LINE__)
+#define LOG_ERROR(level, ...) Log::message(Log::MessageType::Error, level, wxString::Format(__VA_ARGS__), __FILE__, __FUNCTION__, __LINE__)
 // move LOG_DEBUG here?
