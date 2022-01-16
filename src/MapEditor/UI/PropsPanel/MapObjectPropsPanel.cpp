@@ -49,6 +49,7 @@
 CVAR(Bool, mobj_props_show_all, false, CVAR_SAVE)
 CVAR(Bool, mobj_props_auto_apply, false, CVAR_SAVE)
 
+EXTERN_CVAR(Int, font_size)
 
 // ----------------------------------------------------------------------------
 //
@@ -65,6 +66,10 @@ CVAR(Bool, mobj_props_auto_apply, false, CVAR_SAVE)
 MapObjectPropsPanel::MapObjectPropsPanel(wxWindow *parent, bool no_apply) :
     PropsPanelBase{ parent },
     no_apply_{ no_apply } {
+
+    auto font_normal = new wxFont(WxUtils::getListFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
+    font_normal->SetPointSize(font_size - 1);
+
     // Setup sizer
     wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(sizer);
@@ -91,6 +96,8 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow *parent, bool no_apply) :
     );
     pg_properties_->SetCaptionTextColour(inactiveTextColour);
     pg_properties_->SetCellDisabledTextColour(inactiveTextColour);
+    pg_properties_->SetFont(*font_normal);
+
     stc_sections_->AddPage(pg_properties_, "Properties");
 
     // Create side property grids
@@ -103,6 +110,7 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow *parent, bool no_apply) :
     );
     pg_props_side1_->SetCaptionTextColour(inactiveTextColour);
     pg_props_side1_->SetCellDisabledTextColour(inactiveTextColour);
+    pg_props_side1_->SetFont(*font_normal);
     pg_props_side2_ = new wxPropertyGrid(
         stc_sections_,
         -1,
@@ -112,6 +120,7 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow *parent, bool no_apply) :
     );
     pg_props_side2_->SetCaptionTextColour(inactiveTextColour);
     pg_props_side2_->SetCellDisabledTextColour(inactiveTextColour);
+    pg_props_side2_->SetFont(*font_normal);
 
     // Add buttons
     wxBoxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
