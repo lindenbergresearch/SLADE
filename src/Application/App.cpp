@@ -429,7 +429,7 @@ bool App::init(vector<string> &args, double ui_scale) {
     UI::init(ui_scale);
 
     // Show splash screen
-    // UI::showSplash("Starting up...");
+    UI::showSplash("Starting up...");
 
     // Init palettes
     if (!palette_manager.init()) {
@@ -492,14 +492,14 @@ bool App::init(vector<string> &args, double ui_scale) {
     // Show the main window
     MainEditor::windowWx()->Show(true);
     wxTheApp->SetTopWindow(MainEditor::windowWx());
-    //  UI::showSplash("Starting up...", false, MainEditor::windowWx());
+    UI::showSplash("Starting up...", false, MainEditor::windowWx());
 
     // Open any archives from the command line
     for (auto &path : paths_to_open)
         archive_manager.openArchive(path);
 
     // Hide splash screen
-    //  UI::hideSplash();
+     UI::hideSplash();
 
     init_ok = true;
     Log::info("SLADE Initialisation OK");
