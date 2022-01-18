@@ -262,7 +262,7 @@ public:
         // Add stack trace text area
         text_stack = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxHSCROLL);
         text_stack->SetValue(trace);
-        text_stack->SetFont(wxFont(8, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+        text_stack->SetFont(wxFont(12, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
         sizer->Add(new wxStaticText(this, -1, "Crash Information:"), 0, wxLEFT | wxRIGHT, 10);
         sizer->AddSpacer(2);
         sizer->Add(text_stack, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
