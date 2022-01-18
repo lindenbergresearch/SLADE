@@ -313,6 +313,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow *parent, STabCtrl *nb_archives
     createRecentPanel();
     refreshRecentFileList();
 
+
     // Create/setup bookmarks tab
     auto panel_bm = new wxPanel(stc_tabs_);
     panel_bm->SetSizer(new wxBoxSizer(wxVERTICAL));
@@ -356,6 +357,26 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow *parent, STabCtrl *nb_archives
     // Init layout
     Layout();
     SetInitialSize(wxSize(UI::scalePx(256), -1));
+}
+
+
+// ----------------------------------------------------------------------------
+// ArchiveManagerPanel:openRecentFile()l
+//
+// Opens the recent file from the recent list.
+// ----------------------------------------------------------------------------
+void ArchiveManagerPanel::openRecentFile() {
+    if (list_recent_->GetItemCount() > 0) {
+        auto dir = list_recent_->GetItemText(0, 1);
+        auto file = list_recent_->GetItemText(0, 0);
+        string file_name = string::Format("%s/%s", dir, file);
+
+        Log::info(string::Format("recent file: %s", file_name));
+
+        openFile(file_name);
+    } else {
+        Log::warning("No recent files found.");
+    }
 }
 
 

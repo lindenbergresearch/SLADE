@@ -15,6 +15,8 @@ MainWindow *main_window = nullptr;
 
 bool MainEditor::init() {
     main_window = new MainWindow();
+
+    main_window->openRecentFile();
     return true;
 }
 

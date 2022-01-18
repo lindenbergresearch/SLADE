@@ -198,6 +198,10 @@ public:
     void openDirAsArchive(string dir) const;
 
 
+    void openRecentFile();
+
+
+
     bool redirectToTab(ArchiveEntry *entry) const;
 
 

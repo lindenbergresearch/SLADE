@@ -84,6 +84,7 @@ public:
 
     void openStartPageTab();
 
+    void openRecentFile();
 
     ArchiveManagerPanel *getArchiveManagerPanel() { return panel_archivemanager; }
 

@@ -448,6 +448,11 @@ void MainWindow::setupLayout() {
 }
 
 
+void MainWindow::openRecentFile() {
+    panel_archivemanager->openRecentFile();
+}
+
+
 // ----------------------------------------------------------------------------
 // MainWindow::createStartPage
 //
