@@ -8,8 +8,7 @@
 #include "UI/Controls/PaletteChooser.h"
 #include "MapEditor/MapEditor.h"
 
-
-CVAR(Bool, autoload_recent_file, true, CVAR_SAVE)
+CVAR(Bool, autoload_recent_file, false, CVAR_SAVE)
 
 namespace MainEditor {
 MainWindow *main_window = nullptr;
