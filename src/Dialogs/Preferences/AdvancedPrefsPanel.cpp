@@ -68,7 +68,7 @@ AdvancedPrefsPanel::AdvancedPrefsPanel(wxWindow *parent) : PrefsPanelBase(parent
 
     auto *font_monospace = (new wxFont(WxUtils::getMonospaceFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT))));
     font_monospace->SetPointSize(font_size_prefs);
-    font_monospace = &font_monospace->MakeBold();
+    //font_monospace = &font_monospace->MakeBold();
     pg_cvars_->SetFont(*font_monospace);
 
     pg_cvars_->SetCaptionTextColour(inactiveTextColour);
