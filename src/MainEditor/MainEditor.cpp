@@ -8,6 +8,9 @@
 #include "UI/Controls/PaletteChooser.h"
 #include "MapEditor/MapEditor.h"
 
+
+CVAR(Bool, autoload_recent_file, true, CVAR_SAVE)
+
 namespace MainEditor {
 MainWindow *main_window = nullptr;
 }
@@ -16,7 +19,10 @@ MainWindow *main_window = nullptr;
 bool MainEditor::init() {
     main_window = new MainWindow();
 
-    main_window->openRecentFile();
+    if (autoload_recent_file) {
+        main_window->openRecentFile();
+    }
+
     return true;
 }
 
