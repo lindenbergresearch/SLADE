@@ -102,8 +102,8 @@ string Log::Message::formattedMessageLine(bool colorize) const {
 string Log::Message::getDebugInfo() const {
     auto fname = wxString(file).AfterLast('/');
 
-    if (fname.size() <= 1) return wxString::Format("%s/%d: ", typeToString(type), level);
-    else return wxString::Format("%s/%d: %s::%s(%d) ", typeToString(type), level, fname, func, line);
+    if (fname.size() <= 1) return wxString::Format("%s/%d: ", typeToString(), level);
+    else return wxString::Format("%s/%d: %s::%s(%d) ", typeToString(), level, fname, func, line);
 }
 
 
@@ -113,8 +113,8 @@ string Log::Message::getDebugInfo() const {
 // Returns the string representation of the corresponding log-type.
 
 // ----------------------------------------------------------------------------
-string Log::Message::typeToString(MessageType mt) {
-    switch (mt) {
+string Log::Message::typeToString() const {
+    switch (type) {
         case MessageType::Info:
             return "INFO";
         case MessageType::Warning:
@@ -251,7 +251,7 @@ void Log::message(MessageType type, const wxString &text, const char *_file, con
 // ----------------------------------------------------------------------------
 vector<Log::Message *> Log::since(time_t time, MessageType type) {
     vector<Message *> list;
-    for (auto &msg : log)
+    for (auto &msg: log)
         if (msg.timestamp >= time && (type == MessageType::Any || msg.type == type))
             list.push_back(&msg);
     return list;

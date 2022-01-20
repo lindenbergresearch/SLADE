@@ -50,7 +50,7 @@ struct Message {
     string getDebugInfo() const;
 
 
-    static string typeToString(MessageType mt);
+    string typeToString() const;
 };
 
 
