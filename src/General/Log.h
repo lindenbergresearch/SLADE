@@ -24,6 +24,7 @@ struct Message {
 
     string formattedMessageLine() const;
     string getDebugInfo() const;
+    static string typeToString(MessageType mt) ;
 };
 
 
@@ -37,6 +38,9 @@ void setVerbosity(int verbosity);
 
 
 void init();
+
+
+
 
 
 void message(MessageType type, int level, const char *text, const char *_file = "", const char *_func = "", int _line = 0);

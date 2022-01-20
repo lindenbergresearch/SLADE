@@ -82,7 +82,12 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
 // [HH:MM:SS:mmm] <message>
 // ----------------------------------------------------------------------------
 string Log::Message::formattedMessageLine() const {
-    return S_FMT("%s%s%s", wxDateTime(timestamp).Format("[%H:%M:%S:%l] "), getDebugInfo(), CHR(message));
+    return S_FMT(
+        "%s%s%s",
+        wxDateTime(timestamp).Format("[%H:%M:%S:%l] "),
+        getDebugInfo(),
+        CHR(message)
+    );
 }
 
 
@@ -94,12 +99,43 @@ string Log::Message::formattedMessageLine() const {
 // ----------------------------------------------------------------------------
 string Log::Message::getDebugInfo() const {
     auto fname = wxString(file).AfterLast('/');
-    auto fmt = wxString::Format("<%s->%s(%d)> ", fname, func, line);
+    auto fmt = wxString::Format("%s: <%s->%s(%d)> ", typeToString(type), fname, func, line);
 
     if (fname.size() <= 1) return "";
 
     return fmt;
 }
+
+
+// ----------------------------------------------------------------------------
+// Log::typeToString
+//
+// Returns the string representation of the corresponding log-type.
+
+// ----------------------------------------------------------------------------
+string Log::Message::typeToString(MessageType mt) {
+    switch (mt) {
+        case MessageType::Info:
+            return "INFO";
+        case MessageType::Warning:
+            return "WARNING";
+        case MessageType::Error:
+            return "ERROR";
+        case MessageType::Debug:
+            return "DEBUG";
+        case MessageType::Console:
+            return "CONSOLE";
+        case MessageType::Script:
+            return "SCRIPT";
+        case MessageType::Any:
+            return "ANY";
+        default:
+            return "UNKNOWN";
+    }
+}
+
+
+
 
 // ----------------------------------------------------------------------------
 //
