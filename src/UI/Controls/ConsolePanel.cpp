@@ -50,8 +50,7 @@
 //
 // ConsolePanel class constructor
 // ----------------------------------------------------------------------------
-ConsolePanel::ConsolePanel(wxWindow *parent, int id)
-    : wxPanel(parent, id) {
+ConsolePanel::ConsolePanel(wxWindow *parent, int id) : wxPanel(parent, id) {
     // Init variables
     cmd_log_index_ = 0;
     next_message_index_ = 0;
@@ -64,7 +63,14 @@ ConsolePanel::ConsolePanel(wxWindow *parent, int id)
     text_command_->Bind(wxEVT_KEY_DOWN, &ConsolePanel::onCommandKeyDown, this);
 
     // Start update timer
-    timer_update_.Bind(wxEVT_TIMER, [&](wxTimerEvent &) { update(); });
+    timer_update_.Bind(
+        wxEVT_TIMER,
+        [&](wxTimerEvent &) {
+            update();
+        }
+    );
+
+
     timer_update_.Start(100);
 }
 
@@ -104,7 +110,11 @@ void ConsolePanel::initLayout() {
 
     // Set console font to default+monospace
     auto font = WxUtils::getMonospaceFont(wxSystemSettings::GetFont(wxSYS_ANSI_FIXED_FONT));
+    font.SetPointSize(13);
     text_command_->SetFont(font);
+    text_command_->SetBackgroundColour(WXCOL(StyleSet::currentSet()->getStyleBackground("default")));
+    text_command_->SetForegroundColour(WXCOL(StyleSet::currentSet()->getStyleForeground("default")));
+    text_command_->EnableVisibleFocus(false);
 
     setupTextArea();
 }
@@ -122,7 +132,7 @@ void ConsolePanel::setupTextArea() const {
     // Margins
     text_log_->SetMarginWidth(0, text_log_->TextWidth(wxSTC_STYLE_DEFAULT, "[00:00:00:000]"));
     text_log_->SetMarginType(0, wxSTC_MARGIN_TEXT);
-    text_log_->SetMarginWidth(1, 8);
+    text_log_->SetMarginWidth(1, 7);
 
     // Message type colours
     auto hsl = Misc::rgbToHsl(StyleSet::currentSet()->getStyleForeground("default"));
@@ -132,6 +142,8 @@ void ConsolePanel::setupTextArea() const {
     text_log_->StyleSetForeground(201, WXCOL(Misc::hslToRgb(0.1, 1., hsl.l)));
     text_log_->StyleSetForeground(202, WXCOL(Misc::hslToRgb(0.5, 0.8, hsl.l)));
     text_log_->StyleSetForeground(203, WXCOL(Misc::hslToRgb(hsl.h, hsl.s, 0.5)));
+    text_log_->StyleSetForeground(204, WXCOL(COL_CYAN));
+    text_log_->StyleSetForeground(205, WXCOL(Misc::hslToRgb(1, hsl.s, 0.5)));
 }
 
 
@@ -145,7 +157,10 @@ void ConsolePanel::update() {
 
     // Check if any new log messages were added since the last update
     auto &log = Log::history();
-    if (log.size() <= next_message_index_) {
+    // current index
+    auto current = log.size();
+
+    if (current <= next_message_index_) {
         // None added, check again in 500ms
         timer_update_.Start(500);
         return;
@@ -153,18 +168,27 @@ void ConsolePanel::update() {
 
     // Add new log messages to log text area
     text_log_->SetEditable(true);
-    for (auto a = next_message_index_; a < log.size(); a++) {
-        // Add message line + timestamp margin
-        text_log_->AppendText(log[a].message);
-        text_log_->MarginSetText(a, wxDateTime(log[a].timestamp).Format("[%H:%M:%S:%l]"));
-        text_log_->MarginSetStyle(a, wxSTC_STYLE_LINENUMBER);
+    for (auto a = next_message_index_; a < current; a++) {
+        // skip verbose
+        if (log[a].level > 1) continue;
 
-        if (a > 0)
-            text_log_->AppendText("\n");
+        auto msg = S_FMT("%s: %s", log[a].typeToString(), log[a].message);
+
+        // Add message line + timestamp margin
+        text_log_->AppendText(msg);
+        text_log_->MarginSetText(int(a), wxDateTime(log[a].timestamp).Format("[%H:%M:%S:%l]"));
+        text_log_->MarginSetStyle(int(a), wxSTC_STYLE_LINENUMBER);
 
         // Set line colour depending on message type
-        text_log_->StartStyling(text_log_->GetLineEndPosition(a) - text_log_->GetLineLength(a));
+        text_log_->StartStyling(
+            text_log_->GetLineEndPosition(int(a)) -
+            text_log_->GetLineLength(a)
+        );
+
         switch (log[a].type) {
+            case Log::MessageType::Info:
+                text_log_->SetStyling(text_log_->GetLineLength(a), 205);
+                break;
             case Log::MessageType::Error:
                 text_log_->SetStyling(text_log_->GetLineLength(a), 200);
                 break;
@@ -177,17 +201,24 @@ void ConsolePanel::update() {
             case Log::MessageType::Debug:
                 text_log_->SetStyling(text_log_->GetLineLength(a), 203);
                 break;
+            case Log::MessageType::Console:
+                text_log_->SetStyling(text_log_->GetLineLength(a), 204);
+                break;
             default:
+                text_log_->SetStyling(text_log_->GetLineLength(a), 205);
                 break;
         }
-    }
-    text_log_->SetEditable(false);
 
-    next_message_index_ = Log::history().size();
+
+        text_log_->AppendText("\n");
+    }
+
+    text_log_->SetEditable(false);
+    next_message_index_ = current;
     text_log_->ScrollToEnd();
 
     // Check again in 100ms
-    timer_update_.Start(100);
+    timer_update_.Start(20);
 }
 
 
