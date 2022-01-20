@@ -90,7 +90,7 @@ bool OpenGL::init() {
     if (initialised)
         return true;
 
-    LOG_MESSAGE(1, "Initialising OpenGL...");
+    LOG_MESSAGE(1, "--- Initialising OpenGL -----------------------------");
 
     // Get OpenGL info
     info.vendor = wxString::From8BitData((const char *) glGetString(GL_VENDOR));
@@ -98,11 +98,12 @@ bool OpenGL::init() {
     info.version = wxString::From8BitData((const char *) glGetString(GL_VERSION));
     info.extensions = wxString::From8BitData((const char *) glGetString(GL_EXTENSIONS));
 
-    // Get OpenGL version
+    // Get OpenGL info
     string temp = info.version;
     temp.Truncate(3);
     temp.ToDouble(&version);
-    LOG_MESSAGE(1, "OpenGL Version: %1.1f", version);
+    LOG_MESSAGE(1, "OpenGL Version %1.1f", version);
+    LOG_MESSAGE(1, "Vendor: %s / Renderer: %s", info.vendor, info.renderer);
 
     // Get max texture size
     GLint val = 0;
@@ -114,19 +115,21 @@ bool OpenGL::init() {
     glewInit();
 
     // Test extensions
-    LOG_MESSAGE(1, "Checking extensions...");
+    LOG_MESSAGE(1, "Checking supported extensions:");
     if (GLEW_ARB_vertex_buffer_object)
-        LOG_MESSAGE(1, "Vertex Buffer Objects supported");
+        LOG_MESSAGE(1, " * Vertex Buffer Objects supported");
     else
-        LOG_MESSAGE(1, "Vertex Buffer Objects not supported");
+        LOG_MESSAGE(1, " - Vertex Buffer Objects not supported");
     if (GLEW_ARB_point_sprite)
-        LOG_MESSAGE(1, "Point Sprites supported");
+        LOG_MESSAGE(1, " * Point Sprites supported");
     else
-        LOG_MESSAGE(1, "Point Sprites not supported");
+        LOG_MESSAGE(1, " - Point Sprites not supported");
     if (GLEW_ARB_framebuffer_object)
-        LOG_MESSAGE(1, "Framebuffer Objects supported");
+        LOG_MESSAGE(1, " * Framebuffer Objects supported");
     else
-        LOG_MESSAGE(1, "Framebuffer Objects not supported");
+        LOG_MESSAGE(1, " - Framebuffer Objects not supported");
+
+    LOG_MESSAGE(1, "-----------------------------------------------------");
 
     initialised = true;
     return true;
