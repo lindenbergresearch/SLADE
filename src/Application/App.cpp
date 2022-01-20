@@ -590,7 +590,7 @@ void App::saveConfigFile() {
 void App::exit(bool save_config) {
     exiting = true;
 
-    Log::info("Quitting Application...");
+    Log::info("Shutdown Application...");
 
     if (save_config) {
         // Save configuration
