@@ -6,15 +6,36 @@ enum class MessageType {
     Warning,
     Error,
     Debug,
-    Console,    // Only displayed in the console
-    Script,        // Script output
+    Console, // Only displayed in the console
+    Script,  // Script output
     Any
+};
+
+/*
+Black:  \u001b[30m.
+Red:    \u001b[31m.
+Green:  \u001b[32m.
+Yellow: \u001b[33m.
+Blue:   \u001b[34m.
+Magenta:\u001b[35m.
+Cyan:   \u001b[36m.
+White:  \u001b[37m.
+*/
+static const int levelColors[] = {
+    38,
+    33,
+    31,
+    34,
+    37,
+    32,
+    36
 };
 
 
 struct Message {
     string message;
     MessageType type;
+    int level;
     wxDateTime timestamp;
 
     /* add additional debug info */
@@ -22,9 +43,14 @@ struct Message {
     string func;
     int line;
 
-    string formattedMessageLine() const;
+
+    string formattedMessageLine(bool colorize = false) const;
+
+
     string getDebugInfo() const;
-    static string typeToString(MessageType mt) ;
+
+
+    static string typeToString(MessageType mt);
 };
 
 
@@ -38,9 +64,6 @@ void setVerbosity(int verbosity);
 
 
 void init();
-
-
-
 
 
 void message(MessageType type, int level, const char *text, const char *_file = "", const char *_func = "", int _line = 0);

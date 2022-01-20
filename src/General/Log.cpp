@@ -62,7 +62,7 @@ CVAR(Bool, log_console, false, CVAR_SAVE);   // print to console
 void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
     string error = "FreeImage: ";
     if (fif != FIF_UNKNOWN)
-        error += S_FMT("[%s] ", FreeImage_GetFormatFromFIF(fif));
+        error += S_FMT("?[%s] ", FreeImage_GetFormatFromFIF(fif));
     error += message;
 
     Log::error(error);
@@ -81,12 +81,14 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char *message) {
 // Returns the log entry as a formatted string:
 // [HH:MM:SS:mmm] <message>
 // ----------------------------------------------------------------------------
-string Log::Message::formattedMessageLine() const {
+string Log::Message::formattedMessageLine(bool colorize) const {
     return S_FMT(
-        "%s%s%s",
+        "%s%s%s%s%s",
+        colorize ? string::Format("\x1B[%d;1m", levelColors[int(type)]) : "",
         wxDateTime(timestamp).Format("[%H:%M:%S:%l] "),
         getDebugInfo(),
-        CHR(message)
+        CHR(message),
+        colorize ? string::Format("\x1B[0m", levelColors[int(type)]) : ""
     );
 }
 
@@ -99,11 +101,9 @@ string Log::Message::formattedMessageLine() const {
 // ----------------------------------------------------------------------------
 string Log::Message::getDebugInfo() const {
     auto fname = wxString(file).AfterLast('/');
-    auto fmt = wxString::Format("%s: <%s->%s(%d)> ", typeToString(type), fname, func, line);
 
-    if (fname.size() <= 1) return "";
-
-    return fmt;
+    if (fname.size() <= 1) return wxString::Format("%s/%d: ", typeToString(type), level);
+    else return wxString::Format("%s/%d: %s::%s(%d) ", typeToString(type), level, fname, func, line);
 }
 
 
@@ -118,7 +118,7 @@ string Log::Message::typeToString(MessageType mt) {
         case MessageType::Info:
             return "INFO";
         case MessageType::Warning:
-            return "WARNING";
+            return "WARN";
         case MessageType::Error:
             return "ERROR";
         case MessageType::Debug:
@@ -227,14 +227,14 @@ void Log::setVerbosity(int verbosity) {
 // ----------------------------------------------------------------------------
 void Log::message(MessageType type, const char *text, const char *_file, const char *_func, int _line) {
     // Add log message
-    log.push_back({ text, type, wxDateTime::UNow(), _file, _func, _line });
+    log.push_back({ text, type, 1, wxDateTime::UNow(), _file, _func, _line });
 
     // Write to log file
     if (log_file.is_open() && type != MessageType::Console)
         sf::err() << log.back().formattedMessageLine() << "\n";
 
     if (log_console)
-        std::cout << log.back().formattedMessageLine() << "\n";
+        std::cout << log.back().formattedMessageLine(true) << "\n";
 }
 
 
@@ -300,14 +300,14 @@ void Log::message(MessageType type, int level, const char *text, const char *_fi
         return;
 
     // Add log message
-    log.push_back({ text, type, wxDateTime::UNow(), _file, _func, _line });
+    log.push_back({ text, type, level, wxDateTime::UNow(), _file, _func, _line });
 
     // Write to log file
     if (log_file.is_open() && type != MessageType::Console)
         sf::err() << log.back().formattedMessageLine() << "\n";
 
     if (log_console) {
-        std::cout << log.back().formattedMessageLine() << "\n";
+        std::cout << log.back().formattedMessageLine(true) << "\n";
     }
 
 }
