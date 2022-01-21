@@ -87,10 +87,10 @@ public:
 
         // Draw separator lines
         int height = (toolbar_size / 16.0) * 11;
-        dc.GradientFillLinear(WxUtils::scaledRect(1, 0, 1, height), col_background, col_dark, wxSOUTH);
-        dc.GradientFillLinear(WxUtils::scaledRect(1, height, 1, height), col_background, col_dark, wxNORTH);
-        dc.GradientFillLinear(WxUtils::scaledRect(2, 0, 1, height), col_background, col_light, wxSOUTH);
-        dc.GradientFillLinear(WxUtils::scaledRect(2, height, 1, height), col_background, col_light, wxNORTH);
+        dc.GradientFillLinear(WxUtils::scaledRect(1, 0, 1, height), col_dark, col_dark, wxSOUTH);
+        dc.GradientFillLinear(WxUtils::scaledRect(1, height, 1, height), col_dark, col_dark, wxNORTH);
+        dc.GradientFillLinear(WxUtils::scaledRect(2, 0, 1, height), col_light, col_light, wxSOUTH);
+        dc.GradientFillLinear(WxUtils::scaledRect(2, height, 1, height), col_light, col_light, wxNORTH);
     }
 };
 
@@ -172,6 +172,7 @@ SToolBarGroup::SToolBarGroup(SToolBar *parent, string name, bool force_name) : w
 
         wxStaticText *label = new wxStaticText(this, -1, S_FMT("%s:", showname));
         label->SetForegroundColour(Drawing::getMenuTextColour());
+        label->SetFont(label->GetFont().MakeSmaller());
         sizer->AddSpacer(UI::pad());
         sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL);
         sizer->AddSpacer(UI::px(UI::Size::PadMinimum));
@@ -351,7 +352,7 @@ SToolBar::SToolBar(wxWindow *parent, bool main_toolbar) : wxPanel(parent, -1) {
     // In Windows, only enable on Vista or newer
     if (Global::win_version_major >= 6)
         SetDoubleBuffered(true);
-#elif !defined __WXMAC__
+#elif __WXMAC__
     SetDoubleBuffered(true);
 #endif
 
@@ -663,7 +664,7 @@ int SToolBar::calculateNumRows(int width) {
 // Returns the SToolBarGroup matching [name], or nullptr if not found
 // ----------------------------------------------------------------------------
 SToolBarGroup *SToolBar::group(const string &name) {
-    for (auto group : groups_)
+    for (auto group: groups_)
         if (S_CMPNOCASE(group->name(), name))
             return group;
 
@@ -705,21 +706,21 @@ void SToolBar::onPaint(wxPaintEvent &e) {
 
     // Get system colours needed
     wxColour col_background = GetBackgroundColour();
-    wxColour col_light = Drawing::lightColour(col_background, 1.5f);
-    //wxColour col_dark = win10_theme ? *wxWHITE : Drawing::darkColour(col_background, 1.5f);
+    wxColour col_light = Drawing::lightColour(col_background, 2.5f);
+    wxColour col_dark = Drawing::darkColour(col_background, 2.5f);
 
     // Draw background
     dc.SetBackground(wxBrush(col_background));
     dc.Clear();
 
     if (draw_border_) {
-        // Draw top
-        //dc.SetPen(wxPen(wxColor(220, 220, 220)));// col_light));
-        //dc.DrawLine(wxPoint(0, 0), wxPoint(GetSize().x+1, 0));
+//         Draw top
+        dc.SetPen(col_light);// col_light));
+        dc.DrawLine(wxPoint(0, 1), wxPoint(GetSize().x + 1, 1));
 
-        // Draw bottom
-        //dc.SetPen(wxPen(col_dark));
-        //dc.DrawLine(wxPoint(0, GetSize().y-1), wxPoint(GetSize().x+1, GetSize().y-1));
+//         Draw bottom
+        dc.SetPen(col_dark);
+        dc.DrawLine(wxPoint(0, GetSize().y - 2), wxPoint(GetSize().x + 1, GetSize().y - 2));
     }
 }
 
