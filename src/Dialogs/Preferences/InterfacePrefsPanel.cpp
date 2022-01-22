@@ -107,9 +107,9 @@ void InterfacePrefsPanel::init() {
     cb_condensed_tabs_->SetValue(tabs_condensed);
     cb_web_dark_theme_->SetValue(web_dark_theme);
 
-    if (toolbar_size <= 16)
+    if (toolbar_size <= 18)
         choice_toolbar_size_->Select(0);
-    else if (toolbar_size <= 24)
+    else if (toolbar_size <= 22)
         choice_toolbar_size_->Select(1);
     else
         choice_toolbar_size_->Select(2);
@@ -147,9 +147,9 @@ void InterfacePrefsPanel::applyPreferences() {
     web_dark_theme = cb_web_dark_theme_->GetValue();
 
     if (choice_toolbar_size_->GetSelection() == 0)
-        toolbar_size = 16;
+        toolbar_size = 18;
     else if (choice_toolbar_size_->GetSelection() == 1)
-        toolbar_size = 24;
+        toolbar_size = 22;
     else
         toolbar_size = 32;
 
