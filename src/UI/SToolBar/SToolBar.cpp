@@ -45,7 +45,7 @@
 // ----------------------------------------------------------------------------
 CVAR(Bool, show_toolbar_names, true, CVAR_SAVE)
 CVAR(String, toolbars_hidden, "", CVAR_SAVE)
-CVAR(Int, toolbar_size, 16, CVAR_SAVE)
+CVAR(Int, toolbar_size, 18, CVAR_SAVE)
 DEFINE_EVENT_TYPE(wxEVT_STOOLBAR_LAYOUT_UPDATED)
 
 
@@ -58,7 +58,7 @@ class SToolBarSeparator : public wxControl {
 public:
     SToolBarSeparator(wxWindow *parent) : wxControl(parent, -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE) {
         // Set size
-        int height = UI::scalePx(toolbar_size + 6);
+        int height = UI::scalePx(toolbar_size + 6) + 4;
         int width = UI::scalePx(4);
         SetSizeHints(width, height, width, height);
         SetMinSize(wxSize(width, height));
@@ -86,7 +86,7 @@ public:
         dc.Clear();
 
         // Draw separator lines
-        int height = (toolbar_size / 16.0) * 11;
+        int height = toolbar_size;
         dc.GradientFillLinear(WxUtils::scaledRect(1, 0, 1, height), col_dark, col_dark, wxSOUTH);
         dc.GradientFillLinear(WxUtils::scaledRect(1, height, 1, height), col_dark, col_dark, wxNORTH);
         dc.GradientFillLinear(WxUtils::scaledRect(2, 0, 1, height), col_light, col_light, wxSOUTH);
@@ -172,7 +172,7 @@ SToolBarGroup::SToolBarGroup(SToolBar *parent, string name, bool force_name) : w
 
         wxStaticText *label = new wxStaticText(this, -1, S_FMT("%s:", showname));
         label->SetForegroundColour(Drawing::getMenuTextColour());
-        label->SetFont(label->GetFont().MakeSmaller());
+        label->SetFont(label->GetFont().MakeBold());
         sizer->AddSpacer(UI::pad());
         sizer->Add(label, 0, wxALIGN_CENTER_VERTICAL);
         sizer->AddSpacer(UI::px(UI::Size::PadMinimum));
@@ -707,20 +707,20 @@ void SToolBar::onPaint(wxPaintEvent &e) {
     // Get system colours needed
     wxColour col_background = GetBackgroundColour();
     wxColour col_light = Drawing::lightColour(col_background, 2.5f);
-    wxColour col_dark = Drawing::darkColour(col_background, 2.5f);
+    wxColour col_dark = Drawing::darkColour(col_background, 20.f);
 
     // Draw background
     dc.SetBackground(wxBrush(col_background));
     dc.Clear();
 
     if (draw_border_) {
-//         Draw top
+        //         Draw top
         dc.SetPen(col_light);// col_light));
         dc.DrawLine(wxPoint(0, 1), wxPoint(GetSize().x + 1, 1));
 
-//         Draw bottom
+        //         Draw bottom
         dc.SetPen(col_dark);
-        dc.DrawLine(wxPoint(0, GetSize().y - 2), wxPoint(GetSize().x + 1, GetSize().y - 2));
+        dc.DrawLine(wxPoint(0, GetSize().y - 1), wxPoint(GetSize().x + 1, GetSize().y - 1));
     }
 }
 
@@ -827,5 +827,5 @@ void SToolBar::onEraseBackground(wxEraseEvent &e) {
 // Returns the height for all toolbars
 // ----------------------------------------------------------------------------
 int SToolBar::getBarHeight() {
-    return UI::scalePx(toolbar_size * 2);
+    return UI::scalePx(toolbar_size * 2 + 2);
 }

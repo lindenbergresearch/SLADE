@@ -2,6 +2,8 @@
 
 #include "common.h"
 
+#define PAD_INNER 2
+#define PAD_OUTER 1
 
 class SAction;
 
@@ -49,10 +51,11 @@ private:
     string help_text_;
 
     // Layout
-    int pad_outer_ = 3;
-    int pad_inner_ = 1;
-    int icon_size_ = 16;
-    int text_width_ = 0;
+    int top_margin = 4;
+    int pad_outer_;
+    int pad_inner_;
+    int icon_size_ ;
+    int text_width_ ;
 
 
     void sendClickedEvent();
