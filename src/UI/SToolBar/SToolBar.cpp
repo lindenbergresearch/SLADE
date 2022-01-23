@@ -499,35 +499,36 @@ void SToolBar::updateLayout(bool force, bool generate_event) {
     sizer->Clear();
 
     // Delete previous separators
-    for (unsigned a = 0; a < separators_.size(); a++)
-        delete separators_[a];
+    for (auto &separator: separators_)
+        delete separator;
     separators_.clear();
 
     // Delete previous vlines
-    for (unsigned a = 0; a < vlines_.size(); a++)
-        delete vlines_[a];
+    for (auto &vline: vlines_)
+        delete vline;
     vlines_.clear();
 
     // Create horizontal sizer
-    wxBoxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
+    auto *hbox = new wxBoxSizer(wxHORIZONTAL);
     sizer->Add(hbox);
 
     // Go through all groups
     int current_width = 0;
     int groups_line = 0;
+
     n_rows_ = 0;
-    for (unsigned a = 0; a < groups_.size(); a++) {
+    for (auto &group: groups_) {
         // Skip if group is hidden
-        if (groups_[a]->hidden()) {
-            groups_[a]->Show(false);
+        if (group->hidden()) {
+            group->Show(false);
             continue;
         }
 
         // Check if the group will fit
-        groups_[a]->Show();
-        if (groups_[a]->GetBestSize().x + current_width + UI::pad() > GetSize().x && groups_line > 0) {
+        group->Show();
+        if (group->GetBestSize().x + current_width + UI::pad() > GetSize().x && groups_line > 0) {
             // The group won't fit, begin a new line
-            SToolBarVLine *vline = new SToolBarVLine(this);
+            auto *vline = new SToolBarVLine(this);
             sizer->Add(vline, 0, wxEXPAND);
             vlines_.push_back(vline);
 
@@ -535,12 +536,13 @@ void SToolBar::updateLayout(bool force, bool generate_event) {
             sizer->Add(hbox, 0);
             groups_line = 0;
             current_width = 0;
+
             n_rows_++;
         }
 
         // Add separator if needed
         if (groups_line > 0) {
-            SToolBarSeparator *sep = new SToolBarSeparator(this);
+            auto *sep = new SToolBarSeparator(this);
             sep->SetBackgroundColour(GetBackgroundColour());
             separators_.push_back(sep);
             hbox->Add(sep, 0, wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT, UI::px(UI::Size::PadMinimum));
@@ -548,8 +550,8 @@ void SToolBar::updateLayout(bool force, bool generate_event) {
         }
 
         // Add the group
-        hbox->Add(groups_[a], 0, wxEXPAND | wxTOP | wxBOTTOM | wxLEFT | wxRIGHT, UI::px(UI::Size::PadMinimum));
-        current_width += groups_[a]->GetBestSize().x + UI::pad();
+        hbox->Add(group, 0, wxEXPAND | wxTOP | wxBOTTOM | wxLEFT | wxRIGHT, UI::px(UI::Size::PadMinimum));
+        current_width += group->GetBestSize().x + UI::pad();
 
         groups_line++;
     }
