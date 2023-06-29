@@ -107,12 +107,14 @@ void InterfacePrefsPanel::init() {
     cb_condensed_tabs_->SetValue(tabs_condensed);
     cb_web_dark_theme_->SetValue(web_dark_theme);
 
-    if (toolbar_size <= 18)
+    if (toolbar_size <= 16)
         choice_toolbar_size_->Select(0);
-    else if (toolbar_size <= 22)
+    else if (toolbar_size <= 18)
         choice_toolbar_size_->Select(1);
-    else
+    else if (toolbar_size <= 24)
         choice_toolbar_size_->Select(2);
+    else
+        choice_toolbar_size_->Select(3);
 
     choice_iconset_general_->SetSelection(0);
     for (unsigned a = 0; a < choice_iconset_general_->GetCount(); a++)
@@ -147,9 +149,11 @@ void InterfacePrefsPanel::applyPreferences() {
     web_dark_theme = cb_web_dark_theme_->GetValue();
 
     if (choice_toolbar_size_->GetSelection() == 0)
-        toolbar_size = 18;
+        toolbar_size = 16;
     else if (choice_toolbar_size_->GetSelection() == 1)
-        toolbar_size = 22;
+        toolbar_size = 18;
+    else if (choice_toolbar_size_->GetSelection() == 2)
+        toolbar_size = 24;
     else
         toolbar_size = 32;
 
@@ -175,8 +179,8 @@ wxPanel *InterfacePrefsPanel::setupGeneralTab(wxWindow *stc_tabs) {
     cb_file_browser_ = new wxCheckBox(panel, -1, "Show File Browser tab in the Archive Manager panel *");
     cb_list_monospace_ = new wxCheckBox(panel, -1, "Use monospaced font for lists");
     cb_condensed_tabs_ = new wxCheckBox(panel, -1, "Condensed tabs *");
-    string sizes[] = { "Normal", "Large", "Extra Large" };
-    choice_toolbar_size_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 3, sizes);
+    string sizes[] = { "Small 16px", "Normal 18px", "Bigger 24px", "Large 32x32" };
+    choice_toolbar_size_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, 4, sizes);
     vector<string> sets = Icons::getIconSets(Icons::GENERAL);
     choice_iconset_general_ = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets.size(), &sets[0]);
 
